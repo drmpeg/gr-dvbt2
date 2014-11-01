@@ -1,0 +1,67 @@
+<block>
+  <name>Cell/Time Interleaver</name>
+  <key>dvbt2_cellinterleaver_cc</key>
+  <category>dvbt2</category>
+  <import>import dvbt2</import>
+  <make>dvbt2.cellinterleaver_cc($constellation.val, $framesize.val, $fecblocks, $tiblocks)</make>
+  <param>
+    <name>FECFRAME size</name>
+    <key>framesize</key>
+    <type>enum</type>
+    <option>
+      <name>Normal</name>
+      <key>FECFRAME_NORMAL</key>
+      <opt>val:dvbt2.FECFRAME_NORMAL</opt>
+    </option>
+    <option>
+      <name>Short</name>
+      <key>FECFRAME_SHORT</key>
+      <opt>val:dvbt2.FECFRAME_SHORT</opt>
+    </option>
+  </param>
+  <param>
+    <name>Constellation</name>
+    <key>constellation</key>
+    <type>enum</type>
+    <option>
+      <name>QPSK</name>
+      <key>MOD_QPSK</key>
+      <opt>val:dvbt2.MOD_QPSK</opt>
+    </option>
+    <option>
+      <name>16QAM</name>
+      <key>MOD_16QAM</key>
+      <opt>val:dvbt2.MOD_16QAM</opt>
+    </option>
+    <option>
+      <name>64QAM</name>
+      <key>MOD_64QAM</key>
+      <opt>val:dvbt2.MOD_64QAM</opt>
+    </option>
+    <option>
+      <name>256QAM</name>
+      <key>MOD_256QAM</key>
+      <opt>val:dvbt2.MOD_256QAM</opt>
+    </option>
+  </param>
+  <param>
+    <name>FEC blocks per frame</name>
+    <key>fecblocks</key>
+    <value>168</value>
+    <type>int</type>
+  </param>
+  <param>
+    <name>TI blocks per frame</name>
+    <key>tiblocks</key>
+    <value>3</value>
+    <type>int</type>
+  </param>
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+  <source>
+    <name>out</name>
+    <type>complex</type>
+  </source>
+</block>
