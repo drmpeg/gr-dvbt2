@@ -27,8 +27,10 @@
 #define NBCH_1_4 3240
 #define KBCH_1_2 7032
 #define NBCH_1_2 7200
-#define BITS_PER_GROUP 360
-#define BITS_LAST_GROUP 192
+
+#define KSIG_PRE 200
+#define KSIG_POST 350
+#define NBCH_PARITY 168
 
 typedef struct{
     int type;
@@ -124,9 +126,10 @@ namespace gr {
       int cell_size;
       int mapped_items;
       int l1_constellation;
+      int fft_size;
       L1Signalling L1_Signalling[1];
       void add_l1pre(gr_complex *);
-      void add_l1post(unsigned char *);
+      void add_l1post(gr_complex *);
       int add_crc32_bits(unsigned char *, int);
       unsigned int m_poly_s_12[6];
       int poly_mult(const int*, int, const int*, int, int*);
@@ -138,7 +141,9 @@ namespace gr {
       void l1post_ldpc_lookup_generate(void);
       l1_ldpc_encode_table ldpc_encode;
       unsigned char l1_temp[FRAME_SIZE_SHORT];
+      unsigned char l1_interleave[FRAME_SIZE_SHORT];
       gr_complex l1pre_cache[1840];
+      gr_complex l1post_cache[1504];
       gr_complex m_bpsk[2];
       gr_complex m_qpsk[4];
       gr_complex m_16qam[16];
@@ -147,8 +152,11 @@ namespace gr {
       const static int ldpc_tab_1_4S[9][13];
       const static int ldpc_tab_1_2S[20][9];
 
+      const static int mux16[8];
+      const static int mux64[12];
+
      public:
-      framemapper_cc_impl(dvbt2_constellation_t constellation, dvbt2_framesize_t framesize, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern);
+      framemapper_cc_impl(dvbt2_constellation_t constellation, dvbt2_code_rate_t rate, dvbt2_framesize_t framesize, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern);
       ~framemapper_cc_impl();
 
       // Where all the action really happens

@@ -3,7 +3,7 @@
   <key>dvbt2_framemapper_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.framemapper_cc($constellation.val, $framesize.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val)</make>
+  <make>dvbt2.framemapper_cc($constellation.val, $rate.val, $framesize.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>
@@ -42,6 +42,56 @@
       <name>256QAM</name>
       <key>MOD_256QAM</key>
       <opt>val:dvbt2.MOD_256QAM</opt>
+    </option>
+  </param>
+  <param>
+    <name>Code rate</name>
+    <key>rate</key>
+    <type>enum</type>
+    <option>
+      <name>1/2</name>
+      <key>C1_2</key>
+      <opt>val:dvbt2.C1_2</opt>
+    </option>
+    <option>
+      <name>3/5</name>
+      <key>C3_5</key>
+      <opt>val:dvbt2.C3_5</opt>
+    </option>
+    <option>
+      <name>2/3</name>
+      <key>C2_3</key>
+      <opt>val:dvbt2.C2_3</opt>
+    </option>
+    <option>
+      <name>3/4</name>
+      <key>C3_4</key>
+      <opt>val:dvbt2.C3_4</opt>
+    </option>
+    <option>
+      <name>4/5</name>
+      <key>C4_5</key>
+      <opt>val:dvbt2.C4_5</opt>
+    </option>
+    <option>
+      <name>5/6</name>
+      <key>C5_6</key>
+      <opt>val:dvbt2.C5_6</opt>
+    </option>
+  </param>
+  <param>
+    <name>Constellation rotation</name>
+    <key>rotation</key>
+    <type>enum</type>
+    <option>
+      <name>Off</name>
+      <key>ROTATION_OFF</key>
+      <opt>val:dvbt2.ROTATION_OFF</opt>
+    </option>
+    <option>
+      <name>On</name>
+      <key>ROTATION_ON</key>
+      <opt>val:dvbt2.ROTATION_ON</opt>
     </option>
   </param>
   <param>

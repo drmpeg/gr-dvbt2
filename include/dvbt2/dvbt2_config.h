@@ -82,8 +82,8 @@ namespace gr {
     };
 
     enum dvbt2_framesize_t {
-      FECFRAME_NORMAL = 0,
-      FECFRAME_SHORT,
+      FECFRAME_SHORT = 0,
+      FECFRAME_NORMAL,
     };
 
     enum dvbt2_streamtype_t {
@@ -113,7 +113,7 @@ namespace gr {
       FFTSIZE_16K,
       FFTSIZE_32K_NORM,
       FFTSIZE_8K_SGI,
-      FFTSIZE_32_SGI,
+      FFTSIZE_32K_SGI,
     };
 
     enum dvbt2_guardinterval_t {

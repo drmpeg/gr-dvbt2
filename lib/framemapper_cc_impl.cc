@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     framemapper_cc::sptr
-    framemapper_cc::make(dvbt2_constellation_t constellation, dvbt2_framesize_t framesize, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern)
+    framemapper_cc::make(dvbt2_constellation_t constellation, dvbt2_code_rate_t rate, dvbt2_framesize_t framesize, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern)
     {
       return gnuradio::get_initial_sptr
-        (new framemapper_cc_impl(constellation, framesize, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern));
+        (new framemapper_cc_impl(constellation, rate, framesize, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern));
     }
 
     /*
      * The private constructor
      */
-    framemapper_cc_impl::framemapper_cc_impl(dvbt2_constellation_t constellation, dvbt2_framesize_t framesize, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern)
+    framemapper_cc_impl::framemapper_cc_impl(dvbt2_constellation_t constellation, dvbt2_code_rate_t rate, dvbt2_framesize_t framesize, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern)
       : gr::block("framemapper_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
@@ -100,15 +100,15 @@ namespace gr {
         l1preinit->l1_mod = l1constellation;
         l1preinit->l1_cod = 0;
         l1preinit->l1_fec_type = 0;
-        l1preinit->l1_post_size = 752;    /* 250 */
-        l1preinit->l1_post_info_size = 318;
+        l1preinit->l1_post_size = 250;    /* fix */
+        l1preinit->l1_post_info_size = KSIG_POST - 32;
         l1preinit->pilot_pattern = pilotpattern;
         l1preinit->tx_id_availability = 0;
         l1preinit->cell_id = 0;
         l1preinit->network_id = 0x3085;
         l1preinit->t2_system_id = 0x8001;
         l1preinit->num_t2_frames = 2;
-        l1preinit->num_data_symbols = 983;    /* 100 */
+        l1preinit->num_data_symbols = 100;    /* fix */
         l1preinit->regen_flag = FALSE;
         l1preinit->l1_post_extension = FALSE;
         l1preinit->num_rf = 1;
@@ -130,11 +130,11 @@ namespace gr {
         l1postinit->first_rf_idx = 0;
         l1postinit->first_frame_idx = 0;
         l1postinit->plp_group_id = 1;
-        l1postinit->plp_cod = 4;
-        l1postinit->plp_mod = 3;
-        l1postinit->plp_rotation = 1;
-        l1postinit->plp_fec_type = 1;
-        l1postinit->plp_num_blocks_max = 168;
+        l1postinit->plp_cod = rate;
+        l1postinit->plp_mod = constellation;
+        l1postinit->plp_rotation = rotation;
+        l1postinit->plp_fec_type = framesize;
+        l1postinit->plp_num_blocks_max = fecblocks;
         l1postinit->frame_interval = 1;
         l1postinit->time_il_length = 3;
         l1postinit->time_il_type = 0;
@@ -154,7 +154,7 @@ namespace gr {
         l1postinit->reserved_3 = 0;
         l1postinit->plp_id = 0;
         l1postinit->plp_start = 0;
-        l1postinit->plp_num_blocks = 168;
+        l1postinit->plp_num_blocks = fecblocks;
         l1postinit->reserved_4 = 0;
         l1postinit->reserved_5 = 0;
 
@@ -350,6 +350,7 @@ namespace gr {
                 break;
         }
         l1_constellation = l1constellation;
+        fft_size = fftsize;
         set_output_multiple(200);
         mapped_items = cell_size * fecblocks;
     }
@@ -674,7 +675,7 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
             shift[5] ^= m_poly_s_12[5];
         }
     }
-    for (int n = 0; n < 168; n++)
+    for (int n = 0; n < NBCH_PARITY; n++)
     {
         l1pre[offset_bits++] = (shift[5] & 0x01000000) ? 1 : 0;
         reg_6_shift(shift);
@@ -709,11 +710,11 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
     }
     /* remove padding and punctured bits, BPSK modulate */
     index = 0;
-    for (int w = 0; w < 200; w++)
+    for (int w = 0; w < KSIG_PRE; w++)
     {
         out[index++] = m_bpsk[l1_temp[w]];
     }
-    for (int w = 0; w < 168; w++)
+    for (int w = 0; w < NBCH_PARITY; w++)
     {
         out[index++] = m_bpsk[l1_temp[w + KBCH_1_4]];
     }
@@ -724,7 +725,6 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
             out[index++] = m_bpsk[l1_temp[w + NBCH_1_4]];
         }
     }
-    printf("l1pre index = %d\n", index);
 #if 0
     for (int w = 0; w < 1840; w++)
     {
@@ -733,7 +733,7 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
 #endif
 }
 
-void framemapper_cc_impl::add_l1post(unsigned char *out)
+void framemapper_cc_impl::add_l1post(gr_complex *out)
 {
     int temp, offset_bits = 0;
     unsigned char b, value;
@@ -744,7 +744,13 @@ void framemapper_cc_impl::add_l1post(unsigned char *out)
     unsigned char *l1post = l1_temp;
     L1Post *l1postinit = &L1_Signalling[0].l1post_data;
     int g, o, index;
-    int post_puncture[25] = {6, 15, 13, 10, 3, 17, 21, 8, 5, 19, 2, 23, 16, 24, 7, 18, 1, 12, 20, 0, 4, 14, 9, 11, 22};
+    int N_punc_temp, N_post_temp, N_post, N_punc, eta_mod, N_P2;
+    int *post_puncture;
+    int post_puncture_bqpsk[25] = {6, 4, 18, 9, 13, 8, 15, 20, 5, 17, 2, 24, 10, 22, 12, 3, 16, 23, 1, 14, 0, 21, 19, 7, 11};
+    int post_puncture_16qam[25] = {6, 4, 13, 9, 18, 8, 15, 20, 5, 17, 2, 22, 24, 7, 12, 1, 16, 23, 14, 0, 21, 10, 19, 11, 3};
+    int post_puncture_64qam[25] = {6, 15, 13, 10, 3, 17, 21, 8, 5, 19, 2, 23, 16, 24, 7, 18, 1, 12, 20, 0, 4, 14, 9, 11, 22};
+    int rows, numCols, mod, offset, pack, produced;
+    unsigned char *cols[12];
 
     temp = l1postinit->sub_slices_per_frame;
     for (int n = 14; n >= 0; n--)
@@ -942,7 +948,7 @@ void framemapper_cc_impl::add_l1post(unsigned char *out)
             shift[5] ^= m_poly_s_12[5];
         }
     }
-    for (int n = 0; n < 168; n++)
+    for (int n = 0; n < NBCH_PARITY; n++)
     {
         l1post[offset_bits++] = (shift[5] & 0x01000000) ? 1 : 0;
         reg_6_shift(shift);
@@ -960,7 +966,67 @@ void framemapper_cc_impl::add_l1post(unsigned char *out)
        p[j] ^= p[j-1];
     }
     /* Puncturing */
-    for (int c = 0; c < 18; c++)
+    N_punc_temp = (6 * (KBCH_1_2 - KSIG_POST)) / 5;
+    N_post_temp = KSIG_POST + NBCH_PARITY + 9000 - N_punc_temp;
+    switch (l1_constellation)
+    {
+        case gr::dvbt2::L1_MOD_BPSK:
+            eta_mod = 1;
+            post_puncture = post_puncture_bqpsk;
+            break;
+        case gr::dvbt2::L1_MOD_QPSK:
+            eta_mod = 2;
+            post_puncture = post_puncture_bqpsk;
+            break;
+        case gr::dvbt2::L1_MOD_16QAM:
+            eta_mod = 4;
+            post_puncture = post_puncture_16qam;
+            break;
+        case gr::dvbt2::L1_MOD_64QAM:
+            eta_mod = 6;
+            post_puncture = post_puncture_64qam;
+            break;
+        default:
+            eta_mod = 1;
+            post_puncture = post_puncture_bqpsk;
+            break;
+    }
+    switch (fft_size)
+    {
+        case gr::dvbt2::FFTSIZE_1K:
+            N_P2 = 16;
+            break;
+        case gr::dvbt2::FFTSIZE_2K:
+            N_P2 = 8;
+            break;
+        case gr::dvbt2::FFTSIZE_4K:
+            N_P2 = 4;
+            break;
+        case gr::dvbt2::FFTSIZE_8K_NORM:
+        case gr::dvbt2::FFTSIZE_8K_SGI:
+            N_P2 = 2;
+            break;
+        case gr::dvbt2::FFTSIZE_16K:
+            N_P2 = 1;
+            break;
+        case gr::dvbt2::FFTSIZE_32K_NORM:
+        case gr::dvbt2::FFTSIZE_32K_SGI:
+            N_P2 = 1;
+            break;
+        default:
+            N_P2 = 16;
+            break;
+    }
+    if (N_P2 == 1)
+    {
+        N_post = ceil((float)N_post_temp / (2 * (float)eta_mod)) * 2 * eta_mod;
+    }
+    else
+    {
+        N_post = ceil((float)N_post_temp / ((float)eta_mod * (float)N_P2)) * eta_mod * N_P2;
+    }
+    N_punc = N_punc_temp - (N_post - N_post_temp);
+    for (int c = 0; c < (N_punc / 360); c++)
     {
         g = post_puncture[c];
         for (int c2 = 0; c2 < 360; c2++)
@@ -969,53 +1035,127 @@ void framemapper_cc_impl::add_l1post(unsigned char *out)
             l1_temp[o] = 0x55;
         }
     }
-    g = post_puncture[18];
-    for (int c2 = 0; c2 < 202; c2++)
+    g = post_puncture[(N_punc / 360)];
+    for (int c2 = 0; c2 < (N_punc - ((N_punc / 360) * 360)); c2++)
     {
         o = (c2 * 25) + g + NBCH_1_2;
         l1_temp[o] = 0x55;
     }
-    /* remove padding and punctured bits, BPSK modulate */
-#if 0
+    /* remove padding and punctured bits */
     index = 0;
-    for (int w = 0; w < 200; w++)
+    for (int w = 0; w < KSIG_POST; w++)
     {
-        out[index++] = m_bpsk[l1_temp[w]];
+        l1_interleave[index++] = l1_temp[w];
     }
-    for (int w = 0; w < 168; w++)
+    for (int w = 0; w < NBCH_PARITY; w++)
     {
-        out[index++] = m_bpsk[l1_temp[w + KBCH_1_4]];
-    }
-    for (int w = 0; w < FRAME_SIZE_SHORT - NBCH_1_4; w++)
-    {
-        if (l1_temp[w + NBCH_1_4] != 0x55)
-        {
-            out[index++] = m_bpsk[l1_temp[w + NBCH_1_4]];
-        }
-    }
-    printf("index = %d\n", index);
-    for (int w = 0; w < 1840; w++)
-    {
-        printf("%+e %+e\n", out[w].real(), out[w].imag());
-    }
-#else
-    index = 0;
-    for (int w = 0; w < 350; w++)
-    {
-        out[index++] = l1_temp[w];
-    }
-    for (int w = 0; w < 168; w++)
-    {
-        out[index++] = l1_temp[w + KBCH_1_2];
+        l1_interleave[index++] = l1_temp[w + KBCH_1_2];
     }
     for (int w = 0; w < FRAME_SIZE_SHORT - NBCH_1_2; w++)
     {
         if (l1_temp[w + NBCH_1_2] != 0x55)
         {
-            out[index++] = l1_temp[w + NBCH_1_2];
+            l1_interleave[index++] = l1_temp[w + NBCH_1_2];
         }
     }
-    printf("index = %d\n", index);
+    /* Bit interleave for 16QAM and 64QAM */
+    if (l1_constellation == gr::dvbt2::L1_MOD_16QAM || l1_constellation == gr::dvbt2::L1_MOD_64QAM)
+    {
+        printf("N_post = %d\n", N_post);
+        if (l1_constellation == gr::dvbt2::L1_MOD_16QAM)
+        {
+            numCols = 8;
+            rows = N_post / 8;
+        }
+        else
+        {
+            numCols = 12;
+            rows = N_post / 12;
+        }
+        for (int j = 0; j < numCols; j++)
+        {
+            cols[j] = &l1_interleave[rows * j];
+        }
+        index = 0;
+        for (int k = 0; k < rows; k++)
+        {
+            for (int w = 0; w < numCols; w++)
+            {
+                *l1post++ = *(cols[w] + index);
+            }
+            index++;
+        }
+    }
+    switch (l1_constellation)
+    {
+        case gr::dvbt2::L1_MOD_BPSK:
+            index = 0;
+            produced = 0;
+            for (int d = 0; d < N_post; d++)
+            {
+                out[produced++] = m_bpsk[l1_interleave[index++]];
+            }
+            break;
+        case gr::dvbt2::L1_MOD_QPSK:
+            mod = 2;
+            index = 0;
+            produced = 0;
+            for (int d = 0; d < N_post / mod; d++)
+            {
+                pack = 0;
+                for (int e = 0; e < mod; e++)
+                {
+                    pack |= l1_interleave[index++];
+                    pack <<= 1;
+                }
+                pack >>= 1;
+                out[produced++] = m_qpsk[pack];
+            }
+            break;
+        case gr::dvbt2::L1_MOD_16QAM:
+            mod = 4;
+            index = 0;
+            produced = 0;
+            for (int d = 0; d < N_post / (mod * 2); d++)
+            {
+                pack = 0;
+                for (int e = 0; e < (mod * 2); e++)
+                {
+                    offset = mux16[e];
+                    pack |= l1_temp[index + offset];
+                    pack <<= 1;
+                }
+                pack >>= 1;
+                out[produced++] = m_16qam[pack >> 4];
+                out[produced++] = m_16qam[pack & 0xf];
+                index += (mod * 2);
+            }
+            break;
+        case gr::dvbt2::L1_MOD_64QAM:
+            mod = 6;
+            index = 0;
+            produced = 0;
+            for (int d = 0; d < N_post / (mod * 2); d++)
+            {
+                pack = 0;
+                for (int e = 0; e < (mod * 2); e++)
+                {
+                    offset = mux64[e];
+                    pack |= l1_temp[index + offset];
+                    pack <<= 1;
+                }
+                pack >>= 1;
+                out[produced++] = m_64qam[pack >> 6];
+                out[produced++] = m_64qam[pack & 0x3f];
+                index += (mod * 2);
+            }
+            break;
+    }
+#if 0
+    for (int w = 0; w < produced; w++)
+    {
+        printf("%+e %+e\n", out[w].real(), out[w].imag());
+    }
 #endif
 }
 
@@ -1031,7 +1171,7 @@ void framemapper_cc_impl::add_l1post(unsigned char *out)
         for (int i = 0; i < noutput_items; i += noutput_items)
         {
             printf("items = %d\n", noutput_items);
-            add_l1post(out);
+            add_l1post(l1post_cache);
         }
 
         // Tell runtime system how many input items we consumed on
@@ -1078,6 +1218,16 @@ const int framemapper_cc_impl::ldpc_tab_1_2S[20][9]=
     {3,13,5988,1057,0,0,0,0,0},
     {3,14,7411,3450,0,0,0,0,0}
 };
+
+    const int framemapper_cc_impl::mux16[8] =
+    {
+        7, 1, 3, 5, 2, 4, 6, 0
+    };
+
+    const int framemapper_cc_impl::mux64[12] =
+    {
+        11, 8, 5, 2, 10, 7, 4, 1, 9, 6, 3, 0
+    };
 
   } /* namespace dvbt2 */
 } /* namespace gr */
