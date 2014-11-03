@@ -34,7 +34,7 @@ namespace gr {
       void init_bb_randomiser(void);
 
      public:
-      bbscrambler_bb_impl(dvbt2_code_rate_t rate, dvbt2_framesize_t framesize);
+      bbscrambler_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate);
       ~bbscrambler_bb_impl();
 
       // Where all the action really happens

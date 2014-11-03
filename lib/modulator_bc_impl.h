@@ -38,7 +38,7 @@ namespace gr {
       gr_complex m_256qam[256];
 
      public:
-      modulator_bc_impl(dvbt2_constellation_t constellation, dvbt2_framesize_t framesize, dvbt2_rotation_t rotation);
+      modulator_bc_impl(dvbt2_framesize_t framesize, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation);
       ~modulator_bc_impl();
 
       // Where all the action really happens

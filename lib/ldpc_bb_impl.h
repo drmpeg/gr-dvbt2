@@ -58,7 +58,7 @@ namespace gr {
       const static int ldpc_tab_5_6S[37][14];
 
      public:
-      ldpc_bb_impl(dvbt2_code_rate_t rate, dvbt2_framesize_t framesize);
+      ldpc_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate);
       ~ldpc_bb_impl();
 
       // Where all the action really happens

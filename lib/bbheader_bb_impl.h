@@ -57,7 +57,7 @@ namespace gr {
       int add_crc8_bits(unsigned char *, int);
 
      public:
-      bbheader_bb_impl(dvbt2_code_rate_t rate, dvbt2_framesize_t framesize);
+      bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate);
       ~bbheader_bb_impl();
 
       // Where all the action really happens

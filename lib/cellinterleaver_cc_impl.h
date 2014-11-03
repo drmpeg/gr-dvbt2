@@ -43,7 +43,7 @@ namespace gr {
       gr_complex **cols;
 
      public:
-      cellinterleaver_cc_impl(dvbt2_constellation_t constellation, dvbt2_framesize_t framesize, int fecblocks, int tiblocks);
+      cellinterleaver_cc_impl(dvbt2_framesize_t framesize, dvbt2_constellation_t constellation, int fecblocks, int tiblocks);
       ~cellinterleaver_cc_impl();
 
       // Where all the action really happens

@@ -29,16 +29,16 @@ namespace gr {
   namespace dvbt2 {
 
     modulator_bc::sptr
-    modulator_bc::make(dvbt2_constellation_t constellation, dvbt2_framesize_t framesize, dvbt2_rotation_t rotation)
+    modulator_bc::make(dvbt2_framesize_t framesize, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation)
     {
       return gnuradio::get_initial_sptr
-        (new modulator_bc_impl(constellation, framesize, rotation));
+        (new modulator_bc_impl(framesize, constellation, rotation));
     }
 
     /*
      * The private constructor
      */
-    modulator_bc_impl::modulator_bc_impl(dvbt2_constellation_t constellation, dvbt2_framesize_t framesize, dvbt2_rotation_t rotation)
+    modulator_bc_impl::modulator_bc_impl(dvbt2_framesize_t framesize, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation)
       : gr::block("modulator_bc",
               gr::io_signature::make(1, 1, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))

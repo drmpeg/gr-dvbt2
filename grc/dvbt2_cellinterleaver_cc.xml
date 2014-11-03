@@ -3,7 +3,7 @@
   <key>dvbt2_cellinterleaver_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.cellinterleaver_cc($constellation.val, $framesize.val, $fecblocks, $tiblocks)</make>
+  <make>dvbt2.cellinterleaver_cc($framesize.val, $constellation.val, $fecblocks, $tiblocks)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>

@@ -59,7 +59,7 @@ namespace gr {
       const static int mux256s[8];
 
      public:
-      interleaver_bb_impl(dvbt2_constellation_t constellation, dvbt2_code_rate_t rate, dvbt2_framesize_t framesize);
+      interleaver_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation);
       ~interleaver_bb_impl();
 
       // Where all the action really happens

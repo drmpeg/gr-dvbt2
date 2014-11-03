@@ -3,7 +3,7 @@
   <key>dvbt2_ldpc_bb</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.ldpc_bb($rate.val, $framesize.val)</make>
+  <make>dvbt2.ldpc_bb($framesize.val, $rate.val)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>

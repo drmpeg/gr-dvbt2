@@ -3,7 +3,7 @@
   <key>dvbt2_modulator_bc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.modulator_bc($constellation.val, $framesize.val, $rotation.val)</make>
+  <make>dvbt2.modulator_bc($framesize.val, $constellation.val, $rotation.val)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>

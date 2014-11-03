@@ -47,7 +47,7 @@ namespace gr {
        * class. dvbt2::cellinterleaver_cc::make is the public interface for
        * creating new instances.
        */
-      static sptr make(dvbt2_constellation_t constellation, dvbt2_framesize_t framesize, int fecblocks, int tiblocks);
+      static sptr make(dvbt2_framesize_t framesize, dvbt2_constellation_t constellation, int fecblocks, int tiblocks);
     };
 
   } // namespace dvbt2

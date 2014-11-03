@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     bbheader_bb::sptr
-    bbheader_bb::make(dvbt2_code_rate_t rate, dvbt2_framesize_t framesize)
+    bbheader_bb::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate)
     {
       return gnuradio::get_initial_sptr
-        (new bbheader_bb_impl(rate, framesize));
+        (new bbheader_bb_impl(framesize, rate));
     }
 
     /*
      * The private constructor
      */
-    bbheader_bb_impl::bbheader_bb_impl(dvbt2_code_rate_t rate, dvbt2_framesize_t framesize)
+    bbheader_bb_impl::bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate)
       : gr::block("bbheader_bb",
               gr::io_signature::make(1, 1, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))

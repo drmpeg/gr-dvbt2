@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     interleaver_bb::sptr
-    interleaver_bb::make(dvbt2_constellation_t constellation, dvbt2_code_rate_t rate, dvbt2_framesize_t framesize)
+    interleaver_bb::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation)
     {
       return gnuradio::get_initial_sptr
-        (new interleaver_bb_impl(constellation, rate, framesize));
+        (new interleaver_bb_impl(framesize, rate, constellation));
     }
 
     /*
      * The private constructor
      */
-    interleaver_bb_impl::interleaver_bb_impl(dvbt2_constellation_t constellation, dvbt2_code_rate_t rate, dvbt2_framesize_t framesize)
+    interleaver_bb_impl::interleaver_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation)
       : gr::block("interleaver_bb",
               gr::io_signature::make(1, 1, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))

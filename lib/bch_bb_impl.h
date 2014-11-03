@@ -45,7 +45,7 @@ namespace gr {
       void bch_poly_build_tables(void);
 
      public:
-      bch_bb_impl(dvbt2_code_rate_t rate, dvbt2_framesize_t framesize);
+      bch_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate);
       ~bch_bb_impl();
 
       // Where all the action really happens
