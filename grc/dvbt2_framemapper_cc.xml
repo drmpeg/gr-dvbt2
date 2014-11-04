@@ -3,7 +3,7 @@
   <key>dvbt2_framemapper_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.framemapper_cc($framesize.val, $rate.val, $constellation.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val)</make>
+  <make>dvbt2.framemapper_cc($framesize.val, $rate.val, $constellation.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val, $numdatasyms)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>
@@ -276,12 +276,18 @@
       <opt>val:dvbt2.PILOT_PP8</opt>
     </option>
   </param>
+  <param>
+    <name>Number of Data Symbols</name>
+    <key>numdatasyms</key>
+    <value>100</value>
+    <type>int</type>
+  </param>
   <sink>
     <name>in</name>
     <type>complex</type>
   </sink>
   <source>
     <name>out</name>
-    <type>byte</type>
+    <type>complex</type>
   </source>
 </block>

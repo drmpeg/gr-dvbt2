@@ -115,7 +115,13 @@ typedef struct{
     int table_length;
     int d[LDPC_ENCODE_TABLE_LENGTH];
     int p[LDPC_ENCODE_TABLE_LENGTH];
-}l1_ldpc_encode_table;
+}l1pre_ldpc_encode_table;
+
+typedef struct{
+    int table_length;
+    int d[LDPC_ENCODE_TABLE_LENGTH];
+    int p[LDPC_ENCODE_TABLE_LENGTH];
+}l1post_ldpc_encode_table;
 
 namespace gr {
   namespace dvbt2 {
@@ -124,9 +130,18 @@ namespace gr {
     {
      private:
       int cell_size;
+      int stream_items;
       int mapped_items;
       int l1_constellation;
       int fft_size;
+      int eta_mod;
+      int N_P2;
+      int C_P2;
+      int N_FC;
+      int C_FC;
+      int C_DATA;
+      int N_post;
+      int N_punc;
       L1Signalling L1_Signalling[1];
       void add_l1pre(gr_complex *);
       void add_l1post(gr_complex *);
@@ -139,11 +154,14 @@ namespace gr {
       void bch_poly_build_tables(void);
       void l1pre_ldpc_lookup_generate(void);
       void l1post_ldpc_lookup_generate(void);
-      l1_ldpc_encode_table ldpc_encode;
+      void init_dummy_randomiser(void);
+      l1pre_ldpc_encode_table l1pre_ldpc_encode;
+      l1post_ldpc_encode_table l1post_ldpc_encode;
       unsigned char l1_temp[FRAME_SIZE_SHORT];
       unsigned char l1_interleave[FRAME_SIZE_SHORT];
+      gr_complex dummy_randomise[24102];
       gr_complex l1pre_cache[1840];
-      gr_complex l1post_cache[1504];
+      gr_complex unmodulated[1];
       gr_complex m_bpsk[2];
       gr_complex m_qpsk[4];
       gr_complex m_16qam[16];
@@ -152,11 +170,16 @@ namespace gr {
       const static int ldpc_tab_1_4S[9][13];
       const static int ldpc_tab_1_2S[20][9];
 
+      const static int pre_puncture[36];
+      const static int post_puncture_bqpsk[25];
+      const static int post_puncture_16qam[25];
+      const static int post_puncture_64qam[25];
+
       const static int mux16[8];
       const static int mux64[12];
 
      public:
-      framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern);
+      framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int numdatasyms);
       ~framemapper_cc_impl();
 
       // Where all the action really happens

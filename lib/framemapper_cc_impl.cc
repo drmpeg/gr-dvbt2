@@ -30,23 +30,24 @@ namespace gr {
   namespace dvbt2 {
 
     framemapper_cc::sptr
-    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern)
+    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int numdatasyms)
     {
       return gnuradio::get_initial_sptr
-        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern));
+        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, numdatasyms));
     }
 
     /*
      * The private constructor
      */
-    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern)
+    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int numdatasyms)
       : gr::block("framemapper_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
-              gr::io_signature::make(1, 1, sizeof(unsigned char)))
+              gr::io_signature::make(1, 1, sizeof(gr_complex)))
     {
         L1Pre *l1preinit = &L1_Signalling[0].l1pre_data;
         L1Post *l1postinit = &L1_Signalling[0].l1post_data;
         double normalization;
+        int N_punc_temp, N_post_temp;
         if (framesize == gr::dvbt2::FECFRAME_NORMAL)
         {
             switch (constellation)
@@ -64,7 +65,7 @@ namespace gr {
                     cell_size = 8100;
                     break;
                 default:
-                    cell_size = 32400;
+                    cell_size = 0;
                     break;
             }
         }
@@ -85,7 +86,7 @@ namespace gr {
                     cell_size = 2025;
                     break;
                 default:
-                    cell_size = 8100;
+                    cell_size = 0;
                     break;
             }
         }
@@ -100,7 +101,6 @@ namespace gr {
         l1preinit->l1_mod = l1constellation;
         l1preinit->l1_cod = 0;
         l1preinit->l1_fec_type = 0;
-        l1preinit->l1_post_size = 250;    /* fix */
         l1preinit->l1_post_info_size = KSIG_POST - 32;
         l1preinit->pilot_pattern = pilotpattern;
         l1preinit->tx_id_availability = 0;
@@ -108,7 +108,7 @@ namespace gr {
         l1preinit->network_id = 0x3085;
         l1preinit->t2_system_id = 0x8001;
         l1preinit->num_t2_frames = 2;
-        l1preinit->num_data_symbols = 100;    /* fix */
+        l1preinit->num_data_symbols = numdatasyms;
         l1preinit->regen_flag = FALSE;
         l1preinit->l1_post_extension = FALSE;
         l1preinit->num_rf = 1;
@@ -164,12 +164,14 @@ namespace gr {
         m_bpsk[0].imag() =  0.0;
         m_bpsk[1].real() =  -1.0;
         m_bpsk[1].imag() =  0.0;
-        add_l1pre(&l1pre_cache[0]);
+        unmodulated[0].real() =  0.0;
+        unmodulated[0].imag() =  0.0;
 
         l1post_ldpc_lookup_generate();
         switch (l1constellation)
         {
             case gr::dvbt2::L1_MOD_BPSK:
+                eta_mod = 1;
                 break;
             case gr::dvbt2::L1_MOD_QPSK:
                 normalization = sqrt(2);
@@ -181,6 +183,7 @@ namespace gr {
                 m_qpsk[2].imag() =  1.0 / normalization;
                 m_qpsk[3].real() = -1.0 / normalization;
                 m_qpsk[3].imag() = -1.0 / normalization;
+                eta_mod = 2;
                 break;
             case gr::dvbt2::L1_MOD_16QAM:
                 normalization = sqrt(10);
@@ -216,6 +219,7 @@ namespace gr {
                 m_16qam[14].imag() = -3.0 / normalization;
                 m_16qam[15].real() = -1.0 / normalization;
                 m_16qam[15].imag() = -1.0 / normalization;
+                eta_mod = 4;
                 break;
             case gr::dvbt2::L1_MOD_64QAM:
                 normalization = sqrt(42);
@@ -347,12 +351,536 @@ namespace gr {
                 m_64qam[62].imag() = -1.0 / normalization;
                 m_64qam[63].real() = -3.0 / normalization;
                 m_64qam[63].imag() = -3.0 / normalization;
+                eta_mod = 6;
                 break;
         }
+        switch (fftsize)
+        {
+            case gr::dvbt2::FFTSIZE_1K:
+                N_P2 = 16;
+                C_P2 = 558;
+                break;
+            case gr::dvbt2::FFTSIZE_2K:
+                N_P2 = 8;
+                C_P2 = 1118;
+                break;
+            case gr::dvbt2::FFTSIZE_4K:
+                N_P2 = 4;
+                C_P2 = 2236;
+                break;
+            case gr::dvbt2::FFTSIZE_8K_NORM:
+            case gr::dvbt2::FFTSIZE_8K_SGI:
+                N_P2 = 2;
+                C_P2 = 4472;
+                break;
+            case gr::dvbt2::FFTSIZE_16K:
+                N_P2 = 1;
+                C_P2 = 8944;
+                break;
+            case gr::dvbt2::FFTSIZE_32K_NORM:
+            case gr::dvbt2::FFTSIZE_32K_SGI:
+                N_P2 = 1;
+                C_P2 = 22432;
+                break;
+            default:
+                N_P2 = 0;
+                C_P2 = 0;
+                break;
+        }
+        switch (fftsize)
+        {
+            case gr::dvbt2::FFTSIZE_1K:
+                switch (pilotpattern)
+                {
+                    case gr::dvbt2::PILOT_PP1:
+                        C_DATA = 764;
+                        N_FC = 568;
+                        C_FC = 402;
+                        break;
+                    case gr::dvbt2::PILOT_PP2:
+                        C_DATA = 768;
+                        N_FC = 710;
+                        C_FC = 654;
+                        break;
+                    case gr::dvbt2::PILOT_PP3:
+                        C_DATA = 798;
+                        N_FC = 710;
+                        C_FC = 490;
+                        break;
+                    case gr::dvbt2::PILOT_PP4:
+                        C_DATA = 804;
+                        N_FC = 780;
+                        C_FC = 707;
+                        break;
+                    case gr::dvbt2::PILOT_PP5:
+                        C_DATA = 818;
+                        N_FC = 780;
+                        C_FC = 544;
+                        break;
+                    case gr::dvbt2::PILOT_PP6:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP7:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP8:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_2K:
+                switch (pilotpattern)
+                {
+                    case gr::dvbt2::PILOT_PP1:
+                        C_DATA = 1522;
+                        N_FC = 1136;
+                        C_FC = 804;
+                        break;
+                    case gr::dvbt2::PILOT_PP2:
+                        C_DATA = 1532;
+                        N_FC = 1420;
+                        C_FC = 1309;
+                        break;
+                    case gr::dvbt2::PILOT_PP3:
+                        C_DATA = 1596;
+                        N_FC = 1420;
+                        C_FC = 980;
+                        break;
+                    case gr::dvbt2::PILOT_PP4:
+                        C_DATA = 1602;
+                        N_FC = 1562;
+                        C_FC = 1415;
+                        break;
+                    case gr::dvbt2::PILOT_PP5:
+                        C_DATA = 1632;
+                        N_FC = 1562;
+                        C_FC = 1088;
+                        break;
+                    case gr::dvbt2::PILOT_PP6:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP7:
+                        C_DATA = 1646;
+                        N_FC = 1632;
+                        C_FC = 1396;
+                        break;
+                    case gr::dvbt2::PILOT_PP8:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_4K:
+                switch (pilotpattern)
+                {
+                    case gr::dvbt2::PILOT_PP1:
+                        C_DATA = 3084;
+                        N_FC = 2272;
+                        C_FC = 1609;
+                        break;
+                    case gr::dvbt2::PILOT_PP2:
+                        C_DATA = 3092;
+                        N_FC = 2840;
+                        C_FC = 2619;
+                        break;
+                    case gr::dvbt2::PILOT_PP3:
+                        C_DATA = 3228;
+                        N_FC = 2840;
+                        C_FC = 1961;
+                        break;
+                    case gr::dvbt2::PILOT_PP4:
+                        C_DATA = 3234;
+                        N_FC = 3124;
+                        C_FC = 2831;
+                        break;
+                    case gr::dvbt2::PILOT_PP5:
+                        C_DATA = 3298;
+                        N_FC = 3124;
+                        C_FC = 2177;
+                        break;
+                    case gr::dvbt2::PILOT_PP6:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP7:
+                        C_DATA = 3328;
+                        N_FC = 3266;
+                        C_FC = 2792;
+                        break;
+                    case gr::dvbt2::PILOT_PP8:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_8K_NORM:
+            case gr::dvbt2::FFTSIZE_8K_SGI:
+                if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
+                {
+                    switch (pilotpattern)
+                    {
+                        case gr::dvbt2::PILOT_PP1:
+                            C_DATA = 6208;
+                            N_FC = 4544;
+                            C_FC = 3218;
+                            break;
+                        case gr::dvbt2::PILOT_PP2:
+                            C_DATA = 6214;
+                            N_FC = 5680;
+                            C_FC = 5238;
+                            break;
+                        case gr::dvbt2::PILOT_PP3:
+                            C_DATA = 6494;
+                            N_FC = 5680;
+                            C_FC = 3922;
+                            break;
+                        case gr::dvbt2::PILOT_PP4:
+                            C_DATA = 6498;
+                            N_FC = 6248;
+                            C_FC = 5662;
+                            break;
+                        case gr::dvbt2::PILOT_PP5:
+                            C_DATA = 6634;
+                            N_FC = 6248;
+                            C_FC = 4354;
+                            break;
+                        case gr::dvbt2::PILOT_PP6:
+                            C_DATA = 0;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP7:
+                            C_DATA = 6698;
+                            N_FC = 6532;
+                            C_FC = 5585;
+                            break;
+                        case gr::dvbt2::PILOT_PP8:
+                            C_DATA = 6698;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (pilotpattern)
+                    {
+                        case gr::dvbt2::PILOT_PP1:
+                            C_DATA = 6296;
+                            N_FC = 4608;
+                            C_FC = 3264;
+                            break;
+                        case gr::dvbt2::PILOT_PP2:
+                            C_DATA = 6298;
+                            N_FC = 5760;
+                            C_FC = 5312;
+                            break;
+                        case gr::dvbt2::PILOT_PP3:
+                            C_DATA = 6584;
+                            N_FC = 5760;
+                            C_FC = 3978;
+                            break;
+                        case gr::dvbt2::PILOT_PP4:
+                            C_DATA = 6588;
+                            N_FC = 6336;
+                            C_FC = 5742;
+                            break;
+                        case gr::dvbt2::PILOT_PP5:
+                            C_DATA = 6728;
+                            N_FC = 6336;
+                            C_FC = 4416;
+                            break;
+                        case gr::dvbt2::PILOT_PP6:
+                            C_DATA = 0;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP7:
+                            C_DATA = 6788;
+                            N_FC = 6624;
+                            C_FC = 5664;
+                            break;
+                        case gr::dvbt2::PILOT_PP8:
+                            C_DATA = 6788;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                    }
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_16K:
+                if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
+                {
+                    switch (pilotpattern)
+                    {
+                        case gr::dvbt2::PILOT_PP1:
+                            C_DATA = 12418;
+                            N_FC = 9088;
+                            C_FC = 6437;
+                            break;
+                        case gr::dvbt2::PILOT_PP2:
+                            C_DATA = 12436;
+                            N_FC = 11360;
+                            C_FC = 10476;
+                            break;
+                        case gr::dvbt2::PILOT_PP3:
+                            C_DATA = 12988;
+                            N_FC = 11360;
+                            C_FC = 7845;
+                            break;
+                        case gr::dvbt2::PILOT_PP4:
+                            C_DATA = 13002;
+                            N_FC = 12496;
+                            C_FC = 11324;
+                            break;
+                        case gr::dvbt2::PILOT_PP5:
+                            C_DATA = 13272;
+                            N_FC = 12496;
+                            C_FC = 8709;
+                            break;
+                        case gr::dvbt2::PILOT_PP6:
+                            C_DATA = 13288;
+                            N_FC = 13064;
+                            C_FC = 11801;
+                            break;
+                        case gr::dvbt2::PILOT_PP7:
+                            C_DATA = 13416;
+                            N_FC = 13064;
+                            C_FC = 11170;
+                            break;
+                        case gr::dvbt2::PILOT_PP8:
+                            C_DATA = 13406;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (pilotpattern)
+                    {
+                        case gr::dvbt2::PILOT_PP1:
+                            C_DATA = 12678;
+                            N_FC = 9280;
+                            C_FC = 6573;
+                            break;
+                        case gr::dvbt2::PILOT_PP2:
+                            C_DATA = 12698;
+                            N_FC = 11600;
+                            C_FC = 10697;
+                            break;
+                        case gr::dvbt2::PILOT_PP3:
+                            C_DATA = 13262;
+                            N_FC = 11600;
+                            C_FC = 8011;
+                            break;
+                        case gr::dvbt2::PILOT_PP4:
+                            C_DATA = 13276;
+                            N_FC = 12760;
+                            C_FC = 11563;
+                            break;
+                        case gr::dvbt2::PILOT_PP5:
+                            C_DATA = 13552;
+                            N_FC = 12760;
+                            C_FC = 8893;
+                            break;
+                        case gr::dvbt2::PILOT_PP6:
+                            C_DATA = 13568;
+                            N_FC = 13340;
+                            C_FC = 12051;
+                            break;
+                        case gr::dvbt2::PILOT_PP7:
+                            C_DATA = 13698;
+                            N_FC = 13340;
+                            C_FC = 11406;
+                            break;
+                        case gr::dvbt2::PILOT_PP8:
+                            C_DATA = 13688;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                    }
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_32K_NORM:
+            case gr::dvbt2::FFTSIZE_32K_SGI:
+                if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
+                {
+                    switch (pilotpattern)
+                    {
+                        case gr::dvbt2::PILOT_PP1:
+                            C_DATA = 0;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP2:
+                            C_DATA = 24886;
+                            N_FC = 22720;
+                            C_FC = 20952;
+                            break;
+                        case gr::dvbt2::PILOT_PP3:
+                            C_DATA = 0;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP4:
+                            C_DATA = 26022;
+                            N_FC = 24992;
+                            C_FC = 22649;
+                            break;
+                        case gr::dvbt2::PILOT_PP5:
+                            C_DATA = 0;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP6:
+                            C_DATA = 26592;
+                            N_FC = 26128;
+                            C_FC = 23603;
+                            break;
+                        case gr::dvbt2::PILOT_PP7:
+                            C_DATA = 26836;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP8:
+                            C_DATA = 26812;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                    }
+                }
+                else
+                {
+                    switch (pilotpattern)
+                    {
+                        case gr::dvbt2::PILOT_PP1:
+                            C_DATA = 0;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP2:
+                            C_DATA = 25412;
+                            N_FC = 23200;
+                            C_FC = 21395;
+                            break;
+                        case gr::dvbt2::PILOT_PP3:
+                            C_DATA = 0;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP4:
+                            C_DATA = 26572;
+                            N_FC = 25520;
+                            C_FC = 23127;
+                            break;
+                        case gr::dvbt2::PILOT_PP5:
+                            C_DATA = 0;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP6:
+                            C_DATA = 27152;
+                            N_FC = 26680;
+                            C_FC = 24102;
+                            break;
+                        case gr::dvbt2::PILOT_PP7:
+                            C_DATA = 27404;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                        case gr::dvbt2::PILOT_PP8:
+                            C_DATA = 27376;
+                            N_FC = 0;
+                            C_FC = 0;
+                            break;
+                    }
+                }
+                break;
+            default:
+                switch (pilotpattern)
+                {
+                    case gr::dvbt2::PILOT_PP1:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP2:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP3:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP4:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP5:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP6:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP7:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                    case gr::dvbt2::PILOT_PP8:
+                        C_DATA = 0;
+                        N_FC = 0;
+                        C_FC = 0;
+                        break;
+                }
+                break;
+        }
+        N_punc_temp = (6 * (KBCH_1_2 - KSIG_POST)) / 5;
+        N_post_temp = KSIG_POST + NBCH_PARITY + 9000 - N_punc_temp;
+        if (N_P2 == 1)
+        {
+            N_post = ceil((float)N_post_temp / (2 * (float)eta_mod)) * 2 * eta_mod;
+        }
+        else
+        {
+            N_post = ceil((float)N_post_temp / ((float)eta_mod * (float)N_P2)) * eta_mod * N_P2;
+        }
+        N_punc = N_punc_temp - (N_post - N_post_temp);
+        l1preinit->l1_post_size = N_post / eta_mod;
+        add_l1pre(&l1pre_cache[0]);
         l1_constellation = l1constellation;
         fft_size = fftsize;
-        set_output_multiple(200);
-        mapped_items = cell_size * fecblocks;
+        init_dummy_randomiser();
+        if (N_FC == 0)
+        {
+            set_output_multiple((N_P2 * C_P2) + (numdatasyms * C_DATA));
+            mapped_items = (N_P2 * C_P2) + (numdatasyms * C_DATA);
+        }
+        else
+        {
+            set_output_multiple((N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC);
+            mapped_items = (N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC;
+        }
+        stream_items = cell_size * fecblocks;
     }
 
     /*
@@ -365,7 +893,7 @@ namespace gr {
     void
     framemapper_cc_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
-        ninput_items_required[0] = mapped_items;
+        ninput_items_required[0] = stream_items;
     }
 
 #define CRC_POLY 0x04C11DB7
@@ -474,21 +1002,6 @@ inline void framemapper_cc_impl::reg_6_shift(unsigned int *sr)
     sr[0] = (sr[0] >> 1);
 }
 
-#define LDPC_BF(TABLE_NAME, ROWS) \
-for (int row = 0; row < ROWS; row++) \
-{ \
-    for(int n = 0; n < 360; n++) \
-    { \
-        for (int col = 1; col <= TABLE_NAME[row][0]; col++) \
-        { \
-            ldpc_encode.p[index] = (TABLE_NAME[row][col] + (n * q)) % pbits; \
-            ldpc_encode.d[index] = im; \
-            index++; \
-        } \
-        im++; \
-    } \
-} 
-
 void framemapper_cc_impl::l1pre_ldpc_lookup_generate(void)
 {
     int im;
@@ -501,9 +1014,20 @@ void framemapper_cc_impl::l1pre_ldpc_lookup_generate(void)
     pbits = FRAME_SIZE_SHORT - NBCH_1_4;    //number of parity bits
     q = 36;
 
-    LDPC_BF(ldpc_tab_1_4S, 9);
-
-    ldpc_encode.table_length = index;
+    for (int row = 0; row < 9; row++)
+    {
+        for(int n = 0; n < 360; n++)
+        {
+            for (int col = 1; col <= ldpc_tab_1_4S[row][0]; col++)
+            {
+                l1pre_ldpc_encode.p[index] = (ldpc_tab_1_4S[row][col] + (n * q)) % pbits;
+                l1pre_ldpc_encode.d[index] = im;
+                index++;
+            }
+            im++;
+        }
+    }
+    l1pre_ldpc_encode.table_length = index;
 }
 
 void framemapper_cc_impl::l1post_ldpc_lookup_generate(void)
@@ -518,9 +1042,20 @@ void framemapper_cc_impl::l1post_ldpc_lookup_generate(void)
     pbits = FRAME_SIZE_SHORT - NBCH_1_2;    //number of parity bits
     q = 25;
 
-    LDPC_BF(ldpc_tab_1_2S, 20);
-
-    ldpc_encode.table_length = index;
+    for (int row = 0; row < 20; row++)
+    {
+        for(int n = 0; n < 360; n++)
+        {
+            for (int col = 1; col <= ldpc_tab_1_2S[row][0]; col++)
+            {
+                l1post_ldpc_encode.p[index] = (ldpc_tab_1_2S[row][col] + (n * q)) % pbits;
+                l1post_ldpc_encode.d[index] = im;
+                index++;
+            }
+            im++;
+        }
+    }
+    l1post_ldpc_encode.table_length = index;
 }
 
 void framemapper_cc_impl::add_l1pre(gr_complex *out)
@@ -534,7 +1069,6 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
     unsigned char *l1pre = l1_temp;
     L1Pre *l1preinit = &L1_Signalling[0].l1pre_data;
     int g, o, index;
-    int pre_puncture[36] = {27, 13, 29, 32, 5, 0, 11, 21, 33, 20, 25, 28, 18, 35, 8, 3, 9, 31, 22, 24, 7, 14, 17, 4, 2, 26, 16, 34, 19, 10, 12, 23, 1, 6, 30, 15};
 
     temp = l1preinit->type;
     for (int n = 7; n >= 0; n--)
@@ -684,9 +1218,9 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
     d = l1_temp;
     p = &l1_temp[NBCH_1_4];
     memset(p, 0, sizeof(unsigned char)*plen);
-    for(int j = 0; j < ldpc_encode.table_length; j++)
+    for(int j = 0; j < l1pre_ldpc_encode.table_length; j++)
     {
-        p[ldpc_encode.p[j]] ^= d[ldpc_encode.d[j]];
+        p[l1pre_ldpc_encode.p[j]] ^= d[l1pre_ldpc_encode.d[j]];
     }
     for(int j = 1; j < plen; j++)
     {
@@ -744,11 +1278,7 @@ void framemapper_cc_impl::add_l1post(gr_complex *out)
     unsigned char *l1post = l1_temp;
     L1Post *l1postinit = &L1_Signalling[0].l1post_data;
     int g, o, index;
-    int N_punc_temp, N_post_temp, N_post, N_punc, eta_mod, N_P2;
-    int *post_puncture;
-    int post_puncture_bqpsk[25] = {6, 4, 18, 9, 13, 8, 15, 20, 5, 17, 2, 24, 10, 22, 12, 3, 16, 23, 1, 14, 0, 21, 19, 7, 11};
-    int post_puncture_16qam[25] = {6, 4, 13, 9, 18, 8, 15, 20, 5, 17, 2, 22, 24, 7, 12, 1, 16, 23, 14, 0, 21, 10, 19, 11, 3};
-    int post_puncture_64qam[25] = {6, 15, 13, 10, 3, 17, 21, 8, 5, 19, 2, 23, 16, 24, 7, 18, 1, 12, 20, 0, 4, 14, 9, 11, 22};
+    const int *post_puncture;
     int rows, numCols, mod, offset, pack, produced;
     unsigned char *cols[12];
 
@@ -957,75 +1487,33 @@ void framemapper_cc_impl::add_l1post(gr_complex *out)
     d = l1_temp;
     p = &l1_temp[NBCH_1_2];
     memset(p, 0, sizeof(unsigned char)*plen);
-    for(int j = 0; j < ldpc_encode.table_length; j++)
+    for(int j = 0; j < l1post_ldpc_encode.table_length; j++)
     {
-        p[ldpc_encode.p[j]] ^= d[ldpc_encode.d[j]];
+        p[l1post_ldpc_encode.p[j]] ^= d[l1post_ldpc_encode.d[j]];
     }
     for(int j = 1; j < plen; j++)
     {
        p[j] ^= p[j-1];
     }
     /* Puncturing */
-    N_punc_temp = (6 * (KBCH_1_2 - KSIG_POST)) / 5;
-    N_post_temp = KSIG_POST + NBCH_PARITY + 9000 - N_punc_temp;
     switch (l1_constellation)
     {
         case gr::dvbt2::L1_MOD_BPSK:
-            eta_mod = 1;
             post_puncture = post_puncture_bqpsk;
             break;
         case gr::dvbt2::L1_MOD_QPSK:
-            eta_mod = 2;
             post_puncture = post_puncture_bqpsk;
             break;
         case gr::dvbt2::L1_MOD_16QAM:
-            eta_mod = 4;
             post_puncture = post_puncture_16qam;
             break;
         case gr::dvbt2::L1_MOD_64QAM:
-            eta_mod = 6;
             post_puncture = post_puncture_64qam;
             break;
         default:
-            eta_mod = 1;
             post_puncture = post_puncture_bqpsk;
             break;
     }
-    switch (fft_size)
-    {
-        case gr::dvbt2::FFTSIZE_1K:
-            N_P2 = 16;
-            break;
-        case gr::dvbt2::FFTSIZE_2K:
-            N_P2 = 8;
-            break;
-        case gr::dvbt2::FFTSIZE_4K:
-            N_P2 = 4;
-            break;
-        case gr::dvbt2::FFTSIZE_8K_NORM:
-        case gr::dvbt2::FFTSIZE_8K_SGI:
-            N_P2 = 2;
-            break;
-        case gr::dvbt2::FFTSIZE_16K:
-            N_P2 = 1;
-            break;
-        case gr::dvbt2::FFTSIZE_32K_NORM:
-        case gr::dvbt2::FFTSIZE_32K_SGI:
-            N_P2 = 1;
-            break;
-        default:
-            N_P2 = 16;
-            break;
-    }
-    if (N_P2 == 1)
-    {
-        N_post = ceil((float)N_post_temp / (2 * (float)eta_mod)) * 2 * eta_mod;
-    }
-    else
-    {
-        N_post = ceil((float)N_post_temp / ((float)eta_mod * (float)N_P2)) * eta_mod * N_P2;
-    }
-    N_punc = N_punc_temp - (N_post - N_post_temp);
     for (int c = 0; c < (N_punc / 360); c++)
     {
         g = post_puncture[c];
@@ -1159,6 +1647,22 @@ void framemapper_cc_impl::add_l1post(gr_complex *out)
 #endif
 }
 
+void framemapper_cc_impl::init_dummy_randomiser(void)
+{
+    int sr = 0x4A80;
+    for (int i = 0; i < FRAME_SIZE_SHORT; i++)
+    {
+        int b = ((sr) ^ (sr >> 1)) & 1;
+        if (b)
+            dummy_randomise[i].real() = -1.0;
+        else
+            dummy_randomise[i].real() = 1.0;
+        dummy_randomise[i].imag() = 0;
+        sr >>= 1;
+        if(b) sr |= 0x4000;
+    }
+}
+
     int
     framemapper_cc_impl::general_work (int noutput_items,
                        gr_vector_int &ninput_items,
@@ -1166,17 +1670,35 @@ void framemapper_cc_impl::add_l1post(gr_complex *out)
                        gr_vector_void_star &output_items)
     {
         const gr_complex *in = (const gr_complex *) input_items[0];
-        unsigned char *out = (unsigned char *) output_items[0];
+        gr_complex *out = (gr_complex *) output_items[0];
+        int index = 0;
 
-        for (int i = 0; i < noutput_items; i += noutput_items)
+        for (int i = 0; i < noutput_items; i += mapped_items)
         {
-            printf("items = %d\n", noutput_items);
-            add_l1post(l1post_cache);
+            for (int j = 0; j < 1840; j++)
+            {
+                *out++ = l1pre_cache[index++];
+            }
+            add_l1post(out);
+            out += N_post / eta_mod;
+            for (int j = 0; j < stream_items; j++)
+            {
+                *out++ = *in++;
+            }
+            index = 0;
+            for (int j = 0; j < mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC); j++)
+            {
+                *out++ = dummy_randomise[index++];
+            }
+            for (int j = 0; j < N_FC - C_FC; j++)
+            {
+                *out++ = unmodulated[0];
+            }
         }
 
         // Tell runtime system how many input items we consumed on
         // each input stream.
-        consume_each (mapped_items);
+        consume_each (stream_items);
 
         // Tell runtime system how many output items we produced.
         return noutput_items;
@@ -1218,6 +1740,26 @@ const int framemapper_cc_impl::ldpc_tab_1_2S[20][9]=
     {3,13,5988,1057,0,0,0,0,0},
     {3,14,7411,3450,0,0,0,0,0}
 };
+
+    const int framemapper_cc_impl::pre_puncture[36] = 
+    {
+        27, 13, 29, 32, 5, 0, 11, 21, 33, 20, 25, 28, 18, 35, 8, 3, 9, 31, 22, 24, 7, 14, 17, 4, 2, 26, 16, 34, 19, 10, 12, 23, 1, 6, 30, 15
+    };
+
+    const int framemapper_cc_impl::post_puncture_bqpsk[25] = 
+    {
+        6, 4, 18, 9, 13, 8, 15, 20, 5, 17, 2, 24, 10, 22, 12, 3, 16, 23, 1, 14, 0, 21, 19, 7, 11
+    };
+
+    const int framemapper_cc_impl::post_puncture_16qam[25] = 
+    {
+        6, 4, 13, 9, 18, 8, 15, 20, 5, 17, 2, 22, 24, 7, 12, 1, 16, 23, 14, 0, 21, 10, 19, 11, 3
+    };
+
+    const int framemapper_cc_impl::post_puncture_64qam[25] = 
+    {
+        6, 15, 13, 10, 3, 17, 21, 8, 5, 19, 2, 23, 16, 24, 7, 18, 1, 12, 20, 0, 4, 14, 9, 11, 22
+    };
 
     const int framemapper_cc_impl::mux16[8] =
     {
