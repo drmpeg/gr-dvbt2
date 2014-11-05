@@ -154,12 +154,13 @@ namespace gr {
       void bch_poly_build_tables(void);
       void l1pre_ldpc_lookup_generate(void);
       void l1post_ldpc_lookup_generate(void);
-      void init_dummy_randomiser(void);
+      void init_dummy_randomizer(void);
       l1pre_ldpc_encode_table l1pre_ldpc_encode;
       l1post_ldpc_encode_table l1post_ldpc_encode;
       unsigned char l1_temp[FRAME_SIZE_SHORT];
       unsigned char l1_interleave[FRAME_SIZE_SHORT];
-      gr_complex dummy_randomise[24102];
+      gr_complex *zigzag_interleave;
+      gr_complex *dummy_randomize;
       gr_complex l1pre_cache[1840];
       gr_complex unmodulated[1];
       gr_complex m_bpsk[2];

@@ -869,18 +869,29 @@ namespace gr {
         add_l1pre(&l1pre_cache[0]);
         l1_constellation = l1constellation;
         fft_size = fftsize;
-        init_dummy_randomiser();
         if (N_FC == 0)
         {
             set_output_multiple((N_P2 * C_P2) + (numdatasyms * C_DATA));
             mapped_items = (N_P2 * C_P2) + (numdatasyms * C_DATA);
+            zigzag_interleave = (gr_complex *) malloc(sizeof(gr_complex ) * mapped_items);
+            if (zigzag_interleave == NULL) {
+                fprintf(stderr, "Frame mapper malloc, Out of memory.\n");
+                exit(1);
+            }
         }
         else
         {
             set_output_multiple((N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC);
             mapped_items = (N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC;
+            zigzag_interleave = (gr_complex *) malloc(sizeof(gr_complex ) * mapped_items);
+            if (zigzag_interleave == NULL) {
+                fprintf(stderr, "Frame mapper malloc, Out of memory.\n");
+                exit(1);
+            }
         }
         stream_items = cell_size * fecblocks;
+        dummy_randomize = (gr_complex *) malloc(sizeof(gr_complex ) * mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC));
+        init_dummy_randomizer();
     }
 
     /*
@@ -888,6 +899,8 @@ namespace gr {
      */
     framemapper_cc_impl::~framemapper_cc_impl()
     {
+        free(dummy_randomize);
+        free(zigzag_interleave);
     }
 
     void
@@ -1259,12 +1272,6 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
             out[index++] = m_bpsk[l1_temp[w + NBCH_1_4]];
         }
     }
-#if 0
-    for (int w = 0; w < 1840; w++)
-    {
-        printf("%+e %+e\n", out[w].real(), out[w].imag());
-    }
-#endif
 }
 
 void framemapper_cc_impl::add_l1post(gr_complex *out)
@@ -1549,7 +1556,6 @@ void framemapper_cc_impl::add_l1post(gr_complex *out)
     /* Bit interleave for 16QAM and 64QAM */
     if (l1_constellation == gr::dvbt2::L1_MOD_16QAM || l1_constellation == gr::dvbt2::L1_MOD_64QAM)
     {
-        printf("N_post = %d\n", N_post);
         if (l1_constellation == gr::dvbt2::L1_MOD_16QAM)
         {
             numCols = 8;
@@ -1639,25 +1645,19 @@ void framemapper_cc_impl::add_l1post(gr_complex *out)
             }
             break;
     }
-#if 0
-    for (int w = 0; w < produced; w++)
-    {
-        printf("%+e %+e\n", out[w].real(), out[w].imag());
-    }
-#endif
 }
 
-void framemapper_cc_impl::init_dummy_randomiser(void)
+void framemapper_cc_impl::init_dummy_randomizer(void)
 {
     int sr = 0x4A80;
-    for (int i = 0; i < FRAME_SIZE_SHORT; i++)
+    for (int i = 0; i < mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC); i++)
     {
         int b = ((sr) ^ (sr >> 1)) & 1;
         if (b)
-            dummy_randomise[i].real() = -1.0;
+            dummy_randomize[i].real() = -1.0;
         else
-            dummy_randomise[i].real() = 1.0;
-        dummy_randomise[i].imag() = 0;
+            dummy_randomize[i].real() = 1.0;
+        dummy_randomize[i].imag() = 0;
         sr >>= 1;
         if(b) sr |= 0x4000;
     }
@@ -1672,27 +1672,99 @@ void framemapper_cc_impl::init_dummy_randomiser(void)
         const gr_complex *in = (const gr_complex *) input_items[0];
         gr_complex *out = (gr_complex *) output_items[0];
         int index = 0;
+        int read, save, count = 0;
+        gr_complex *interleave = zigzag_interleave;
 
         for (int i = 0; i < noutput_items; i += mapped_items)
         {
-            for (int j = 0; j < 1840; j++)
+            if (N_P2 == 1)
             {
-                *out++ = l1pre_cache[index++];
+                for (int j = 0; j < 1840; j++)
+                {
+                    *out++ = l1pre_cache[index++];
+                }
+                add_l1post(out);    /* TODO: add dynamic fields */
+                out += N_post / eta_mod;
+                for (int j = 0; j < stream_items; j++)
+                {
+                    *out++ = *in++;
+                }
+                index = 0;
+                for (int j = 0; j < mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC); j++)
+                {
+                    *out++ = dummy_randomize[index++];
+                }
+                for (int j = 0; j < N_FC - C_FC; j++)
+                {
+                    *out++ = unmodulated[0];
+                }
             }
-            add_l1post(out);
-            out += N_post / eta_mod;
-            for (int j = 0; j < stream_items; j++)
+            else
             {
-                *out++ = *in++;
-            }
-            index = 0;
-            for (int j = 0; j < mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC); j++)
-            {
-                *out++ = dummy_randomise[index++];
-            }
-            for (int j = 0; j < N_FC - C_FC; j++)
-            {
-                *out++ = unmodulated[0];
+                for (int j = 0; j < 1840; j++)
+                {
+                    *interleave++ = l1pre_cache[index++];
+                }
+                add_l1post(interleave);    /* TODO: add dynamic fields */
+                interleave += N_post / eta_mod;
+                for (int j = 0; j < stream_items; j++)
+                {
+                    *interleave++ = *in++;
+                }
+                index = 0;
+                for (int j = 0; j < mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC); j++)
+                {
+                    *interleave++ = dummy_randomize[index++];
+                }
+                for (int j = 0; j < N_FC - C_FC; j++)
+                {
+                    *interleave++ = unmodulated[0];
+                }
+                interleave = zigzag_interleave;
+                read = 0;
+                index = 0;
+                for (int n = 0; n < N_P2; n++)
+                {
+                    save = read;
+                    for (int j = 0; j < 1840 / N_P2; j++)
+                    {
+                        out[index++] = interleave[read];
+                        count++;
+                        read += N_P2;
+                    }
+                    read = save + 1;
+                    index += C_P2 - (1840 / N_P2);
+                }
+                read = 1840;
+                index = 1840 / N_P2;
+                for (int n = 0; n < N_P2; n++)
+                {
+                    save = read;
+                    for (int j = 0; j < (N_post / eta_mod) / N_P2; j++)
+                    {
+                        out[index++] = interleave[read];
+                        count++;
+                        read += N_P2;
+                    }
+                    read = save + 1;
+                    index += C_P2 - ((N_post / eta_mod) / N_P2);
+                }
+                read = 1840 + (N_post / eta_mod);
+                index = (1840 / N_P2) + ((N_post / eta_mod) / N_P2);
+                for (int n = 0; n < N_P2; n++)
+                {
+                    for (int j = 0; j < C_P2 - (1840 / N_P2) - ((N_post / eta_mod) / N_P2); j++)
+                    {
+                        out[index++] = interleave[read++];
+                        count++;
+                    }
+                    index += C_P2 - (C_P2 - (1840 / N_P2) - ((N_post / eta_mod) / N_P2));
+                }
+                index -= C_P2 - (C_P2 - (1840 / N_P2) - ((N_post / eta_mod) / N_P2));
+                for (int j = 0; j < mapped_items - count; j++)
+                {
+                    out[index++] = interleave[read++];
+                }
             }
         }
 
