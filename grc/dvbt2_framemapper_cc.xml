@@ -3,7 +3,7 @@
   <key>dvbt2_framemapper_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.framemapper_cc($framesize.val, $rate.val, $constellation.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val, $numdatasyms)</make>
+  <make>dvbt2.framemapper_cc($framesize.val, $rate.val, $constellation.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val, $t2frames, $numdatasyms)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>
@@ -275,6 +275,12 @@
       <key>PILOT_PP8</key>
       <opt>val:dvbt2.PILOT_PP8</opt>
     </option>
+  </param>
+  <param>
+    <name>T2 Frames per Super-frame</name>
+    <key>t2frames</key>
+    <value>2</value>
+    <type>int</type>
   </param>
   <param>
     <name>Number of Data Symbols</name>

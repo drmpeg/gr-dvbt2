@@ -135,6 +135,8 @@ namespace gr {
       int l1_constellation;
       int fft_size;
       int eta_mod;
+      int t2_frames;
+      int t2_frame_num;
       int N_P2;
       int C_P2;
       int N_FC;
@@ -144,7 +146,7 @@ namespace gr {
       int N_punc;
       L1Signalling L1_Signalling[1];
       void add_l1pre(gr_complex *);
-      void add_l1post(gr_complex *);
+      void add_l1post(gr_complex *, int);
       int add_crc32_bits(unsigned char *, int);
       unsigned int m_poly_s_12[6];
       int poly_mult(const int*, int, const int*, int, int*);
@@ -180,7 +182,7 @@ namespace gr {
       const static int mux64[12];
 
      public:
-      framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int numdatasyms);
+      framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms);
       ~framemapper_cc_impl();
 
       // Where all the action really happens

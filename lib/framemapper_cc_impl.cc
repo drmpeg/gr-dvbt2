@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     framemapper_cc::sptr
-    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int numdatasyms)
+    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms)
     {
       return gnuradio::get_initial_sptr
-        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, numdatasyms));
+        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms));
     }
 
     /*
      * The private constructor
      */
-    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int numdatasyms)
+    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms)
       : gr::block("framemapper_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -107,7 +107,7 @@ namespace gr {
         l1preinit->cell_id = 0;
         l1preinit->network_id = 0x3085;
         l1preinit->t2_system_id = 0x8001;
-        l1preinit->num_t2_frames = 2;
+        l1preinit->num_t2_frames = t2frames;
         l1preinit->num_data_symbols = numdatasyms;
         l1preinit->regen_flag = FALSE;
         l1preinit->l1_post_extension = FALSE;
@@ -184,6 +184,35 @@ namespace gr {
                 m_qpsk[3].real() = -1.0 / normalization;
                 m_qpsk[3].imag() = -1.0 / normalization;
                 eta_mod = 2;
+#ifdef BBC_BITPERFECT
+                for (int n = 0; n < 4; n++)
+                {
+                    void *real_ptr, *imag_ptr;
+                    unsigned int real_int, imag_int;
+                    real_ptr = &m_qpsk[n].real();
+                    real_int = *(unsigned int*)real_ptr;
+                    imag_ptr = &m_qpsk[n].imag();
+                    imag_int = *(unsigned int*)imag_ptr;
+                    switch (real_int)
+                    {
+                        case 0xbf3504f3:
+                            *(unsigned int*)real_ptr = 0xbf3504f4;
+                            break;
+                        case 0x3f3504f3:
+                            *(unsigned int*)real_ptr = 0x3f3504f4;
+                            break;
+                    }
+                    switch (imag_int)
+                    {
+                        case 0xbf3504f3:
+                            *(unsigned int*)imag_ptr = 0xbf3504f4;
+                            break;
+                        case 0x3f3504f3:
+                            *(unsigned int*)imag_ptr = 0x3f3504f4;
+                            break;
+                    }
+                }
+#endif
                 break;
             case gr::dvbt2::L1_MOD_16QAM:
                 normalization = sqrt(10);
@@ -220,6 +249,35 @@ namespace gr {
                 m_16qam[15].real() = -1.0 / normalization;
                 m_16qam[15].imag() = -1.0 / normalization;
                 eta_mod = 4;
+#ifdef BBC_BITPERFECT
+                for (int n = 0; n < 16; n++)
+                {
+                    void *real_ptr, *imag_ptr;
+                    unsigned int real_int, imag_int;
+                    real_ptr = &m_16qam[n].real();
+                    real_int = *(unsigned int*)real_ptr;
+                    imag_ptr = &m_16qam[n].imag();
+                    imag_int = *(unsigned int*)imag_ptr;
+                    switch (real_int)
+                    {
+                        case 0xbea1e89b:
+                            *(unsigned int*)real_ptr = 0xbea1e89c;
+                            break;
+                        case 0x3ea1e89b:
+                            *(unsigned int*)real_ptr = 0x3ea1e89c;
+                            break;
+                    }
+                    switch (imag_int)
+                    {
+                        case 0xbea1e89b:
+                            *(unsigned int*)imag_ptr = 0xbea1e89c;
+                            break;
+                        case 0x3ea1e89b:
+                            *(unsigned int*)imag_ptr = 0x3ea1e89c;
+                            break;
+                    }
+                }
+#endif
                 break;
             case gr::dvbt2::L1_MOD_64QAM:
                 normalization = sqrt(42);
@@ -352,6 +410,71 @@ namespace gr {
                 m_64qam[63].real() = -3.0 / normalization;
                 m_64qam[63].imag() = -3.0 / normalization;
                 eta_mod = 6;
+#ifdef BBC_BITPERFECT
+                for (int n = 0; n < 64; n++)
+                {
+                    void *real_ptr, *imag_ptr;
+                    unsigned int real_int, imag_int;
+                    real_ptr = &m_64qam[n].real();
+                    real_int = *(unsigned int*)real_ptr;
+                    imag_ptr = &m_64qam[n].imag();
+                    imag_int = *(unsigned int*)imag_ptr;
+                    switch (real_int)
+                    {
+                        case 0xbe1e01b3:
+                            *(unsigned int*)real_ptr = 0xbe1e01af;
+                            break;
+                        case 0x3e1e01b3:
+                            *(unsigned int*)real_ptr = 0x3e1e01af;
+                            break;
+                        case 0xbf8a417c:
+                            *(unsigned int*)real_ptr = 0xbf8a4178;
+                            break;
+                        case 0x3f8a417c:
+                            *(unsigned int*)real_ptr = 0x3f8a4178;
+                            break;
+                        case 0xbf45821f:
+                            *(unsigned int*)real_ptr = 0xbf45821e;
+                            break;
+                        case 0x3f45821f:
+                            *(unsigned int*)real_ptr = 0x3f45821e;
+                            break;
+                        case 0xbeed028c:
+                            *(unsigned int*)real_ptr = 0xbeed028a;
+                            break;
+                        case 0x3eed028c:
+                            *(unsigned int*)real_ptr = 0x3eed028a;
+                            break;
+                    }
+                    switch (imag_int)
+                    {
+                        case 0xbe1e01b3:
+                            *(unsigned int*)imag_ptr = 0xbe1e01af;
+                            break;
+                        case 0x3e1e01b3:
+                            *(unsigned int*)imag_ptr = 0x3e1e01af;
+                            break;
+                        case 0xbf8a417c:
+                            *(unsigned int*)imag_ptr = 0xbf8a4178;
+                            break;
+                        case 0x3f8a417c:
+                            *(unsigned int*)imag_ptr = 0x3f8a4178;
+                            break;
+                        case 0xbf45821f:
+                            *(unsigned int*)imag_ptr = 0xbf45821e;
+                            break;
+                        case 0x3f45821f:
+                            *(unsigned int*)imag_ptr = 0x3f45821e;
+                            break;
+                        case 0xbeed028c:
+                            *(unsigned int*)imag_ptr = 0xbeed028a;
+                            break;
+                        case 0x3eed028c:
+                            *(unsigned int*)imag_ptr = 0x3eed028a;
+                            break;
+                    }
+                }
+#endif
                 break;
         }
         switch (fftsize)
@@ -869,6 +992,8 @@ namespace gr {
         add_l1pre(&l1pre_cache[0]);
         l1_constellation = l1constellation;
         fft_size = fftsize;
+        t2_frames = t2frames;
+        t2_frame_num = 0;
         if (N_FC == 0)
         {
             set_output_multiple((N_P2 * C_P2) + (numdatasyms * C_DATA));
@@ -1274,7 +1399,7 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
     }
 }
 
-void framemapper_cc_impl::add_l1post(gr_complex *out)
+void framemapper_cc_impl::add_l1post(gr_complex *out, int t2_frame_num)
 {
     int temp, offset_bits = 0;
     unsigned char b, value;
@@ -1406,7 +1531,7 @@ void framemapper_cc_impl::add_l1post(gr_complex *out)
     {
         l1post[offset_bits++] = 0;
     }
-    temp = l1postinit->frame_idx;
+    temp = t2_frame_num;
     for (int n = 7; n >= 0; n--)
     {
         l1post[offset_bits++] = temp & (1 << n) ? 1 : 0;
@@ -1683,7 +1808,8 @@ void framemapper_cc_impl::init_dummy_randomizer(void)
                 {
                     *out++ = l1pre_cache[index++];
                 }
-                add_l1post(out);    /* TODO: add dynamic fields */
+                add_l1post(out, t2_frame_num);
+                t2_frame_num = (t2_frame_num + 1) % t2_frames;
                 out += N_post / eta_mod;
                 for (int j = 0; j < stream_items; j++)
                 {
@@ -1705,7 +1831,8 @@ void framemapper_cc_impl::init_dummy_randomizer(void)
                 {
                     *interleave++ = l1pre_cache[index++];
                 }
-                add_l1post(interleave);    /* TODO: add dynamic fields */
+                add_l1post(interleave, t2_frame_num);
+                t2_frame_num = (t2_frame_num + 1) % t2_frames;
                 interleave += N_post / eta_mod;
                 for (int j = 0; j < stream_items; j++)
                 {

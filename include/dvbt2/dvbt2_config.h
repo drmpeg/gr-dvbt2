@@ -25,6 +25,8 @@
 #define TRUE 1
 #define FALSE 0
 
+#define BBC_BITPERFECT
+
 #define BB_HEADER_LENGTH_BITS 72
 
 // BB HEADER fields
