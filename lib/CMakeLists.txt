@@ -32,7 +32,8 @@ list(APPEND dvbt2_sources
     interleaver_bb_impl.cc
     modulator_bc_impl.cc
     cellinterleaver_cc_impl.cc
-    framemapper_cc_impl.cc )
+    framemapper_cc_impl.cc
+    freqinterleaver_cc_impl.cc )
 
 set(dvbt2_sources "${dvbt2_sources}" PARENT_SCOPE)
 if(NOT dvbt2_sources)

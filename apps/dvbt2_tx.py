@@ -2,7 +2,7 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Dvbt2 Tx
-# Generated: Thu Nov  6 15:23:11 2014
+# Generated: Fri Nov  7 17:45:09 2014
 ##################################################
 
 from gnuradio import blocks
@@ -31,6 +31,7 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON)
         self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM)
+        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6)
         self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON, 168, 3, dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_1_32, dvbt2.L1_MOD_64QAM, dvbt2.PILOT_PP6, 2, 100)
         self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, 168, 3)
         self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
@@ -52,8 +53,9 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         self.connect((self.dvbt2_cellinterleaver_cc_0, 0), (self.dvbt2_framemapper_cc_0, 0))
         self.connect((self.dvbt2_bbheader_bb_0, 0), (self.dvbt2_bbscrambler_bb_0, 0))
         self.connect((self.blocks_file_source_0, 0), (self.dvbt2_bbheader_bb_0, 0))
+        self.connect((self.dvbt2_framemapper_cc_0, 0), (self.dvbt2_freqinterleaver_cc_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.blocks_file_sink_0, 0))
-        self.connect((self.dvbt2_framemapper_cc_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.dvbt2_freqinterleaver_cc_0, 0), (self.blocks_throttle_0, 0))
 
 
 
