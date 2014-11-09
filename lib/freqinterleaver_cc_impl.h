@@ -29,6 +29,8 @@ namespace gr {
     class freqinterleaver_cc_impl : public freqinterleaver_cc
     {
      private:
+      int interleaved_items;
+      int num_data_symbols;
       int Heven[32768];
       int Hodd[32768];
       int HevenP2[32768];
@@ -54,7 +56,7 @@ namespace gr {
       const static int bitperm32k[14];
 
      public:
-      freqinterleaver_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern);
+      freqinterleaver_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms);
       ~freqinterleaver_cc_impl();
 
       // Where all the action really happens

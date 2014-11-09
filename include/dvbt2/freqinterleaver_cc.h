@@ -47,7 +47,7 @@ namespace gr {
        * class. dvbt2::freqinterleaver_cc::make is the public interface for
        * creating new instances.
        */
-      static sptr make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern);
+      static sptr make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms);
     };
 
   } // namespace dvbt2

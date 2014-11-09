@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ASCII'?>
 <flow_graph>
-  <timestamp>Fri Nov  7 17:45:09 2014</timestamp>
+  <timestamp>Sat Nov  8 19:15:32 2014</timestamp>
   <block>
     <key>options</key>
     <param>
@@ -656,7 +656,7 @@
     </param>
     <param>
       <key>carriermode</key>
-      <value>CARRIERS_NORMAL</value>
+      <value>CARRIERS_EXTENDED</value>
     </param>
     <param>
       <key>fftsize</key>
@@ -665,6 +665,10 @@
     <param>
       <key>pilotpattern</key>
       <value>PILOT_PP6</value>
+    </param>
+    <param>
+      <key>numdatasyms</key>
+      <value>100</value>
     </param>
     <param>
       <key>alias</key>
@@ -684,7 +688,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1018, 322)</value>
+      <value>(1018, 314)</value>
     </param>
     <param>
       <key>_rotation</key>

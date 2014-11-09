@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     freqinterleaver_cc::sptr
-    freqinterleaver_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern)
+    freqinterleaver_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms)
     {
       return gnuradio::get_initial_sptr
-        (new freqinterleaver_cc_impl(carriermode, fftsize, pilotpattern));
+        (new freqinterleaver_cc_impl(carriermode, fftsize, pilotpattern, numdatasyms));
     }
 
     /*
      * The private constructor
      */
-    freqinterleaver_cc_impl::freqinterleaver_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern)
+    freqinterleaver_cc_impl::freqinterleaver_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms)
       : gr::sync_block("freqinterleaver_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -659,12 +659,45 @@ namespace gr {
             }
             if (even < N_FC)
             {
-                HoddFC[q_evenFC++] = even;
+                HevenFC[q_evenFC++] = even;
             }
             if (odd < N_FC)
             {
-                HevenFC[q_oddFC++] = odd;
+                HoddFC[q_oddFC++] = odd;
             }
+        }
+        if (fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI)
+        {
+            for (int j = 0; j < q_odd; j++)
+            {
+                int a;
+                a = Hodd[j];
+                Heven[a] = j;
+            }
+            for (int j = 0; j < q_oddP2; j++)
+            {
+                int a;
+                a = HoddP2[j];
+                HevenP2[a] = j;
+            }
+            for (int j = 0; j < q_oddFC; j++)
+            {
+                int a;
+                a = HoddFC[j];
+                HevenFC[a] = j;
+            }
+        }
+        if (N_FC == 0)
+        {
+            set_output_multiple((N_P2 * C_P2) + (numdatasyms * C_DATA));
+            interleaved_items = (N_P2 * C_P2) + (numdatasyms * C_DATA);
+            num_data_symbols = numdatasyms;
+        }
+        else
+        {
+            set_output_multiple((N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC);
+            interleaved_items = (N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC;
+            num_data_symbols = numdatasyms - 1;
         }
     }
 
@@ -682,8 +715,63 @@ namespace gr {
     {
         const gr_complex *in = (const gr_complex *) input_items[0];
         gr_complex *out = (gr_complex *) output_items[0];
+        int symbol = 0;
+        int *H;
 
-        // Do <+signal processing+>
+        for (int i = 0; i < noutput_items; i += interleaved_items)
+        {
+            for (int j = 0; j < N_P2; j++)
+            {
+                if ((symbol % 2) == 0)
+                {
+                    H = HevenP2;
+                }
+                else
+                {
+                    H = HoddP2;
+                }
+                for (int j = 0; j < C_P2; j++)
+                {
+                    *out++ = in[H[j]];
+                }
+                symbol++;
+                in += C_P2;
+            }
+            for (int j = 0; j < num_data_symbols; j++)
+            {
+                if ((symbol % 2) == 0)
+                {
+                    H = Heven;
+                }
+                else
+                {
+                    H = Hodd;
+                }
+                for (int j = 0; j < C_DATA; j++)
+                {
+                    *out++ = in[H[j]];
+                }
+                symbol++;
+                in += C_DATA;
+            }
+            if (N_FC != 0)
+            {
+                if ((symbol % 2) == 0)
+                {
+                    H = HevenFC;
+                }
+                else
+                {
+                    H = HoddFC;
+                }
+                for (int j = 0; j < N_FC; j++)
+                {
+                    *out++ = in[H[j]];
+                }
+                symbol++;
+                in += N_FC;
+            }
+        }
 
         // Tell runtime system how many output items we produced.
         return noutput_items;
