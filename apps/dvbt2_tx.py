@@ -2,14 +2,19 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Dvbt2 Tx
-# Generated: Sat Nov  8 19:15:32 2014
+# Generated: Tue Nov 11 03:40:31 2014
 ##################################################
 
 from gnuradio import blocks
+from gnuradio import digital
 from gnuradio import eng_notation
+from gnuradio import fft
 from gnuradio import gr
+from gnuradio import wxgui
 from gnuradio.eng_option import eng_option
+from gnuradio.fft import window
 from gnuradio.filter import firdes
+from gnuradio.wxgui import fftsink2
 from grc_gnuradio import wxgui as grc_wxgui
 from optparse import OptionParser
 import dvbt2
@@ -28,6 +33,25 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         ##################################################
         # Blocks
         ##################################################
+        self.wxgui_fftsink2_0 = fftsink2.fft_sink_c(
+        	self.GetWin(),
+        	baseband_freq=429000000,
+        	y_per_div=20,
+        	y_divs=10,
+        	ref_level=10,
+        	ref_scale=2.0,
+        	sample_rate=samp_rate,
+        	fft_size=1024,
+        	fft_rate=15,
+        	average=False,
+        	avg_alpha=None,
+        	title="FFT Plot",
+        	peak_hold=False,
+        	size=(600,600),
+        )
+        self.Add(self.wxgui_fftsink2_0.win)
+        self.fft_vxx_0 = fft.fft_vcc(16384, False, (window.rectangular(16384)), True, 1)
+        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6, 100, 16384)
         self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON)
         self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM)
@@ -37,10 +61,10 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.dvbt2_bbheader_bb_0 = dvbt2.bbheader_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
+        self.digital_ofdm_cyclic_prefixer_0 = digital.ofdm_cyclic_prefixer(16384, 16384+16384/32, 0, "")
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, "/home/re/xfer/vv256.ts", False)
-        self.blocks_file_sink_0 = blocks.file_sink(gr.sizeof_gr_complex*1, "/home/re/xfer/vvbb.bin", False)
-        self.blocks_file_sink_0.set_unbuffered(False)
+        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_vcc((0.00815554344404, ))
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, "/home/re/xfer/vv256.ts", True)
 
         ##################################################
         # Connections
@@ -54,8 +78,12 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         self.connect((self.dvbt2_bbheader_bb_0, 0), (self.dvbt2_bbscrambler_bb_0, 0))
         self.connect((self.blocks_file_source_0, 0), (self.dvbt2_bbheader_bb_0, 0))
         self.connect((self.dvbt2_framemapper_cc_0, 0), (self.dvbt2_freqinterleaver_cc_0, 0))
-        self.connect((self.blocks_throttle_0, 0), (self.blocks_file_sink_0, 0))
-        self.connect((self.dvbt2_freqinterleaver_cc_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.dvbt2_freqinterleaver_cc_0, 0), (self.dvbt2_pilotgenerator_cc_0, 0))
+        self.connect((self.dvbt2_pilotgenerator_cc_0, 0), (self.fft_vxx_0, 0))
+        self.connect((self.fft_vxx_0, 0), (self.digital_ofdm_cyclic_prefixer_0, 0))
+        self.connect((self.blocks_throttle_0, 0), (self.wxgui_fftsink2_0, 0))
+        self.connect((self.digital_ofdm_cyclic_prefixer_0, 0), (self.blocks_multiply_const_vxx_0, 0))
+        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_throttle_0, 0))
 
 
 
@@ -65,6 +93,7 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
     def set_samp_rate(self, samp_rate):
         self.samp_rate = samp_rate
         self.blocks_throttle_0.set_sample_rate(self.samp_rate)
+        self.wxgui_fftsink2_0.set_sample_rate(self.samp_rate)
 
 if __name__ == '__main__':
     import ctypes

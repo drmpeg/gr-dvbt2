@@ -30,5 +30,6 @@ install(FILES
     modulator_bc.h
     cellinterleaver_cc.h
     framemapper_cc.h
-    freqinterleaver_cc.h DESTINATION include/dvbt2
+    freqinterleaver_cc.h
+    pilotgenerator_cc.h DESTINATION include/dvbt2
 )
