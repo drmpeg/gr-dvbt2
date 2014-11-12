@@ -44,6 +44,8 @@ namespace gr {
       int fft_size;
       int left_nulls;
       int right_nulls;
+      int pilot_pattern;
+      int carrier_mode;
       gr_complex p2_bpsk[2];
       gr_complex sp_bpsk[2];
       gr_complex cp_bpsk[2];

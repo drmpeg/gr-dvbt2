@@ -114,7 +114,6 @@ namespace gr {
                 C_P2 = 0;
                 K_EXT = 0;
                 C_PS = 0;
-                fft_size = 0;
                 break;
         }
         switch (fftsize)
@@ -760,6 +759,18 @@ namespace gr {
                 fc_carrier_map[i] = SCATTERED_CARRIER;
             }
         }
+        if (fftsize == gr::dvbt2::FFTSIZE_1K && pilotpattern == gr::dvbt2::PILOT_PP4)
+        {
+            fc_carrier_map[C_PS - 2] = SCATTERED_CARRIER;
+        }
+        else if (fftsize == gr::dvbt2::FFTSIZE_1K && pilotpattern == gr::dvbt2::PILOT_PP5)
+        {
+            fc_carrier_map[C_PS - 2] = SCATTERED_CARRIER;
+        }
+        else if (fftsize == gr::dvbt2::FFTSIZE_2K && pilotpattern == gr::dvbt2::PILOT_PP7)
+        {
+            fc_carrier_map[C_PS - 2] = SCATTERED_CARRIER;
+        }
         fc_carrier_map[0] = SCATTERED_CARRIER;
         fc_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
         if (N_FC == 0)
@@ -770,14 +781,15 @@ namespace gr {
         {
             active_items = (N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC;
         }
-        fft_size = vlength;
-        left_nulls = ((fft_size - C_PS) / 2) + 1;
-        right_nulls = (fft_size - C_PS) / 2;
+        fft_size = fftsize;
+        pilot_pattern = pilotpattern;
+        carrier_mode = carriermode;
+        left_nulls = ((vlength - C_PS) / 2) + 1;
+        right_nulls = (vlength - C_PS) / 2;
         p2_bpsk[0].real() = sqrt(31.0) / 5.0;
         p2_bpsk[0].imag() = 0.0;
         p2_bpsk[1].real() = -(sqrt(31.0) / 5.0);
         p2_bpsk[1].imag() = 0.0;
-        printf("left = %d, right = %d\n", left_nulls, right_nulls);
         num_symbols = numdatasyms + N_P2;
         set_output_multiple(num_symbols);
     }
@@ -824,13 +836,749 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
     {
         data_carrier_map[i] = DATA_CARRIER;
     }
-    for (int i = 0; i < 88; i++)
+    switch (fft_size)
     {
-        data_carrier_map[pp6_cp5[i] % 13056] = CONTINUAL_CARRIER;
-    }
-    for (int i = 0; i < 2; i++)
-    {
-        data_carrier_map[pp6_16k[i]] = CONTINUAL_CARRIER;
+        case gr::dvbt2::FFTSIZE_1K:
+            switch (pilot_pattern)
+            {
+                case gr::dvbt2::PILOT_PP1:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP2:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp2_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP3:
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP4:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp4_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP5:
+                    for (int i = 0; i < 19; i++)
+                    {
+                        data_carrier_map[pp5_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP6:
+                    break;
+                case gr::dvbt2::PILOT_PP7:
+                    for (int i = 0; i < 15; i++)
+                    {
+                        data_carrier_map[pp7_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP8:
+                    break;
+            }
+            break;
+        case gr::dvbt2::FFTSIZE_2K:
+            switch (pilot_pattern)
+            {
+                case gr::dvbt2::PILOT_PP1:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 25; i++)
+                    {
+                        data_carrier_map[pp1_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP2:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp2_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp2_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP3:
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp3_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP4:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp4_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp4_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP5:
+                    for (int i = 0; i < 19; i++)
+                    {
+                        data_carrier_map[pp5_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp5_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP6:
+                    break;
+                case gr::dvbt2::PILOT_PP7:
+                    for (int i = 0; i < 15; i++)
+                    {
+                        data_carrier_map[pp7_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 30; i++)
+                    {
+                        data_carrier_map[pp7_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP8:
+                    break;
+            }
+            break;
+        case gr::dvbt2::FFTSIZE_4K:
+            switch (pilot_pattern)
+            {
+                case gr::dvbt2::PILOT_PP1:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp1_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 25; i++)
+                    {
+                        data_carrier_map[pp1_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP2:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp2_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp2_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp2_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP3:
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp3_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp3_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp3_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP4:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp4_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp4_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp4_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP5:
+                    for (int i = 0; i < 19; i++)
+                    {
+                        data_carrier_map[pp5_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp5_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        data_carrier_map[pp5_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP6:
+                    break;
+                case gr::dvbt2::PILOT_PP7:
+                    for (int i = 0; i < 15; i++)
+                    {
+                        data_carrier_map[pp7_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 30; i++)
+                    {
+                        data_carrier_map[pp7_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 5; i++)
+                    {
+                        data_carrier_map[pp7_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP8:
+                    break;
+            }
+            break;
+        case gr::dvbt2::FFTSIZE_8K_NORM:
+        case gr::dvbt2::FFTSIZE_8K_SGI:
+            switch (pilot_pattern)
+            {
+                case gr::dvbt2::PILOT_PP1:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp1_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 25; i++)
+                    {
+                        data_carrier_map[pp1_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP2:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp2_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp2_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp2_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp2_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            data_carrier_map[pp2_8k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP3:
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp3_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp3_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp3_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp3_8k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP4:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp4_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp4_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp4_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp4_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp4_8k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP5:
+                    for (int i = 0; i < 19; i++)
+                    {
+                        data_carrier_map[pp5_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp5_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        data_carrier_map[pp5_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp5_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP6:
+                    break;
+                case gr::dvbt2::PILOT_PP7:
+                    for (int i = 0; i < 15; i++)
+                    {
+                        data_carrier_map[pp7_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 30; i++)
+                    {
+                        data_carrier_map[pp7_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 5; i++)
+                    {
+                        data_carrier_map[pp7_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        data_carrier_map[pp7_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 5; i++)
+                        {
+                            data_carrier_map[pp7_8k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP8:
+                    for (int i = 0; i < 47; i++)
+                    {
+                        data_carrier_map[pp8_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 5; i++)
+                        {
+                            data_carrier_map[pp2_8k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+            }
+            break;
+        case gr::dvbt2::FFTSIZE_16K:
+            switch (pilot_pattern)
+            {
+                case gr::dvbt2::PILOT_PP1:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp1_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 25; i++)
+                    {
+                        data_carrier_map[pp1_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 44; i++)
+                    {
+                        data_carrier_map[pp1_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            data_carrier_map[pp1_16k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP2:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp2_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp2_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp2_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp2_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 41; i++)
+                    {
+                        data_carrier_map[pp2_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp2_16k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP3:
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp3_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp3_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp3_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 44; i++)
+                    {
+                        data_carrier_map[pp3_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp3_16k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP4:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp4_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp4_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp4_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp4_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 44; i++)
+                    {
+                        data_carrier_map[pp4_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp4_16k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP5:
+                    for (int i = 0; i < 19; i++)
+                    {
+                        data_carrier_map[pp5_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp5_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        data_carrier_map[pp5_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp5_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 44; i++)
+                    {
+                        data_carrier_map[pp5_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp5_16k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP6:
+                    for (int i = 0; i < 88; i++)
+                    {
+                        data_carrier_map[pp6_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp6_16k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP7:
+                    for (int i = 0; i < 15; i++)
+                    {
+                        data_carrier_map[pp7_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 30; i++)
+                    {
+                        data_carrier_map[pp7_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 5; i++)
+                    {
+                        data_carrier_map[pp7_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        data_carrier_map[pp7_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 35; i++)
+                    {
+                        data_carrier_map[pp7_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            data_carrier_map[pp7_16k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP8:
+                    for (int i = 0; i < 47; i++)
+                    {
+                        data_carrier_map[pp8_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 39; i++)
+                    {
+                        data_carrier_map[pp8_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 3; i++)
+                        {
+                            data_carrier_map[pp2_16k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+            }
+            break;
+        case gr::dvbt2::FFTSIZE_32K_NORM:
+        case gr::dvbt2::FFTSIZE_32K_SGI:
+            switch (pilot_pattern)
+            {
+                case gr::dvbt2::PILOT_PP1:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp1_cp1[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 25; i++)
+                    {
+                        data_carrier_map[pp1_cp2[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 44; i++)
+                    {
+                        data_carrier_map[pp1_cp5[i]] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP2:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp2_cp1[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp2_cp2[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp2_cp3[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp2_cp4[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 41; i++)
+                    {
+                        data_carrier_map[pp2_cp5[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 88; i++)
+                    {
+                        data_carrier_map[pp2_cp6[i]] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp2_32k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP3:
+                    for (int i = 0; i < 22; i++)
+                    {
+                        data_carrier_map[pp3_cp1[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp3_cp2[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp3_cp3[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 44; i++)
+                    {
+                        data_carrier_map[pp3_cp5[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 49; i++)
+                    {
+                        data_carrier_map[pp3_cp6[i]] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP4:
+                    for (int i = 0; i < 20; i++)
+                    {
+                        data_carrier_map[pp4_cp1[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp4_cp2[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp4_cp3[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 2; i++)
+                    {
+                        data_carrier_map[pp4_cp4[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 44; i++)
+                    {
+                        data_carrier_map[pp4_cp5[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 86; i++)
+                    {
+                        data_carrier_map[pp4_cp6[i]] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp4_32k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP5:
+                    for (int i = 0; i < 19; i++)
+                    {
+                        data_carrier_map[pp5_cp1[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 23; i++)
+                    {
+                        data_carrier_map[pp5_cp2[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        data_carrier_map[pp5_cp3[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 1; i++)
+                    {
+                        data_carrier_map[pp5_cp4[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 44; i++)
+                    {
+                        data_carrier_map[pp5_cp5[i]] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP6:
+                    for (int i = 0; i < 88; i++)
+                    {
+                        data_carrier_map[pp6_cp5[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 88; i++)
+                    {
+                        data_carrier_map[pp6_cp6[i]] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 4; i++)
+                        {
+                            data_carrier_map[pp6_32k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP7:
+                    for (int i = 0; i < 15; i++)
+                    {
+                        data_carrier_map[pp7_cp1[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 30; i++)
+                    {
+                        data_carrier_map[pp7_cp2[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 5; i++)
+                    {
+                        data_carrier_map[pp7_cp3[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 3; i++)
+                    {
+                        data_carrier_map[pp7_cp4[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 35; i++)
+                    {
+                        data_carrier_map[pp7_cp5[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 92; i++)
+                    {
+                        data_carrier_map[pp7_cp6[i]] = CONTINUAL_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::PILOT_PP8:
+                    for (int i = 0; i < 47; i++)
+                    {
+                        data_carrier_map[pp8_cp4[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 39; i++)
+                    {
+                        data_carrier_map[pp8_cp5[i]] = CONTINUAL_CARRIER;
+                    }
+                    for (int i = 0; i < 89; i++)
+                    {
+                        data_carrier_map[pp8_cp6[i]] = CONTINUAL_CARRIER;
+                    }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 6; i++)
+                        {
+                            data_carrier_map[pp2_32k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
+                    break;
+            }
+            break;
+        default:
+            break;
     }
     for (int i = 0; i < C_PS; i++)
     {
@@ -854,7 +1602,6 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
         gr_complex zero;
         int L_FC = 0;
 
-        printf("noutput_items = %d, active_items = %d\n", noutput_items, active_items);
         zero.real() = 0.0;
         zero.imag() = 0.0;
         if (N_FC != 0)
@@ -1397,7 +2144,6 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
     {
         27268, 27368, 27448, 27580, 27688, 27758
     };
-
 
   } /* namespace dvbt2 */
 } /* namespace gr */
