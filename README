@@ -30,6 +30,22 @@ terrestrial television broadcasting system (DVB-T2):
 
 http://www.etsi.org/deliver/etsi_en/302700_302799/302755/01.03.01_60/en_302755v010301p.pdf
 
+The baseband framing, baseband scrambling, LDPC (low density
+parity check) and BCH (Bose, Chaudhuri, Hocquenghem) blocks
+are reused from gr-dvbs2 (https://github.com/drmpeg/gr-dvbs2)
+which are originally from G4GUO's DATV-Express Digital Amateur
+Television project. The bit interleaver, DVB-T2 modulator,
+cell and time interleaver, frame mapper, frequency interleaver
+and pilot generator blocks are all new.
+
+The baseline implementation has been verified against the BBC
+test streams available here:
+
+ftp://ftp.kw.bbc.co.uk/t2refs/
+
+Currently, the implementation is bit perfect with the VV008-16FFT,
+VV009-4KFFT, VV010-2KFFT and VV011-1KFFT profiles.
+
 Note: This is a work in progress.
 
 Build instructions:
