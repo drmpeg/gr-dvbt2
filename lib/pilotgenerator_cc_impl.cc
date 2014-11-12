@@ -786,10 +786,20 @@ namespace gr {
         carrier_mode = carriermode;
         left_nulls = ((vlength - C_PS) / 2) + 1;
         right_nulls = (vlength - C_PS) / 2;
-        p2_bpsk[0].real() = sqrt(31.0) / 5.0;
-        p2_bpsk[0].imag() = 0.0;
-        p2_bpsk[1].real() = -(sqrt(31.0) / 5.0);
-        p2_bpsk[1].imag() = 0.0;
+        if (fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI)
+        {
+            p2_bpsk[0].real() = sqrt(37.0) / 5.0;
+            p2_bpsk[0].imag() = 0.0;
+            p2_bpsk[1].real() = -(sqrt(37.0) / 5.0);
+            p2_bpsk[1].imag() = 0.0;
+        }
+        else
+        {
+            p2_bpsk[0].real() = sqrt(31.0) / 5.0;
+            p2_bpsk[0].imag() = 0.0;
+            p2_bpsk[1].real() = -(sqrt(31.0) / 5.0);
+            p2_bpsk[1].imag() = 0.0;
+        }
         num_symbols = numdatasyms + N_P2;
         set_output_multiple(num_symbols);
     }
@@ -812,7 +822,7 @@ void pilotgenerator_cc_impl::init_prbs(void)
     int sr = 0x7ff;
     int j = 0;
 
-    for (int i = 0; i < 32768; i++)
+    for (int i = 0; i < MAX_CARRIERS; i++)
     {
         int b = ((sr) ^ (sr >> 2)) & 1;
         prbs[i] = sr & 1;

@@ -24,6 +24,7 @@
 #include <dvbt2/pilotgenerator_cc.h>
 
 #define CHIPS 2624
+#define MAX_CARRIERS 27841
 
 enum dvbt2_carrier_type_t {
   DATA_CARRIER = 1,
@@ -49,11 +50,11 @@ namespace gr {
       gr_complex p2_bpsk[2];
       gr_complex sp_bpsk[2];
       gr_complex cp_bpsk[2];
-      int prbs[32768];
+      int prbs[MAX_CARRIERS];
       int pn_sequence[CHIPS];
-      int p2_carrier_map[32768];
-      int data_carrier_map[32768];
-      int fc_carrier_map[32768];
+      int p2_carrier_map[MAX_CARRIERS];
+      int data_carrier_map[MAX_CARRIERS];
+      int fc_carrier_map[MAX_CARRIERS];
       int N_P2;
       int C_P2;
       int N_FC;
