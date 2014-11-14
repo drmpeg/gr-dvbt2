@@ -35,8 +35,8 @@ parity check) and BCH (Bose, Chaudhuri, Hocquenghem) blocks
 are reused from gr-dvbs2 (https://github.com/drmpeg/gr-dvbs2)
 which are originally from G4GUO's DATV-Express Digital Amateur
 Television project. The bit interleaver, DVB-T2 modulator,
-cell and time interleaver, frame mapper, frequency interleaver
-and pilot generator blocks are all new.
+cell and time interleaver, frame mapper, frequency interleaver,
+pilot generator and P1 symbol insertion blocks are all new.
 
 The baseline implementation has been verified against the BBC
 test streams available here:
@@ -46,7 +46,11 @@ ftp://ftp.kw.bbc.co.uk/t2refs/
 Currently, the implementation is bit perfect with the VV008-16FFT,
 VV009-4KFFT, VV010-2KFFT and VV011-1KFFT profiles.
 
-Note: This is a work in progress.
+Note: The baseline (version 1.1.1 of the DVB-T2 specification)
+implementation is complete. However, the High Efficiency
+baseband framing mode (HEM) has yet to be implemented, so
+many BBC profiles (including the 32K/256QAM mode currently
+in use in the UK) are not available.
 
 Build instructions:
 
