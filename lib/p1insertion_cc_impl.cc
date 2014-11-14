@@ -284,11 +284,7 @@ void p1insertion_cc_impl::init_p1_randomizer(void)
     {
         const gr_complex *in = (const gr_complex *) input_items[0];
         gr_complex *out = (gr_complex *) output_items[0];
-        gr_complex zero;
 
-        zero.real() = 0.0;
-        zero.imag() = 0.0;
-        printf("noutput_items = %d, insertion_items = %d\n", noutput_items, insertion_items);
         for (int i = 0; i < noutput_items; i += insertion_items)
         {
             for (int j = 0; j < 542; j++)
