@@ -31,5 +31,6 @@ install(FILES
     cellinterleaver_cc.h
     framemapper_cc.h
     freqinterleaver_cc.h
-    pilotgenerator_cc.h DESTINATION include/dvbt2
+    pilotgenerator_cc.h
+    p1insertion_cc.h DESTINATION include/dvbt2
 )

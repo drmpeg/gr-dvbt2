@@ -1,0 +1,129 @@
+<block>
+  <name>P1 Symbol Insertion</name>
+  <key>dvbt2_p1insertion_cc</key>
+  <category>dvbt2</category>
+  <import>import dvbt2</import>
+  <import>from gnuradio import fft</import>
+  <import>from gnuradio.fft import window</import>
+  <make>dvbt2.p1insertion_cc($carriermode.val, $fftsize.val, $guardinterval.val, $numdatasyms, $window)</make>
+  <param>
+    <name>Extended Carrier Mode</name>
+    <key>carriermode</key>
+    <type>enum</type>
+    <option>
+      <name>Normal</name>
+      <key>CARRIERS_NORMAL</key>
+      <opt>val:dvbt2.CARRIERS_NORMAL</opt>
+    </option>
+    <option>
+      <name>Extended</name>
+      <key>CARRIERS_EXTENDED</key>
+      <opt>val:dvbt2.CARRIERS_EXTENDED</opt>
+    </option>
+  </param>
+  <param>
+    <name>FFT Size</name>
+    <key>fftsize</key>
+    <type>enum</type>
+    <option>
+      <name>1K</name>
+      <key>FFTSIZE_1K</key>
+      <opt>val:dvbt2.FFTSIZE_1K</opt>
+    </option>
+    <option>
+      <name>2K</name>
+      <key>FFTSIZE_2K</key>
+      <opt>val:dvbt2.FFTSIZE_2K</opt>
+    </option>
+    <option>
+      <name>4K</name>
+      <key>FFTSIZE_4K</key>
+      <opt>val:dvbt2.FFTSIZE_4K</opt>
+    </option>
+    <option>
+      <name>8K</name>
+      <key>FFTSIZE_8K_NORM</key>
+      <opt>val:dvbt2.FFTSIZE_8K_NORM</opt>
+    </option>
+    <option>
+      <name>8K Short GI</name>
+      <key>FFTSIZE_8K_EXT</key>
+      <opt>val:dvbt2.FFTSIZE_8K_SGI</opt>
+    </option>
+    <option>
+      <name>16K</name>
+      <key>FFTSIZE_16K</key>
+      <opt>val:dvbt2.FFTSIZE_16K</opt>
+    </option>
+    <option>
+      <name>32K</name>
+      <key>FFTSIZE_32K_NORM</key>
+      <opt>val:dvbt2.FFTSIZE_32K_NORM</opt>
+    </option>
+    <option>
+      <name>32K Short GI</name>
+      <key>FFTSIZE_32K_EXT</key>
+      <opt>val:dvbt2.FFTSIZE_32K_SGI</opt>
+    </option>
+  </param>
+  <param>
+    <name>Guard Interval</name>
+    <key>guardinterval</key>
+    <type>enum</type>
+    <option>
+      <name>1/32</name>
+      <key>GI_1_32</key>
+      <opt>val:dvbt2.GI_1_32</opt>
+    </option>
+    <option>
+      <name>1/16</name>
+      <key>GI_1_16</key>
+      <opt>val:dvbt2.GI_1_16</opt>
+    </option>
+    <option>
+      <name>1/8</name>
+      <key>GI_1_8</key>
+      <opt>val:dvbt2.GI_1_8</opt>
+    </option>
+    <option>
+      <name>1/4</name>
+      <key>GI_1_4</key>
+      <opt>val:dvbt2.GI_1_4</opt>
+    </option>
+    <option>
+      <name>1/128</name>
+      <key>GI_1_128</key>
+      <opt>val:dvbt2.GI_1_128</opt>
+    </option>
+    <option>
+      <name>19/128</name>
+      <key>GI_19_128</key>
+      <opt>val:dvbt2.GI_19_128</opt>
+    </option>
+    <option>
+      <name>19/256</name>
+      <key>GI_19_256</key>
+      <opt>val:dvbt2.GI_19_256</opt>
+    </option>
+  </param>
+  <param>
+    <name>Number of Data Symbols</name>
+    <key>numdatasyms</key>
+    <value>100</value>
+    <type>int</type>
+  </param>
+  <param>
+    <name>Window</name>
+    <key>window</key>
+    <value>window.rectangular(1024)</value>
+    <type>real_vector</type>
+  </param>
+  <sink>
+    <name>in</name>
+    <type>complex</type>
+  </sink>
+  <source>
+    <name>out</name>
+    <type>complex</type>
+  </source>
+</block>

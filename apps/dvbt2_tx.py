@@ -2,7 +2,7 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Dvbt2 Tx
-# Generated: Tue Nov 11 03:40:31 2014
+# Generated: Thu Nov 13 16:09:07 2014
 ##################################################
 
 from gnuradio import blocks
@@ -52,6 +52,7 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         self.Add(self.wxgui_fftsink2_0.win)
         self.fft_vxx_0 = fft.fft_vcc(16384, False, (window.rectangular(16384)), True, 1)
         self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6, 100, 16384)
+        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_1_32, 100, (window.rectangular(1024)))
         self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON)
         self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM)
@@ -63,7 +64,6 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         self.dvbt2_bbheader_bb_0 = dvbt2.bbheader_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.digital_ofdm_cyclic_prefixer_0 = digital.ofdm_cyclic_prefixer(16384, 16384+16384/32, 0, "")
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_multiply_const_vxx_0 = blocks.multiply_const_vcc((0.00815554344404, ))
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, "/home/re/xfer/vv256.ts", True)
 
         ##################################################
@@ -82,8 +82,8 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         self.connect((self.dvbt2_pilotgenerator_cc_0, 0), (self.fft_vxx_0, 0))
         self.connect((self.fft_vxx_0, 0), (self.digital_ofdm_cyclic_prefixer_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.wxgui_fftsink2_0, 0))
-        self.connect((self.digital_ofdm_cyclic_prefixer_0, 0), (self.blocks_multiply_const_vxx_0, 0))
-        self.connect((self.blocks_multiply_const_vxx_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.dvbt2_p1insertion_cc_0, 0), (self.blocks_throttle_0, 0))
+        self.connect((self.digital_ofdm_cyclic_prefixer_0, 0), (self.dvbt2_p1insertion_cc_0, 0))
 
 
 

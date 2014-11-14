@@ -19,6 +19,7 @@
 #include "dvbt2/framemapper_cc.h"
 #include "dvbt2/freqinterleaver_cc.h"
 #include "dvbt2/pilotgenerator_cc.h"
+#include "dvbt2/p1insertion_cc.h"
 %}
 
 
@@ -44,3 +45,5 @@ GR_SWIG_BLOCK_MAGIC2(dvbt2, framemapper_cc);
 GR_SWIG_BLOCK_MAGIC2(dvbt2, freqinterleaver_cc);
 %include "dvbt2/pilotgenerator_cc.h"
 GR_SWIG_BLOCK_MAGIC2(dvbt2, pilotgenerator_cc);
+%include "dvbt2/p1insertion_cc.h"
+GR_SWIG_BLOCK_MAGIC2(dvbt2, p1insertion_cc);
