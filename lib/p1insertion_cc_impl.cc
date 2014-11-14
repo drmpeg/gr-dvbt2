@@ -301,6 +301,7 @@ void p1insertion_cc_impl::init_p1_randomizer(void)
             }
             volk_32fc_s32fc_multiply_32fc(out, in, normalization, frame_items);
             out += frame_items;
+            in += frame_items;
         }
 
         // Tell runtime system how many input items we consumed on

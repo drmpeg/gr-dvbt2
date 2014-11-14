@@ -61,5 +61,14 @@ Build instructions:
     sudo make install
     sudo ldconfig
 
+IMPORTANT: Because some of the blocks have to process entire
+T2 frames, the shared memory requirement will be greater than
+the Linux default. The size of shared memory can be increased
+with the following shell commands:
+
+    sudo -i
+    echo $(( 1024 * 1024 * 1024 )) > /proc/sys/kernel/shmmax
+    logout
+
 Contributions are welcome!
 
