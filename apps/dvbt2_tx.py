@@ -2,7 +2,7 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Dvbt2 Tx
-# Generated: Thu Nov 13 16:09:07 2014
+# Generated: Fri Nov 14 16:52:43 2014
 ##################################################
 
 from gnuradio import blocks
@@ -61,7 +61,7 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, 168, 3)
         self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
-        self.dvbt2_bbheader_bb_0 = dvbt2.bbheader_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
+        self.dvbt2_bbheader_bb_0 = dvbt2.bbheader_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.INPUTMODE_NORMAL)
         self.digital_ofdm_cyclic_prefixer_0 = digital.ofdm_cyclic_prefixer(16384, 16384+16384/32, 0, "")
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, "/home/re/xfer/vv256.ts", True)

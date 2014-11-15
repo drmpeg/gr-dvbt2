@@ -43,14 +43,10 @@ test streams available here:
 
 ftp://ftp.kw.bbc.co.uk/t2refs/
 
-Currently, the implementation is bit perfect with the VV008-16FFT,
-VV009-4KFFT, VV010-2KFFT and VV011-1KFFT profiles.
-
-Note: The baseline (version 1.1.1 of the DVB-T2 specification)
-implementation is complete. However, the High Efficiency
-baseband framing mode (HEM) has yet to be implemented, so
-many BBC profiles (including the 32K/256QAM mode currently
-in use in the UK) are not available.
+Currently, the implementation is bit perfect with the VV001-CR35,
+VV003-CR23, VV008-16FFT, VV009-4KFFT, VV010-2KFFT and VV011-1KFFT
+profiles. The VV003-CR23 profile is the current HD broadcast
+mode (32K/256QAM at 40.2 Mbps or Ofcom Mode 7) in the UK.
 
 Build instructions:
 

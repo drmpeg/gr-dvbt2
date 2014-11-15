@@ -50,6 +50,8 @@ namespace gr {
       unsigned int kbch;
       unsigned int count;
       unsigned char crc;
+      unsigned int input_mode;
+      unsigned int extra;
       FrameFormat m_format[1];
       unsigned char crc_tab[256];
       void add_bbheader(unsigned char *, int);
@@ -57,7 +59,7 @@ namespace gr {
       int add_crc8_bits(unsigned char *, int);
 
      public:
-      bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate);
+      bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode);
       ~bbheader_bb_impl();
 
       // Where all the action really happens

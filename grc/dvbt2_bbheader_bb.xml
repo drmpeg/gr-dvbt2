@@ -3,7 +3,7 @@
   <key>dvbt2_bbheader_bb</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.bbheader_bb($framesize.val, $rate.val)</make>
+  <make>dvbt2.bbheader_bb($framesize.val, $rate.val, $mode.val)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>
@@ -52,6 +52,21 @@
       <name>5/6</name>
       <key>C5_6</key>
       <opt>val:dvbt2.C5_6</opt>
+    </option>
+  </param>
+  <param>
+    <name>Baseband Framing Mode</name>
+    <key>mode</key>
+    <type>enum</type>
+    <option>
+      <name>Normal</name>
+      <key>FECFRAME_NORMAL</key>
+      <opt>val:dvbt2.INPUTMODE_NORMAL</opt>
+    </option>
+    <option>
+      <name>High Efficiency</name>
+      <key>FECFRAME_SHORT</key>
+      <opt>val:dvbt2.INPUTMODE_HIEFF</opt>
     </option>
   </param>
   <sink>

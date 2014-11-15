@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     bbheader_bb::sptr
-    bbheader_bb::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate)
+    bbheader_bb::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode)
     {
       return gnuradio::get_initial_sptr
-        (new bbheader_bb_impl(framesize, rate));
+        (new bbheader_bb_impl(framesize, rate, mode));
     }
 
     /*
      * The private constructor
      */
-    bbheader_bb_impl::bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate)
+    bbheader_bb_impl::bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode)
       : gr::block("bbheader_bb",
               gr::io_signature::make(1, 1, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
@@ -107,12 +107,23 @@ namespace gr {
         f->ccm_acm = CCM;
         f->issyi   = ISSYI_NOT_ACTIVE;
         f->npd     = NPD_NOT_ACTIVE;
-        f->upl     = 188 * 8;
-        f->dfl     = kbch - 80;
-        f->sync    = 0x47;
+        if (mode == gr::dvbt2::INPUTMODE_NORMAL)
+        {
+            f->upl     = 188 * 8;
+            f->dfl     = kbch - 80;
+            f->sync    = 0x47;
+        }
+        else
+        {
+            f->upl     = 0;
+            f->dfl     = kbch - 80;
+            f->sync    = 0;
+        }
         f->ro      = 0;
 
         build_crc8_table();
+        input_mode = mode;
+        extra = (((kbch - 80) / 8) / 187) + 1;
         set_output_multiple(kbch);
     }
 
@@ -126,7 +137,14 @@ namespace gr {
     void
     bbheader_bb_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
-        ninput_items_required[0] = ((noutput_items - 80) / 8);
+        if (input_mode == gr::dvbt2::INPUTMODE_NORMAL)
+        {
+            ninput_items_required[0] = ((noutput_items - 80) / 8);
+        }
+        else
+        {
+            ninput_items_required[0] = ((noutput_items - 80) / 8) + extra;
+        }
     }
 
 #define CRC_POLY 0xAB
@@ -168,6 +186,11 @@ int bbheader_bb_impl::add_crc8_bits(unsigned char *in, int length)
         b = in[i++] ^ (crc & 0x01);
         crc >>= 1;
         if (b) crc ^= CRC_POLY;
+    }
+
+    if (input_mode == gr::dvbt2::INPUTMODE_HIEFF)
+    {
+        crc ^= 0x80;
     }
 
     for (int n = 0; n < 8; n++)
@@ -249,34 +272,61 @@ void bbheader_bb_impl::add_bbheader(unsigned char *out, int count)
         int offset = 0;
         unsigned char b;
 
-
         for (int i = 0; i < noutput_items; i += kbch)
         {
             add_bbheader(&out[offset], count);
             offset = offset + 80;
 
-            for (int j = 0; j < (int)((kbch - 80) / 8); j++)
+            if (input_mode == gr::dvbt2::INPUTMODE_HIEFF)
             {
-                if (count == 0)
+                for (int j = 0; j < (int)((kbch - 80) / 8); j++)
                 {
-                    if (*in != 0x47)
+                    if (count == 0)
                     {
-                        printf("Transport Stream sync error!\n");
+                        if (*in != 0x47)
+                        {
+                            printf("Transport Stream sync error!\n");
+                        }
+                        j--;
+                        in++;
                     }
-                    in++;
-                    b = crc;
-                    crc = 0;
+                    else
+                    {
+                        b = *in++;
+                        for (int n = 7; n >= 0; n--)
+                        {
+                            out[offset++] = b & (1 << n) ? 1 : 0;
+                        }
+                    }
+                    count = (count + 1) % 188;
+                    consumed++;
                 }
-                else
+            }
+            else
+            {
+                for (int j = 0; j < (int)((kbch - 80) / 8); j++)
                 {
-                    b = *in++;
-                    crc = crc_tab[b ^ crc];
-                }
-                count = (count + 1) % 188;
-                consumed++;
-                for (int n = 7; n >= 0; n--)
-                {
-                    out[offset++] = b & (1 << n) ? 1 : 0;
+                    if (count == 0)
+                    {
+                        if (*in != 0x47)
+                        {
+                            printf("Transport Stream sync error!\n");
+                        }
+                        in++;
+                        b = crc;
+                        crc = 0;
+                    }
+                    else
+                    {
+                        b = *in++;
+                        crc = crc_tab[b ^ crc];
+                    }
+                    count = (count + 1) % 188;
+                    consumed++;
+                    for (int n = 7; n >= 0; n--)
+                    {
+                        out[offset++] = b & (1 << n) ? 1 : 0;
+                    }
                 }
             }
         }

@@ -47,7 +47,7 @@ namespace gr {
        * class. dvbt2::bbheader_bb::make is the public interface for
        * creating new instances.
        */
-      static sptr make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate);
+      static sptr make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode);
     };
 
   } // namespace dvbt2

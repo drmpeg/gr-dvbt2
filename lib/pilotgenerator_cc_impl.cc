@@ -842,6 +842,7 @@ void pilotgenerator_cc_impl::init_prbs(void)
 
 void pilotgenerator_cc_impl::init_pilots(int symbol)
 {
+    int remainder;
     for (int i = 0; i < C_PS; i++)
     {
         data_carrier_map[i] = DATA_CARRIER;
@@ -1190,7 +1191,7 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            data_carrier_map[pp2_8k[i]] = CONTINUAL_CARRIER;
+                            data_carrier_map[pp8_8k[i]] = CONTINUAL_CARRIER;
                         }
                     }
                     break;
@@ -1387,7 +1388,7 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     {
                         for (int i = 0; i < 3; i++)
                         {
-                            data_carrier_map[pp2_16k[i]] = CONTINUAL_CARRIER;
+                            data_carrier_map[pp8_16k[i]] = CONTINUAL_CARRIER;
                         }
                     }
                     break;
@@ -1563,6 +1564,13 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     {
                         data_carrier_map[pp7_cp6[i]] = CONTINUAL_CARRIER;
                     }
+                    if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
+                    {
+                        for (int i = 0; i < 2; i++)
+                        {
+                            data_carrier_map[pp7_32k[i]] = CONTINUAL_CARRIER;
+                        }
+                    }
                     break;
                 case gr::dvbt2::PILOT_PP8:
                     for (int i = 0; i < 47; i++)
@@ -1581,7 +1589,7 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     {
                         for (int i = 0; i < 6; i++)
                         {
-                            data_carrier_map[pp2_32k[i]] = CONTINUAL_CARRIER;
+                            data_carrier_map[pp8_32k[i]] = CONTINUAL_CARRIER;
                         }
                     }
                     break;
@@ -1592,7 +1600,12 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
     }
     for (int i = 0; i < C_PS; i++)
     {
-        if (abs((i - K_EXT) % (dx * dy)) == (dx * (symbol % dy)))
+        remainder = (i - K_EXT) % (dx * dy);
+        if (remainder < 0)
+        {
+            remainder += (dx * dy);
+        }
+        if (remainder == (dx * (symbol % dy)))
         {
             data_carrier_map[i] = SCATTERED_CARRIER;
         }

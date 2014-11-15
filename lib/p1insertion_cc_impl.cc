@@ -111,7 +111,6 @@ namespace gr {
                 break;
         }
         normalization = 5.0 / sqrt(27.0 * C_PS);
-        printf("normalization = %f\n", normalization);
         switch (guardinterval)
         {
             case gr::dvbt2::GI_1_32:
@@ -210,8 +209,8 @@ namespace gr {
         memcpy(out, p1_fft->get_outbuf(), sizeof(gr_complex) * p1_fft_size);
         for (int i = 0; i < 1024; i++)
         {
-            p1_time[i].real() *= 1/sqrt(384);
-            p1_time[i].imag() *= 1/sqrt(384);
+            p1_time[i].real() *= 1 / sqrt(384);
+            p1_time[i].imag() *= 1 / sqrt(384);
         }
         for (int i = 0; i < 1023; i++)
         {
@@ -233,8 +232,8 @@ namespace gr {
         memcpy(out, p1_fft->get_outbuf(), sizeof(gr_complex) * p1_fft_size);
         for (int i = 0; i < 1024; i++)
         {
-            p1_timeshft[i].real() *= 1/sqrt(384);
-            p1_timeshft[i].imag() *= 1/sqrt(384);
+            p1_timeshft[i].real() *= 1 / sqrt(384);
+            p1_timeshft[i].imag() *= 1 / sqrt(384);
         }
         const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
         set_alignment(std::max(1, alignment_multiple));

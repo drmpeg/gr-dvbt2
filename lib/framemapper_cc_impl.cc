@@ -1031,7 +1031,7 @@ namespace gr {
     void
     framemapper_cc_impl::forecast (int noutput_items, gr_vector_int &ninput_items_required)
     {
-        ninput_items_required[0] = stream_items;
+        ninput_items_required[0] = stream_items * (noutput_items / mapped_items);
     }
 
 #define CRC_POLY 0x04C11DB7
@@ -1892,6 +1892,7 @@ void framemapper_cc_impl::init_dummy_randomizer(void)
                 {
                     out[index++] = interleave[read++];
                 }
+                out += mapped_items;
             }
         }
 

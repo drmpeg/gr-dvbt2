@@ -94,6 +94,11 @@ namespace gr {
       STREAMTYPE_BOTH,
     };
 
+    enum dvbt2_inputmode_t {
+      INPUTMODE_NORMAL = 0,
+      INPUTMODE_HIEFF,
+    };
+
     enum dvbt2_extended_carrier_t {
       CARRIERS_NORMAL = 0,
       CARRIERS_EXTENDED,
@@ -161,6 +166,7 @@ typedef gr::dvbt2::dvbt2_constellation_t dvbt2_constellation_t;
 typedef gr::dvbt2::dvbt2_rotation_t dvbt2_rotation_t;
 typedef gr::dvbt2::dvbt2_framesize_t dvbt2_framesize_t;
 typedef gr::dvbt2::dvbt2_streamtype_t dvbt2_streamtype_t;
+typedef gr::dvbt2::dvbt2_inputmode_t dvbt2_inputmode_t;
 typedef gr::dvbt2::dvbt2_extended_carrier_t dvbt2_extended_carrier_t;
 typedef gr::dvbt2::dvbt2_preamble_t dvbt2_preamble_t;
 typedef gr::dvbt2::dvbt2_fftsize_t dvbt2_fftsize_t;
