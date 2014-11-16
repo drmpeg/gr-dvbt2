@@ -44,9 +44,28 @@ test streams available here:
 ftp://ftp.kw.bbc.co.uk/t2refs/
 
 Currently, the implementation is bit perfect with the VV001-CR35,
-VV003-CR23, VV008-16FFT, VV009-4KFFT, VV010-2KFFT and VV011-1KFFT
-profiles. The VV003-CR23 profile is the current HD broadcast
-mode (32K/256QAM at 40.2 Mbps or Ofcom Mode 7) in the UK.
+VV003-CR23, VV004-8KFFT, VV005-8KFFT, VV007-16KFFT, VV008-16FFT,
+VV009-4KFFT, VV010-2KFFT, VV011-1KFFT, VV015-8KFFT, VV019-NOROT
+and VV034-DTG016 profiles. The VV003-CR23 profile is the current
+HD broadcast mode (32K/256QAM at 40.2 Mbps or Ofcom Mode 7) in
+the UK.
+
+Version 1.1.1 features not implemented:
+
+1) Generic Encapsulated Stream (GSE)
+2) Generic Continuous Stream (GCS)
+3) Generic Fixed-length Packetized Stream (GFPS)
+4) Input Stream Synchronization
+5) Null Packet Deletion
+6) In-band signalling
+7) PAPR
+8) Time interleaver type 2
+9) Common PLP
+10) Multiple PLP
+11) Type 2 PLP
+12) Auxiliary stream
+13) FEF
+14) MISO
 
 Build instructions:
 
