@@ -136,7 +136,7 @@ namespace gr {
         l1postinit->plp_fec_type = framesize;
         l1postinit->plp_num_blocks_max = fecblocks;
         l1postinit->frame_interval = 1;
-        l1postinit->time_il_length = 3;
+        l1postinit->time_il_length = tiblocks;
         l1postinit->time_il_type = 0;
         l1postinit->in_band_a_flag = 0;
         l1postinit->in_band_b_flag = 0;
