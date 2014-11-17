@@ -64,9 +64,6 @@ namespace gr {
                 case gr::dvbt2::MOD_256QAM:
                     cell_size = 8100;
                     break;
-                default:
-                    cell_size = 0;
-                    break;
             }
         }
         else
@@ -84,9 +81,6 @@ namespace gr {
                     break;
                 case gr::dvbt2::MOD_256QAM:
                     cell_size = 2025;
-                    break;
-                default:
-                    cell_size = 0;
                     break;
             }
         }
@@ -504,10 +498,6 @@ namespace gr {
             case gr::dvbt2::FFTSIZE_32K_SGI:
                 N_P2 = 1;
                 C_P2 = 22432;
-                break;
-            default:
-                N_P2 = 0;
-                C_P2 = 0;
                 break;
         }
         switch (fftsize)
@@ -929,51 +919,6 @@ namespace gr {
                             C_FC = 0;
                             break;
                     }
-                }
-                break;
-            default:
-                switch (pilotpattern)
-                {
-                    case gr::dvbt2::PILOT_PP1:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP2:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP3:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP4:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP5:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP6:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP7:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP8:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
                 }
                 break;
         }

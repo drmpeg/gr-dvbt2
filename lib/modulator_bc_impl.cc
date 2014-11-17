@@ -63,9 +63,6 @@ namespace gr {
                 case gr::dvbt2::MOD_256QAM:
                     cell_size = 8100;
                     break;
-                default:
-                    cell_size = 32400;
-                    break;
             }
         }
         else
@@ -83,9 +80,6 @@ namespace gr {
                     break;
                 case gr::dvbt2::MOD_256QAM:
                     cell_size = 2025;
-                    break;
-                default:
-                    cell_size = 8100;
                     break;
             }
         }
@@ -2263,17 +2257,6 @@ namespace gr {
                 }
 #endif
                 break;
-            default:
-                normalization = sqrt(2);
-                m_qpsk[0].real() =  1.0 / normalization;
-                m_qpsk[0].imag() =  1.0 / normalization;
-                m_qpsk[1].real() =  1.0 / normalization;
-                m_qpsk[1].imag() = -1.0 / normalization;
-                m_qpsk[2].real() = -1.0 / normalization;
-                m_qpsk[2].imag() =  1.0 / normalization;
-                m_qpsk[3].real() = -1.0 / normalization;
-                m_qpsk[3].imag() = -1.0 / normalization;
-                break;
         }
         signal_constellation = constellation;
         set_output_multiple(cell_size);
@@ -2407,16 +2390,6 @@ namespace gr {
                             f_temp[0].imag() = g_temp[0].imag();
                             *out++ = f_temp[0];
                         }
-                    }
-                }
-                break;
-            default:
-                for (int i = 0; i < noutput_items; i += cell_size)
-                {
-                    for (int j = 0; j < cell_size; j++)
-                    {
-                        index = *in++;
-                        *out++ = m_qpsk[index & 0x3];
                     }
                 }
                 break;

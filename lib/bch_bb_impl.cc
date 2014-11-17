@@ -77,11 +77,6 @@ namespace gr {
                     nbch = 54000;
                     bch_code = BCH_CODE_N10;
                     break;
-                default:
-                    kbch = 0;
-                    nbch = 0;
-                    bch_code = 0;
-                    break;
             }
         }
         else
@@ -117,11 +112,6 @@ namespace gr {
                     kbch = 13152;
                     nbch = 13320;
                     bch_code = BCH_CODE_S12;
-                    break;
-                default:
-                    kbch = 0;
-                    nbch = 0;
-                    bch_code = 0;
                     break;
             }
         }

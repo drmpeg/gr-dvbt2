@@ -109,12 +109,6 @@ namespace gr {
                     K_EXT = 288;
                 }
                 break;
-            default:
-                N_P2 = 0;
-                C_P2 = 0;
-                K_EXT = 0;
-                C_PS = 0;
-                break;
         }
         switch (fftsize)
         {
@@ -537,51 +531,6 @@ namespace gr {
                     }
                 }
                 break;
-            default:
-                switch (pilotpattern)
-                {
-                    case gr::dvbt2::PILOT_PP1:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP2:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP3:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP4:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP5:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP6:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP7:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP8:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                }
-                break;
         }
         init_prbs();
         for (int i = 0; i < C_PS; i++)
@@ -672,8 +621,6 @@ namespace gr {
                 cp_bpsk[1].real() = -8.0 / 3.0;
                 cp_bpsk[1].imag() = 0.0;
                 break;
-            default:
-                break;
         }
         switch (pilotpattern)
         {
@@ -740,12 +687,6 @@ namespace gr {
                 sp_bpsk[1].imag() = 0.0;
                 dx = 6;
                 dy = 16;
-                break;
-            default:
-                sp_bpsk[0].real() = 0.0;
-                sp_bpsk[0].imag() = 0.0;
-                sp_bpsk[1].real() = 0.0;
-                sp_bpsk[1].imag() = 0.0;
                 break;
         }
         for (int i = 0; i < C_PS; i++)
@@ -1594,8 +1535,6 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     }
                     break;
             }
-            break;
-        default:
             break;
     }
     for (int i = 0; i < C_PS; i++)

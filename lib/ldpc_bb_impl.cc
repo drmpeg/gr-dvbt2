@@ -72,10 +72,6 @@ namespace gr {
                     nbch = 54000;
                     q_val = 30;
                     break;
-                default:
-                    nbch = 0;
-                    q_val = 0;
-                    break;
             }
         }
         else
@@ -106,10 +102,6 @@ namespace gr {
                 case gr::dvbt2::C5_6:
                     nbch = 13320;
                     q_val = 8;
-                    break;
-                default:
-                    nbch = 0;
-                    q_val = 0;
                     break;
             }
         }

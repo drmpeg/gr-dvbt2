@@ -67,7 +67,6 @@ namespace gr {
       C3_4,
       C4_5,
       C5_6,
-      C_OTHER,
     };
 
     enum dvbt2_constellation_t {
@@ -75,7 +74,6 @@ namespace gr {
       MOD_16QAM,
       MOD_64QAM,
       MOD_256QAM,
-      MOD_OTHER,
     };
 
     enum dvbt2_rotation_t {

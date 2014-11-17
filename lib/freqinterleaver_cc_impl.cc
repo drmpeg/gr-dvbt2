@@ -562,51 +562,6 @@ namespace gr {
                     }
                 }
                 break;
-            default:
-                switch (pilotpattern)
-                {
-                    case gr::dvbt2::PILOT_PP1:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP2:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP3:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP4:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP5:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP6:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP7:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                    case gr::dvbt2::PILOT_PP8:
-                        C_DATA = 0;
-                        N_FC = 0;
-                        C_FC = 0;
-                        break;
-                }
-                break;
         }
         for (int i = 0; i < max_states; i++)
         {

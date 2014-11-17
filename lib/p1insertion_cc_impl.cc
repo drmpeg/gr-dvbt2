@@ -104,11 +104,6 @@ namespace gr {
                     C_PS = 27841;
                 }
                 break;
-            default:
-                fft_size = 0;
-                N_P2 = 0;
-                C_PS = 0;
-                break;
         }
         normalization = 5.0 / sqrt(27.0 * C_PS);
         switch (guardinterval)
@@ -133,9 +128,6 @@ namespace gr {
                 break;
             case gr::dvbt2::GI_19_256:
                 guard_interval = (fft_size * 19) / 256;
-                break;
-            default:
-                guard_interval = 0;
                 break;
         }
         init_p1_randomizer();

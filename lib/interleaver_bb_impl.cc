@@ -75,10 +75,6 @@ namespace gr {
                     nbch = 54000;
                     q_val = 30;
                     break;
-                default:
-                    nbch = 0;
-                    q_val = 0;
-                    break;
             }
         }
         else
@@ -110,10 +106,6 @@ namespace gr {
                     nbch = 13320;
                     q_val = 8;
                     break;
-                default:
-                    nbch = 0;
-                    q_val = 0;
-                    break;
             }
         }
         switch (constellation)
@@ -135,11 +127,6 @@ namespace gr {
                 break;
             case gr::dvbt2::MOD_256QAM:
                 mod = 8;
-                set_output_multiple(frame_size / mod);
-                packed_items = frame_size / mod;
-                break;
-            default:
-                mod = 2;
                 set_output_multiple(frame_size / mod);
                 packed_items = frame_size / mod;
                 break;
@@ -516,17 +503,6 @@ namespace gr {
                             index += mod;
                             consumed += mod;
                         }
-                    }
-                }
-                break;
-            default:
-                for (int i = 0; i < noutput_items; i += packed_items)
-                {
-                    rows = frame_size / 2;
-                    for (int j = 0; j < rows; j++)
-                    {
-                        out[produced] = in[consumed++] << 1;
-                        out[produced++] |= in[consumed++];
                     }
                 }
                 break;

@@ -69,9 +69,6 @@ namespace gr {
                 case gr::dvbt2::C5_6:
                     kbch = 53840;
                     break;
-                default:
-                    kbch = 0;
-                    break;
             }
         }
         else
@@ -95,9 +92,6 @@ namespace gr {
                     break;
                 case gr::dvbt2::C5_6:
                     kbch = 13152;
-                    break;
-                default:
-                    kbch = 0;
                     break;
             }
         }
