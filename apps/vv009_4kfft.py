@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 ##################################################
 # Gnuradio Python Flow Graph
-# Title: Dvbt2 Tx
-# Generated: Fri Nov 14 16:52:43 2014
+# Title: Vv009 4Kfft
+# Generated: Mon Nov 17 00:43:27 2014
 ##################################################
 
 from gnuradio import blocks
@@ -20,10 +20,10 @@ from optparse import OptionParser
 import dvbt2
 import wx
 
-class dvbt2_tx(grc_wxgui.top_block_gui):
+class vv009_4kfft(grc_wxgui.top_block_gui):
 
     def __init__(self):
-        grc_wxgui.top_block_gui.__init__(self, title="Dvbt2 Tx")
+        grc_wxgui.top_block_gui.__init__(self, title="Vv009 4Kfft")
 
         ##################################################
         # Variables
@@ -50,21 +50,21 @@ class dvbt2_tx(grc_wxgui.top_block_gui):
         	size=(600,600),
         )
         self.Add(self.wxgui_fftsink2_0.win)
-        self.fft_vxx_0 = fft.fft_vcc(16384, False, (window.rectangular(16384)), True, 1)
-        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6, 100, 16384)
-        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_1_32, 100, (window.rectangular(1024)))
-        self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON)
-        self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
-        self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM)
-        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6, 100)
-        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON, 168, 3, dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_1_32, dvbt2.L1_MOD_64QAM, dvbt2.PILOT_PP6, 2, 100)
-        self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, 168, 3)
-        self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
-        self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
-        self.dvbt2_bbheader_bb_0 = dvbt2.bbheader_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.INPUTMODE_NORMAL)
-        self.digital_ofdm_cyclic_prefixer_0 = digital.ofdm_cyclic_prefixer(16384, 16384+16384/32, 0, "")
+        self.fft_vxx_0 = fft.fft_vcc(4096, False, (window.rectangular(4096)), True, 1)
+        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.PILOT_PP7, 100, 4096)
+        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.GI_1_32, 100, (window.rectangular(1024)))
+        self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_64QAM, dvbt2.ROTATION_ON)
+        self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3)
+        self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3, dvbt2.MOD_64QAM)
+        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.PILOT_PP7, 100)
+        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3, dvbt2.MOD_64QAM, dvbt2.ROTATION_ON, 31, 3, dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.GI_1_32, dvbt2.L1_MOD_16QAM, dvbt2.PILOT_PP7, 2, 100)
+        self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_64QAM, 31, 3)
+        self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3)
+        self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3)
+        self.dvbt2_bbheader_bb_0 = dvbt2.bbheader_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3, dvbt2.INPUTMODE_NORMAL)
+        self.digital_ofdm_cyclic_prefixer_0 = digital.ofdm_cyclic_prefixer(4096, 4096+4096/32, 0, "")
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
-        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, "/home/re/xfer/vv256.ts", True)
+        self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, "/home/re/xfer/vv64.ts", True)
 
         ##################################################
         # Connections
@@ -106,6 +106,6 @@ if __name__ == '__main__':
             print "Warning: failed to XInitThreads()"
     parser = OptionParser(option_class=eng_option, usage="%prog: [options]")
     (options, args) = parser.parse_args()
-    tb = dvbt2_tx()
+    tb = vv009_4kfft()
     tb.Start(True)
     tb.Wait()
