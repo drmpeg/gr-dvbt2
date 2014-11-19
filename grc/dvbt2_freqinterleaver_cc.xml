@@ -3,7 +3,7 @@
   <key>dvbt2_freqinterleaver_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.freqinterleaver_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $numdatasyms)</make>
+  <make>dvbt2.freqinterleaver_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $numdatasyms, $paprmode.val)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -114,6 +114,31 @@
     <key>numdatasyms</key>
     <value>100</value>
     <type>int</type>
+  </param>
+  <param>
+    <name>PAPR Mode</name>
+    <key>paprmode</key>
+    <type>enum</type>
+    <option>
+      <name>Off</name>
+      <key>PAPR_OFF</key>
+      <opt>val:dvbt2.PAPR_OFF</opt>
+    </option>
+    <option>
+      <name>Active Constellation Extension</name>
+      <key>PAPR_ACE</key>
+      <opt>val:dvbt2.PAPR_ACE</opt>
+    </option>
+    <option>
+      <name>Tone Reservation</name>
+      <key>PAPR_TR</key>
+      <opt>val:dvbt2.PAPR_TR</opt>
+    </option>
+    <option>
+      <name>Both TR and ACE</name>
+      <key>PAPR_BOTH</key>
+      <opt>val:dvbt2.PAPR_BOTH</opt>
+    </option>
   </param>
   <sink>
     <name>in</name>

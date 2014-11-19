@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     pilotgenerator_cc::sptr
-    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, int vlength)
+    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, int vlength)
     {
       return gnuradio::get_initial_sptr
-        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, numdatasyms, vlength));
+        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, numdatasyms, paprmode, vlength));
     }
 
     /*
      * The private constructor
      */
-    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, int vlength)
+    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, int vlength)
       : gr::block("pilotgenerator_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex) * vlength))
@@ -156,6 +156,21 @@ namespace gr {
                         C_FC = 0;
                         break;
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 10;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 10;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 10;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_2K:
                 switch (pilotpattern)
@@ -201,6 +216,21 @@ namespace gr {
                         C_FC = 0;
                         break;
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 18;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 18;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 18;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_4K:
                 switch (pilotpattern)
@@ -245,6 +275,21 @@ namespace gr {
                         N_FC = 0;
                         C_FC = 0;
                         break;
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 36;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 36;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 36;
+                    }
                 }
                 break;
             case gr::dvbt2::FFTSIZE_8K_NORM:
@@ -341,6 +386,21 @@ namespace gr {
                             break;
                     }
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 72;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 72;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 72;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
@@ -433,6 +493,21 @@ namespace gr {
                             N_FC = 0;
                             C_FC = 0;
                             break;
+                    }
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 144;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 144;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 144;
                     }
                 }
                 break;
@@ -528,6 +603,21 @@ namespace gr {
                             N_FC = 0;
                             C_FC = 0;
                             break;
+                    }
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 288;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 288;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 288;
                     }
                 }
                 break;
@@ -714,6 +804,50 @@ namespace gr {
         }
         fc_carrier_map[0] = SCATTERED_CARRIER;
         fc_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
+        if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+        {
+            switch (fftsize)
+            {
+                case gr::dvbt2::FFTSIZE_1K:
+                    for (int i = 0; i < 10; i++)
+                    {
+                        fc_carrier_map[p2_papr_map_1k[i]] = TRPAPR_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::FFTSIZE_2K:
+                    for (int i = 0; i < 18; i++)
+                    {
+                        fc_carrier_map[p2_papr_map_2k[i]] = TRPAPR_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::FFTSIZE_4K:
+                    for (int i = 0; i < 36; i++)
+                    {
+                        fc_carrier_map[p2_papr_map_4k[i]] = TRPAPR_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::FFTSIZE_8K_NORM:
+                case gr::dvbt2::FFTSIZE_8K_SGI:
+                    for (int i = 0; i < 72; i++)
+                    {
+                        fc_carrier_map[p2_papr_map_8k[i] + K_EXT] = TRPAPR_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::FFTSIZE_16K:
+                    for (int i = 0; i < 144; i++)
+                    {
+                        fc_carrier_map[p2_papr_map_16k[i] + K_EXT] = TRPAPR_CARRIER;
+                    }
+                    break;
+                case gr::dvbt2::FFTSIZE_32K_NORM:
+                case gr::dvbt2::FFTSIZE_32K_SGI:
+                    for (int i = 0; i < 288; i++)
+                    {
+                        fc_carrier_map[p2_papr_map_32k[i] + K_EXT] = TRPAPR_CARRIER;
+                    }
+                    break;
+            }
+        }
         if (N_FC == 0)
         {
             active_items = (N_P2 * C_P2) + (numdatasyms * C_DATA);
@@ -725,6 +859,7 @@ namespace gr {
         fft_size = fftsize;
         pilot_pattern = pilotpattern;
         carrier_mode = carriermode;
+        papr_mode = paprmode;
         left_nulls = ((vlength - C_PS) / 2) + 1;
         right_nulls = (vlength - C_PS) / 2;
         if (fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI)
@@ -783,7 +918,7 @@ void pilotgenerator_cc_impl::init_prbs(void)
 
 void pilotgenerator_cc_impl::init_pilots(int symbol)
 {
-    int remainder;
+    int remainder, shift;
     for (int i = 0; i < C_PS; i++)
     {
         data_carrier_map[i] = DATA_CARRIER;
@@ -1551,6 +1686,58 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
     }
     data_carrier_map[0] = SCATTERED_CARRIER;
     data_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
+    if (papr_mode == gr::dvbt2::PAPR_TR || papr_mode == gr::dvbt2::PAPR_BOTH)
+    {
+        if (carrier_mode == gr::dvbt2::CARRIERS_NORMAL)
+        {
+            shift = dx * (symbol % dy);
+        }
+        else
+        {
+            shift = dx * ((symbol + (K_EXT / dx)) % dy);
+        }
+        switch (fft_size)
+        {
+            case gr::dvbt2::FFTSIZE_1K:
+                for (int i = 0; i < 10; i++)
+                {
+                    data_carrier_map[tr_papr_map_1k[i] + shift] = TRPAPR_CARRIER;
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_2K:
+                for (int i = 0; i < 18; i++)
+                {
+                    data_carrier_map[tr_papr_map_2k[i] + shift] = TRPAPR_CARRIER;
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_4K:
+                for (int i = 0; i < 36; i++)
+                {
+                    data_carrier_map[tr_papr_map_4k[i] + shift] = TRPAPR_CARRIER;
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_8K_NORM:
+            case gr::dvbt2::FFTSIZE_8K_SGI:
+                for (int i = 0; i < 72; i++)
+                {
+                    data_carrier_map[tr_papr_map_8k[i] + shift] = TRPAPR_CARRIER;
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_16K:
+                for (int i = 0; i < 144; i++)
+                {
+                    data_carrier_map[tr_papr_map_16k[i] + shift] = TRPAPR_CARRIER;
+                }
+                break;
+            case gr::dvbt2::FFTSIZE_32K_NORM:
+            case gr::dvbt2::FFTSIZE_32K_SGI:
+                for (int i = 0; i < 288; i++)
+                {
+                    data_carrier_map[tr_papr_map_32k[i] + shift] = TRPAPR_CARRIER;
+                }
+                break;
+        }
+    }
 }
 
     int
@@ -1613,6 +1800,10 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                         {
                             *out++ = sp_bpsk[prbs[n] ^ pn_sequence[j]];
                         }
+                        else if (fc_carrier_map[n] == TRPAPR_CARRIER)
+                        {
+                            *out++ = zero;
+                        }
                         else
                         {
                             *out++ = *in++;
@@ -1638,6 +1829,10 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                         else if (data_carrier_map[n] == CONTINUAL_CARRIER)
                         {
                             *out++ = cp_bpsk[prbs[n] ^ pn_sequence[j]];
+                        }
+                        else if (data_carrier_map[n] == TRPAPR_CARRIER)
+                        {
+                            *out++ = zero;
                         }
                         else
                         {
@@ -1754,6 +1949,78 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
         26960, 26974, 26986, 27010, 27013, 27038, 27044, 27053, 27059, 27061, 27074, 27076,
         27083, 27086, 27092, 27094, 27098, 27103, 27110, 27115, 27118, 27119, 27125, 27128,
         27130, 27133, 27134, 27140, 27143, 27145, 27146, 27148, 27149
+    };
+
+    const int pilotgenerator_cc_impl::tr_papr_map_1k[10] = 
+    {
+        109, 117, 122, 129, 139, 321, 350, 403, 459, 465
+    };
+
+    const int pilotgenerator_cc_impl::tr_papr_map_2k[18] = 
+    {
+        250, 404, 638, 677, 700, 712, 755, 952, 1125, 1145,
+        1190, 1276, 1325, 1335, 1406, 1431, 1472, 1481
+    };
+
+    const int pilotgenerator_cc_impl::tr_papr_map_4k[36] = 
+    {
+        170, 219, 405, 501, 597, 654, 661, 745, 995, 1025, 1319, 1361, 1394,
+        1623, 1658, 1913, 1961, 1971, 2106, 2117, 2222, 2228, 2246, 2254, 2361,
+        2468, 2469, 2482, 2637, 2679, 2708, 2825, 2915, 2996, 3033, 3119
+    };
+
+    const int pilotgenerator_cc_impl::tr_papr_map_8k[72] = 
+    {
+        111, 115, 123, 215, 229, 392, 613, 658, 831, 842, 997, 1503, 1626, 1916,
+        1924, 1961, 2233, 2246, 2302, 2331, 2778, 2822, 2913, 2927, 2963, 2994,
+        3087, 3162, 3226, 3270, 3503, 3585, 3711, 3738, 3874, 3902, 4013, 4017,
+        4186, 4253, 4292, 4339, 4412, 4453, 4669, 4910, 5015, 5030, 5061, 5170,
+        5263, 5313, 5360, 5384, 5394, 5493, 5550, 5847, 5901, 5999, 6020, 6165,
+        6174, 6227, 6245, 6314, 6316, 6327, 6503, 6507, 6545, 6565
+    };
+
+    const int pilotgenerator_cc_impl::tr_papr_map_16k[144] = 
+    {
+        109, 122, 139, 171, 213, 214, 251, 585, 763, 1012, 1021, 1077, 1148, 1472,
+        1792, 1883, 1889, 1895, 1900, 2013, 2311, 2582, 2860, 2980, 3011, 3099, 3143,
+        3171, 3197, 3243, 3257, 3270, 3315, 3436, 3470, 3582, 3681, 3712, 3767, 3802,
+        3979, 4045, 4112, 4197, 4409, 4462, 4756, 5003, 5007, 5036, 5246, 5483, 5535,
+        5584, 5787, 5789, 6047, 6349, 6392, 6498, 6526, 6542, 6591, 6680, 6688, 6785,
+        6860, 7134, 7286, 7387, 7415, 7417, 7505, 7526, 7541, 7551, 7556, 7747, 7814,
+        7861, 7880, 8045, 8179, 8374, 8451, 8514, 8684, 8698, 8804, 8924, 9027, 9113,
+        9211, 9330, 9479, 9482, 9487, 9619, 9829, 10326, 10394, 10407, 10450, 10528,
+        10671, 10746, 10774, 10799, 10801, 10912, 11113, 11128, 11205, 11379, 11459,
+        11468, 11658, 11776, 11791, 11953, 11959, 12021, 12028, 12135, 12233, 12407,
+        12441, 12448, 12470, 12501, 12548, 12642, 12679, 12770, 12788, 12899, 12923,
+        12939, 13050, 13103, 13147, 13256, 13339, 13409
+    };
+
+    const int pilotgenerator_cc_impl::tr_papr_map_32k[288] = 
+    {
+        164, 320, 350, 521, 527, 578, 590, 619, 635, 651, 662, 664, 676, 691, 723,
+        940, 1280, 1326, 1509, 1520, 1638, 1682, 1805, 1833, 1861, 1891, 1900, 1902,
+        1949, 1967, 1978, 1998, 2006, 2087, 2134, 2165, 2212, 2427, 2475, 2555, 2874,
+        3067, 3091, 3101, 3146, 3188, 3322, 3353, 3383, 3503, 3523, 3654, 3856, 4150,
+        4158, 4159, 4174, 4206, 4318, 4417, 4629, 4631, 4875, 5104, 5106, 5111, 5131,
+        5145, 5146, 5177, 5181, 5246, 5269, 5458, 5474, 5500, 5509, 5579, 5810, 5823,
+        6058, 6066, 6098, 6411, 6741, 6775, 6932, 7103, 7258, 7303, 7413, 7586, 7591,
+        7634, 7636, 7655, 7671, 7675, 7756, 7760, 7826, 7931, 7937, 7951, 8017, 8061,
+        8071, 8117, 8317, 8321, 8353, 8806, 9010, 9237, 9427, 9453, 9469, 9525, 9558,
+        9574, 9584, 9820, 9973, 10011, 10043, 10064, 10066, 10081, 10136, 10193, 10249,
+        10511, 10537, 11083, 11350, 11369, 11428, 11622, 11720, 11924, 11974, 11979, 12944,
+        12945, 13009, 13070, 13110, 13257, 13364, 13370, 13449, 13503, 13514, 13520, 13583,
+        13593, 13708, 13925, 14192, 14228, 14235, 14279, 14284, 14370, 14393, 14407, 14422,
+        14471, 14494, 14536, 14617, 14829, 14915, 15094, 15138, 15155, 15170, 15260, 15283,
+        15435, 15594, 15634, 15810, 16178, 16192, 16196, 16297, 16366, 16498, 16501, 16861,
+        16966, 17039, 17057, 17240, 17523, 17767, 18094, 18130, 18218, 18344, 18374, 18657,
+        18679, 18746, 18772, 18779, 18786, 18874, 18884, 18955, 19143, 19497, 19534, 19679,
+        19729, 19738, 19751, 19910, 19913, 20144, 20188, 20194, 20359, 20490, 20500, 20555,
+        20594, 20633, 20656, 21099, 21115, 21597, 22139, 22208, 22244, 22530, 22547, 22562,
+        22567, 22696, 22757, 22798, 22854, 22877, 23068, 23102, 23141, 23154, 23170, 23202,
+        23368, 23864, 24057, 24215, 24219, 24257, 24271, 24325, 24447, 25137, 25590, 25702,
+        25706, 25744, 25763, 25811, 25842, 25853, 25954, 26079, 26158, 26285, 26346, 26488,
+        26598, 26812, 26845, 26852, 26869, 26898, 26909, 26927, 26931, 26946, 26975, 26991,
+        27039
     };
 
     const int pilotgenerator_cc_impl::pp1_cp1[20] = 

@@ -30,6 +30,7 @@ enum dvbt2_carrier_type_t {
   DATA_CARRIER = 1,
   P2PILOT_CARRIER,
   P2PAPR_CARRIER,
+  TRPAPR_CARRIER,
   SCATTERED_CARRIER,
   CONTINUAL_CARRIER
 };
@@ -47,6 +48,7 @@ namespace gr {
       int right_nulls;
       int pilot_pattern;
       int carrier_mode;
+      int papr_mode;
       gr_complex p2_bpsk[2];
       gr_complex sp_bpsk[2];
       gr_complex cp_bpsk[2];
@@ -74,6 +76,12 @@ namespace gr {
       const static int p2_papr_map_8k[72];
       const static int p2_papr_map_16k[144];
       const static int p2_papr_map_32k[288];
+      const static int tr_papr_map_1k[10];
+      const static int tr_papr_map_2k[18];
+      const static int tr_papr_map_4k[36];
+      const static int tr_papr_map_8k[72];
+      const static int tr_papr_map_16k[144];
+      const static int tr_papr_map_32k[288];
       const static int pp1_cp1[20];
       const static int pp1_cp2[25];
       const static int pp1_cp5[44];
@@ -130,7 +138,7 @@ namespace gr {
       const static int pp8_32k[6];
 
      public:
-      pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, int vlength);
+      pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, int vlength);
       ~pilotgenerator_cc_impl();
 
       // Where all the action really happens

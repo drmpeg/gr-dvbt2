@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     freqinterleaver_cc::sptr
-    freqinterleaver_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms)
+    freqinterleaver_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode)
     {
       return gnuradio::get_initial_sptr
-        (new freqinterleaver_cc_impl(carriermode, fftsize, pilotpattern, numdatasyms));
+        (new freqinterleaver_cc_impl(carriermode, fftsize, pilotpattern, numdatasyms, paprmode));
     }
 
     /*
      * The private constructor
      */
-    freqinterleaver_cc_impl::freqinterleaver_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms)
+    freqinterleaver_cc_impl::freqinterleaver_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode)
       : gr::sync_block("freqinterleaver_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -187,6 +187,21 @@ namespace gr {
                         C_FC = 0;
                         break;
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 10;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 10;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 10;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_2K:
                 switch (pilotpattern)
@@ -232,6 +247,21 @@ namespace gr {
                         C_FC = 0;
                         break;
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 18;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 18;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 18;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_4K:
                 switch (pilotpattern)
@@ -276,6 +306,21 @@ namespace gr {
                         N_FC = 0;
                         C_FC = 0;
                         break;
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 36;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 36;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 36;
+                    }
                 }
                 break;
             case gr::dvbt2::FFTSIZE_8K_NORM:
@@ -372,6 +417,21 @@ namespace gr {
                             break;
                     }
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 72;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 72;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 72;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
@@ -464,6 +524,21 @@ namespace gr {
                             N_FC = 0;
                             C_FC = 0;
                             break;
+                    }
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 144;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 144;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 144;
                     }
                 }
                 break;
@@ -559,6 +634,21 @@ namespace gr {
                             N_FC = 0;
                             C_FC = 0;
                             break;
+                    }
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 288;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 288;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 288;
                     }
                 }
                 break;

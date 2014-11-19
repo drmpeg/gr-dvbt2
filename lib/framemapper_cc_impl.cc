@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     framemapper_cc::sptr
-    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms)
+    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode)
     {
       return gnuradio::get_initial_sptr
-        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms));
+        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode));
     }
 
     /*
      * The private constructor
      */
-    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms)
+    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode)
       : gr::block("framemapper_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -91,7 +91,7 @@ namespace gr {
         l1preinit->s2 = fftsize;
         l1preinit->l1_repetition_flag = FALSE;
         l1preinit->guard_interval = guardinterval;
-        l1preinit->papr = gr::dvbt2::PAPR_OFF;
+        l1preinit->papr = paprmode;
         l1preinit->l1_mod = l1constellation;
         l1preinit->l1_cod = 0;
         l1preinit->l1_fec_type = 0;
@@ -546,6 +546,21 @@ namespace gr {
                         C_FC = 0;
                         break;
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 10;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 10;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 10;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_2K:
                 switch (pilotpattern)
@@ -591,6 +606,21 @@ namespace gr {
                         C_FC = 0;
                         break;
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 18;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 18;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 18;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_4K:
                 switch (pilotpattern)
@@ -635,6 +665,21 @@ namespace gr {
                         N_FC = 0;
                         C_FC = 0;
                         break;
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 36;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 36;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 36;
+                    }
                 }
                 break;
             case gr::dvbt2::FFTSIZE_8K_NORM:
@@ -731,6 +776,21 @@ namespace gr {
                             break;
                     }
                 }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 72;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 72;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 72;
+                    }
+                }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
@@ -823,6 +883,21 @@ namespace gr {
                             N_FC = 0;
                             C_FC = 0;
                             break;
+                    }
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 144;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 144;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 144;
                     }
                 }
                 break;
@@ -918,6 +993,21 @@ namespace gr {
                             N_FC = 0;
                             C_FC = 0;
                             break;
+                    }
+                }
+                if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
+                {
+                    if (C_DATA != 0)
+                    {
+                        C_DATA -= 288;
+                    }
+                    if (N_FC != 0)
+                    {
+                        N_FC -= 288;
+                    }
+                    if (C_FC != 0)
+                    {
+                        C_FC -= 288;
                     }
                 }
                 break;
