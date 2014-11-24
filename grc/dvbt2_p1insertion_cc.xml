@@ -5,7 +5,7 @@
   <import>import dvbt2</import>
   <import>from gnuradio import fft</import>
   <import>from gnuradio.fft import window</import>
-  <make>dvbt2.p1insertion_cc($carriermode.val, $fftsize.val, $guardinterval.val, $numdatasyms, $window)</make>
+  <make>dvbt2.p1insertion_cc($carriermode.val, $fftsize.val, $guardinterval.val, $numdatasyms)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -111,12 +111,6 @@
     <key>numdatasyms</key>
     <value>100</value>
     <type>int</type>
-  </param>
-  <param>
-    <name>Window</name>
-    <key>window</key>
-    <value>window.rectangular(1024)</value>
-    <type>real_vector</type>
   </param>
   <sink>
     <name>in</name>

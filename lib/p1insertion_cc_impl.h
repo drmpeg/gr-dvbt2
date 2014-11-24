@@ -47,15 +47,14 @@ namespace gr {
       void init_p1_randomizer(void);
 
       fft::fft_complex *p1_fft;
-      unsigned int p1_fft_size;
-      std::vector<float> p1_window;
+      int p1_fft_size;
 
       const static int p1_active_carriers[384];
       const static unsigned char s1_modulation_patterns[8][8];
       const static unsigned char s2_modulation_patterns[16][32];
 
      public:
-      p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, const std::vector<float> &window);
+      p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms);
       ~p1insertion_cc_impl();
 
       // Where all the action really happens

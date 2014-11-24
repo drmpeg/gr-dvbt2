@@ -47,7 +47,7 @@ namespace gr {
        * class. dvbt2::p1insertion_cc::make is the public interface for
        * creating new instances.
        */
-      static sptr make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, const std::vector<float> &window);
+      static sptr make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms);
     };
 
   } // namespace dvbt2

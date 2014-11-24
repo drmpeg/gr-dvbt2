@@ -24,7 +24,6 @@
 
 #include <gnuradio/io_signature.h>
 #include "p1insertion_cc_impl.h"
-#include <math.h>
 #include <volk/volk.h>
 #include <stdio.h>
 
@@ -32,16 +31,16 @@ namespace gr {
   namespace dvbt2 {
 
     p1insertion_cc::sptr
-    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, const std::vector<float> &window)
+    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms)
     {
       return gnuradio::get_initial_sptr
-        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms, window));
+        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms));
     }
 
     /*
      * The private constructor
      */
-    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, const std::vector<float> &window)
+    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms)
       : gr::block("p1insertion_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -185,18 +184,9 @@ namespace gr {
         }
         p1_fft_size = 1024;
         p1_fft = new fft::fft_complex(p1_fft_size, false, 1);
-        p1_window = window;
         gr_complex *dst = p1_fft->get_inbuf();
-        unsigned int offset = p1_fft_size / 2;
-        int fft_m_offset = p1_fft_size - offset;
-        for(unsigned int i = 0; i < offset; i++)
-        {
-            dst[i+fft_m_offset] = in[i] * p1_window[i];
-        }
-        for(unsigned int i = offset; i < p1_fft_size; i++)
-        {
-            dst[i-offset] = in[i] * p1_window[i];
-        }
+        memcpy(&dst[p1_fft_size / 2], &in[0], sizeof(gr_complex) * p1_fft_size / 2);
+        memcpy(&dst[0], &in[p1_fft_size / 2], sizeof(gr_complex) * p1_fft_size / 2);
         p1_fft->execute();
         memcpy(out, p1_fft->get_outbuf(), sizeof(gr_complex) * p1_fft_size);
         for (int i = 0; i < 1024; i++)
@@ -212,14 +202,8 @@ namespace gr {
         in = (const gr_complex *) p1_freqshft;
         out = (gr_complex *) p1_timeshft;
         dst = p1_fft->get_inbuf();
-        for(unsigned int i = 0; i < offset; i++)
-        {
-            dst[i+fft_m_offset] = in[i] * p1_window[i];
-        }
-        for(unsigned int i = offset; i < p1_fft_size; i++)
-        {
-            dst[i-offset] = in[i] * p1_window[i];
-        }
+        memcpy(&dst[p1_fft_size / 2], &in[0], sizeof(gr_complex) * p1_fft_size / 2);
+        memcpy(&dst[0], &in[p1_fft_size / 2], sizeof(gr_complex) * p1_fft_size / 2);
         p1_fft->execute();
         memcpy(out, p1_fft->get_outbuf(), sizeof(gr_complex) * p1_fft_size);
         for (int i = 0; i < 1024; i++)
