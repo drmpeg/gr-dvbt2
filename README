@@ -36,7 +36,8 @@ are reused from gr-dvbs2 (https://github.com/drmpeg/gr-dvbs2)
 which are originally from G4GUO's DATV-Express Digital Amateur
 Television project. The bit interleaver, DVB-T2 modulator,
 cell and time interleaver, frame mapper, frequency interleaver,
-pilot generator and P1 symbol insertion blocks are all new.
+pilot generator, P1 symbol insertion and Tone Reservation PAPR
+blocks are all new.
 
 The baseline implementation has been verified against the BBC
 test streams available here:
@@ -45,10 +46,13 @@ ftp://ftp.kw.bbc.co.uk/t2refs/
 
 Currently, the implementation is bit perfect with the VV001-CR35,
 VV003-CR23, VV004-8KFFT, VV005-8KFFT, VV007-16KFFT, VV008-16FFT,
-VV009-4KFFT, VV010-2KFFT, VV011-1KFFT, VV015-8KFFT, VV019-NOROT
-and VV034-DTG016 profiles. The VV003-CR23 profile is the current
-HD broadcast mode (32K/256QAM at 40.2 Mbps or Ofcom Mode 7) in
-the UK.
+VV009-4KFFT, VV010-2KFFT, VV011-1KFFT, VV012-64QAM45, VV014-64QAM34,
+VV015-8KFFT, VV016-256QAM34, VV019-NOROT and VV034-DTG016 profiles.
+The VV003-CR23 profile is the current HD broadcast mode (32K/256QAM
+at 40.2 Mbps or Ofcom Mode 7) in the UK.
+
+IMPORTANT: The tone reservation PAPR block is very floating point
+intensive and only runs in real-time on the VV016-256QAM34 profile.
 
 Version 1.1.1 features not implemented:
 
@@ -58,7 +62,7 @@ Version 1.1.1 features not implemented:
 4) Input Stream Synchronization
 5) Null Packet Deletion
 6) In-band signalling
-7) PAPR
+7) Active Constellation Extension (ACE) PAPR
 8) Time interleaver type 2
 9) Common PLP
 10) Multiple PLP
