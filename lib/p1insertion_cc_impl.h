@@ -35,8 +35,6 @@ namespace gr {
       int frame_items;
       int insertion_items;
       int N_P2;
-      int C_PS;
-      float normalization;
       int p1_randomize[384];
       int modulation_sequence[384];
       int dbpsk_modulation_sequence[385];

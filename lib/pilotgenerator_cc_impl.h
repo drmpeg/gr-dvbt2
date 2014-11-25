@@ -22,6 +22,7 @@
 #define INCLUDED_DVBT2_PILOTGENERATOR_CC_IMPL_H
 
 #include <dvbt2/pilotgenerator_cc.h>
+#include <gnuradio/fft/fft.h>
 
 #define CHIPS 2624
 #define MAX_CARRIERS 27841
@@ -49,6 +50,7 @@ namespace gr {
       int pilot_pattern;
       int carrier_mode;
       int papr_mode;
+      float normalization;
       gr_complex p2_bpsk[2];
       gr_complex sp_bpsk[2];
       gr_complex cp_bpsk[2];
@@ -68,6 +70,9 @@ namespace gr {
       int dy;
       void init_prbs(void);
       void init_pilots(int);
+
+      fft::fft_complex *ofdm_fft;
+      int ofdm_fft_size;
 
       const static unsigned char pn_sequence_table[CHIPS / 8];
       const static int p2_papr_map_1k[10];

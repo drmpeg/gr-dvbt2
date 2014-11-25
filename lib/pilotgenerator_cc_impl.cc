@@ -24,6 +24,7 @@
 
 #include <gnuradio/io_signature.h>
 #include "pilotgenerator_cc_impl.h"
+#include <volk/volk.h>
 #include <stdio.h>
 
 namespace gr {
@@ -876,6 +877,9 @@ namespace gr {
             p2_bpsk[1].real() = -(sqrt(31.0) / 5.0);
             p2_bpsk[1].imag() = 0.0;
         }
+        normalization = 5.0 / sqrt(27.0 * C_PS);
+        ofdm_fft_size = vlength;
+        ofdm_fft = new fft::fft_complex(ofdm_fft_size, false, 1);
         num_symbols = numdatasyms + N_P2;
         set_output_multiple(num_symbols);
     }
@@ -885,6 +889,7 @@ namespace gr {
      */
     pilotgenerator_cc_impl::~pilotgenerator_cc_impl()
     {
+        delete ofdm_fft;
     }
 
     void
@@ -1749,6 +1754,7 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
         const gr_complex *in = (const gr_complex *) input_items[0];
         gr_complex *out = (gr_complex *) output_items[0];
         gr_complex zero;
+        gr_complex *dst;
         int L_FC = 0;
 
         zero.real() = 0.0;
@@ -1844,6 +1850,13 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                         *out++ = zero;
                     }
                 }
+                out -= ofdm_fft_size;
+                dst = ofdm_fft->get_inbuf();
+                memcpy(&dst[ofdm_fft_size / 2], &out[0], sizeof(gr_complex) * ofdm_fft_size / 2);
+                memcpy(&dst[0], &out[ofdm_fft_size / 2], sizeof(gr_complex) * ofdm_fft_size / 2);
+                ofdm_fft->execute();
+                volk_32fc_s32fc_multiply_32fc(out, ofdm_fft->get_outbuf(), normalization, ofdm_fft_size);
+                out += ofdm_fft_size;
             }
         }
 

@@ -2,7 +2,7 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Vv011 1Kfft
-# Generated: Mon Nov 17 20:27:39 2014
+# Generated: Tue Nov 25 01:25:56 2014
 ##################################################
 
 from gnuradio import blocks
@@ -50,14 +50,13 @@ class vv011_1kfft(grc_wxgui.top_block_gui):
         	size=(600,600),
         )
         self.Add(self.wxgui_fftsink2_0.win)
-        self.fft_vxx_0 = fft.fft_vcc(1024, False, (window.rectangular(1024)), True, 1)
-        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_1K, dvbt2.PILOT_PP3, 1966, 1024)
-        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_1K, dvbt2.GI_1_8, 1966, (window.rectangular(1024)))
+        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_1K, dvbt2.PILOT_PP3, 1966, dvbt2.PAPR_OFF, 1024)
+        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_1K, dvbt2.GI_1_8, 1966)
         self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_QPSK, dvbt2.ROTATION_ON)
         self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C1_2)
         self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C1_2, dvbt2.MOD_QPSK)
-        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_1K, dvbt2.PILOT_PP3, 1966)
-        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C1_2, dvbt2.MOD_QPSK, dvbt2.ROTATION_ON, 48, 3, dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_1K, dvbt2.GI_1_8, dvbt2.L1_MOD_BPSK, dvbt2.PILOT_PP3, 2, 1966)
+        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_1K, dvbt2.PILOT_PP3, 1966, dvbt2.PAPR_OFF)
+        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C1_2, dvbt2.MOD_QPSK, dvbt2.ROTATION_ON, 48, 3, dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_1K, dvbt2.GI_1_8, dvbt2.L1_MOD_BPSK, dvbt2.PILOT_PP3, 2, 1966, dvbt2.PAPR_OFF)
         self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_QPSK, 48, 3)
         self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C1_2)
         self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C1_2)
@@ -79,11 +78,10 @@ class vv011_1kfft(grc_wxgui.top_block_gui):
         self.connect((self.blocks_file_source_0, 0), (self.dvbt2_bbheader_bb_0, 0))
         self.connect((self.dvbt2_framemapper_cc_0, 0), (self.dvbt2_freqinterleaver_cc_0, 0))
         self.connect((self.dvbt2_freqinterleaver_cc_0, 0), (self.dvbt2_pilotgenerator_cc_0, 0))
-        self.connect((self.dvbt2_pilotgenerator_cc_0, 0), (self.fft_vxx_0, 0))
-        self.connect((self.fft_vxx_0, 0), (self.digital_ofdm_cyclic_prefixer_0, 0))
         self.connect((self.blocks_throttle_0, 0), (self.wxgui_fftsink2_0, 0))
         self.connect((self.dvbt2_p1insertion_cc_0, 0), (self.blocks_throttle_0, 0))
         self.connect((self.digital_ofdm_cyclic_prefixer_0, 0), (self.dvbt2_p1insertion_cc_0, 0))
+        self.connect((self.dvbt2_pilotgenerator_cc_0, 0), (self.digital_ofdm_cyclic_prefixer_0, 0))
 
 
 

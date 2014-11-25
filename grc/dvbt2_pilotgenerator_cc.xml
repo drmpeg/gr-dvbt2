@@ -1,5 +1,5 @@
 <block>
-  <name>Pilot Generator</name>
+  <name>Pilot Generator and FFT</name>
   <key>dvbt2_pilotgenerator_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>

@@ -24,7 +24,6 @@
 
 #include <gnuradio/io_signature.h>
 #include "p1insertion_cc_impl.h"
-#include <volk/volk.h>
 #include <stdio.h>
 
 namespace gr {
@@ -53,58 +52,30 @@ namespace gr {
             case gr::dvbt2::FFTSIZE_1K:
                 fft_size = 1024;
                 N_P2 = 16;
-                C_PS = 853;
                 break;
             case gr::dvbt2::FFTSIZE_2K:
                 fft_size = 2048;
                 N_P2 = 8;
-                C_PS = 1705;
                 break;
             case gr::dvbt2::FFTSIZE_4K:
                 fft_size = 4096;
                 N_P2 = 4;
-                C_PS = 3409;
                 break;
             case gr::dvbt2::FFTSIZE_8K_NORM:
             case gr::dvbt2::FFTSIZE_8K_SGI:
                 fft_size = 8192;
                 N_P2 = 2;
-                if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
-                {
-                    C_PS = 6817;
-                }
-                else
-                {
-                    C_PS = 6913;
-                }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
                 fft_size = 16384;
                 N_P2 = 1;
-                if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
-                {
-                    C_PS = 13633;
-                }
-                else
-                {
-                    C_PS = 13921;
-                }
                 break;
             case gr::dvbt2::FFTSIZE_32K_NORM:
             case gr::dvbt2::FFTSIZE_32K_SGI:
                 fft_size = 32768;
                 N_P2 = 1;
-                if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
-                {
-                    C_PS = 27265;
-                }
-                else
-                {
-                    C_PS = 27841;
-                }
                 break;
         }
-        normalization = 5.0 / sqrt(27.0 * C_PS);
         switch (guardinterval)
         {
             case gr::dvbt2::GI_1_32:
@@ -211,8 +182,6 @@ namespace gr {
             p1_timeshft[i].real() *= 1 / sqrt(384);
             p1_timeshft[i].imag() *= 1 / sqrt(384);
         }
-        const int alignment_multiple = volk_get_alignment() / sizeof(gr_complex);
-        set_alignment(std::max(1, alignment_multiple));
         frame_items = ((numdatasyms + N_P2) * fft_size) + ((numdatasyms + N_P2) * guard_interval);
         insertion_items = frame_items + 2048;
         set_output_multiple(frame_items + 2048);
@@ -274,7 +243,7 @@ void p1insertion_cc_impl::init_p1_randomizer(void)
             {
                 *out++ = p1_timeshft[j];
             }
-            volk_32fc_s32fc_multiply_32fc(out, in, normalization, frame_items);
+            memcpy(out, in, sizeof(gr_complex) * frame_items);
             out += frame_items;
             in += frame_items;
         }
