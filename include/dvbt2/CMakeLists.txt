@@ -32,5 +32,6 @@ install(FILES
     framemapper_cc.h
     freqinterleaver_cc.h
     pilotgenerator_cc.h
-    p1insertion_cc.h DESTINATION include/dvbt2
+    p1insertion_cc.h
+    paprtr_cc.h DESTINATION include/dvbt2
 )

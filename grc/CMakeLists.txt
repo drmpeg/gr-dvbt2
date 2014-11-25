@@ -27,5 +27,6 @@ install(FILES
     dvbt2_framemapper_cc.xml
     dvbt2_freqinterleaver_cc.xml
     dvbt2_pilotgenerator_cc.xml
-    dvbt2_p1insertion_cc.xml DESTINATION share/gnuradio/grc/blocks
+    dvbt2_p1insertion_cc.xml
+    dvbt2_paprtr_cc.xml DESTINATION share/gnuradio/grc/blocks
 )
