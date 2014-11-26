@@ -192,6 +192,7 @@ namespace gr {
         }
         cols = (gr_complex **) malloc(sizeof(gr_complex *) * FECBlocksPerBigTIBlock * 5);
         if (cols == NULL) {
+            free(time_interleave);
             fprintf(stderr, "Cell interleaver 2nd malloc, Out of memory.\n");
             exit(1);
         }

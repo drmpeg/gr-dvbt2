@@ -530,7 +530,6 @@ namespace gr {
                 dy = 16;
                 break;
         }
-        normalization = 5.0 / sqrt(27.0 * C_PS);
         fft_size = fftsize;
         pilot_pattern = pilotpattern;
         carrier_mode = carriermode;
@@ -542,13 +541,89 @@ namespace gr {
         papr_fft_size = vlength;
         papr_fft = new fft::fft_complex(papr_fft_size, false, 1);
         ones_freq = (gr_complex*) volk_malloc(sizeof(gr_complex) * papr_fft_size, volk_get_alignment());
+        if (ones_freq == NULL)
+        {
+            fprintf(stderr, "Tone reservation PAPR 1st volk_malloc, Out of memory.\n");
+            delete papr_fft;
+            exit(1);
+        }
         ones_time = (gr_complex*) volk_malloc(sizeof(gr_complex) * papr_fft_size, volk_get_alignment());
+        if (ones_time == NULL)
+        {
+            fprintf(stderr, "Tone reservation PAPR 2nd volk_malloc, Out of memory.\n");
+            volk_free(ones_freq);
+            delete papr_fft;
+            exit(1);
+        }
         c = (gr_complex*) volk_malloc(sizeof(gr_complex) * papr_fft_size, volk_get_alignment());
+        if (c == NULL)
+        {
+            fprintf(stderr, "Tone reservation PAPR 3rd volk_malloc, Out of memory.\n");
+            volk_free(ones_time);
+            volk_free(ones_freq);
+            delete papr_fft;
+            exit(1);
+        }
         ctemp = (gr_complex*) volk_malloc(sizeof(gr_complex) * papr_fft_size, volk_get_alignment());
+        if (ctemp == NULL)
+        {
+            fprintf(stderr, "Tone reservation PAPR 4th volk_malloc, Out of memory.\n");
+            volk_free(c);
+            volk_free(ones_time);
+            volk_free(ones_freq);
+            delete papr_fft;
+            exit(1);
+        }
         magnitude = (float*) volk_malloc(sizeof(float) * papr_fft_size, volk_get_alignment());
+        if (magnitude == NULL)
+        {
+            fprintf(stderr, "Tone reservation PAPR 5th volk_malloc, Out of memory.\n");
+            volk_free(ctemp);
+            volk_free(c);
+            volk_free(ones_time);
+            volk_free(ones_freq);
+            delete papr_fft;
+            exit(1);
+        }
         r = (gr_complex*) volk_malloc(sizeof(gr_complex) * N_TR, volk_get_alignment());
+        if (r == NULL)
+        {
+            fprintf(stderr, "Tone reservation PAPR 6th volk_malloc, Out of memory.\n");
+            volk_free(magnitude);
+            volk_free(ctemp);
+            volk_free(c);
+            volk_free(ones_time);
+            volk_free(ones_freq);
+            delete papr_fft;
+            exit(1);
+        }
         rNew = (gr_complex*) volk_malloc(sizeof(gr_complex) * N_TR, volk_get_alignment());
+        if (rNew == NULL)
+        {
+            fprintf(stderr, "Tone reservation PAPR 7th volk_malloc, Out of memory.\n");
+            volk_free(r);
+            volk_free(magnitude);
+            volk_free(ctemp);
+            volk_free(c);
+            volk_free(ones_time);
+            volk_free(ones_freq);
+            delete papr_fft;
+            exit(1);
+        }
         v = (gr_complex*) volk_malloc(sizeof(gr_complex) * N_TR, volk_get_alignment());
+        if (v == NULL)
+        {
+            fprintf(stderr, "Tone reservation PAPR 8th volk_malloc, Out of memory.\n");
+            volk_free(rNew);
+            volk_free(r);
+            volk_free(magnitude);
+            volk_free(ctemp);
+            volk_free(c);
+            volk_free(ones_time);
+            volk_free(ones_freq);
+            delete papr_fft;
+            exit(1);
+        }
         num_symbols = numdatasyms + N_P2;
         set_output_multiple(num_symbols);
     }
@@ -637,7 +712,7 @@ void paprtr_cc_impl::init_pilots(int symbol)
         int index;
         int L_FC = 0;
         gr_complex *dst;
-        float normalize = 1.0 / N_TR;
+        float normalization = 1.0 / N_TR;
         int m = 0;
         float y, a, alpha, center = (C_PS - 1) / 2;
         float aMax = 5.0 * N_TR * sqrt(10.0 / (27.0 * C_PS));
@@ -721,7 +796,7 @@ void paprtr_cc_impl::init_pilots(int symbol)
                     memcpy(&dst[0], &ones_freq[papr_fft_size / 2], sizeof(gr_complex) * papr_fft_size / 2);
                     papr_fft->execute();
                     memcpy(ones_time, papr_fft->get_outbuf(), sizeof(gr_complex) * papr_fft_size);
-                    volk_32fc_s32fc_multiply_32fc(ones_time, ones_time, normalize, papr_fft_size);
+                    volk_32fc_s32fc_multiply_32fc(ones_time, ones_time, normalization, papr_fft_size);
                     memset(&r[0], 0, sizeof(gr_complex) * N_TR);
                     memset(&c[0], 0, sizeof(gr_complex) * papr_fft_size);
                     for (int k = 1; k <= num_iterations; k++)
@@ -807,7 +882,7 @@ void paprtr_cc_impl::init_pilots(int symbol)
             {
                 for (int j = 0; j < num_symbols; j++)
                 {
-                    volk_32fc_s32fc_multiply_32fc(out, in, normalization, papr_fft_size);
+                    memcpy(out, in, sizeof(gr_complex) * papr_fft_size);
                     in = in + papr_fft_size;
                     out = out + papr_fft_size;
                 }

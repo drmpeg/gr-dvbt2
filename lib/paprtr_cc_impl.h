@@ -76,7 +76,6 @@ namespace gr {
       int dx;
       int dy;
       int shift;
-      float normalization;
       void init_pilots(int);
 
       fft::fft_complex *papr_fft;

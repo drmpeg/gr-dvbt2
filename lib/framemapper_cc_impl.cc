@@ -1033,9 +1033,9 @@ namespace gr {
         {
             set_output_multiple((N_P2 * C_P2) + (numdatasyms * C_DATA));
             mapped_items = (N_P2 * C_P2) + (numdatasyms * C_DATA);
-            zigzag_interleave = (gr_complex *) malloc(sizeof(gr_complex ) * mapped_items);
+            zigzag_interleave = (gr_complex *) malloc(sizeof(gr_complex) * mapped_items);
             if (zigzag_interleave == NULL) {
-                fprintf(stderr, "Frame mapper malloc, Out of memory.\n");
+                fprintf(stderr, "Frame mapper 1st malloc, Out of memory.\n");
                 exit(1);
             }
         }
@@ -1043,14 +1043,19 @@ namespace gr {
         {
             set_output_multiple((N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC);
             mapped_items = (N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC;
-            zigzag_interleave = (gr_complex *) malloc(sizeof(gr_complex ) * mapped_items);
+            zigzag_interleave = (gr_complex *) malloc(sizeof(gr_complex) * mapped_items);
             if (zigzag_interleave == NULL) {
-                fprintf(stderr, "Frame mapper malloc, Out of memory.\n");
+                fprintf(stderr, "Frame mapper 1st malloc, Out of memory.\n");
                 exit(1);
             }
         }
         stream_items = cell_size * fecblocks;
-        dummy_randomize = (gr_complex *) malloc(sizeof(gr_complex ) * mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC));
+        dummy_randomize = (gr_complex *) malloc(sizeof(gr_complex) * mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC));
+        if (dummy_randomize == NULL) {
+            free(zigzag_interleave);
+            fprintf(stderr, "Frame mapper 2nd malloc, Out of memory.\n");
+            exit(1);
+        }
         init_dummy_randomizer();
     }
 
