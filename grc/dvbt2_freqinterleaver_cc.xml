@@ -3,7 +3,7 @@
   <key>dvbt2_freqinterleaver_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.freqinterleaver_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $numdatasyms, $paprmode.val)</make>
+  <make>dvbt2.freqinterleaver_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $guardinterval.val, $numdatasyms, $paprmode.val)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -107,6 +107,46 @@
       <name>PP8</name>
       <key>PILOT_PP8</key>
       <opt>val:dvbt2.PILOT_PP8</opt>
+    </option>
+  </param>
+  <param>
+    <name>Guard Interval</name>
+    <key>guardinterval</key>
+    <type>enum</type>
+    <option>
+      <name>1/32</name>
+      <key>GI_1_32</key>
+      <opt>val:dvbt2.GI_1_32</opt>
+    </option>
+    <option>
+      <name>1/16</name>
+      <key>GI_1_16</key>
+      <opt>val:dvbt2.GI_1_16</opt>
+    </option>
+    <option>
+      <name>1/8</name>
+      <key>GI_1_8</key>
+      <opt>val:dvbt2.GI_1_8</opt>
+    </option>
+    <option>
+      <name>1/4</name>
+      <key>GI_1_4</key>
+      <opt>val:dvbt2.GI_1_4</opt>
+    </option>
+    <option>
+      <name>1/128</name>
+      <key>GI_1_128</key>
+      <opt>val:dvbt2.GI_1_128</opt>
+    </option>
+    <option>
+      <name>19/128</name>
+      <key>GI_19_128</key>
+      <opt>val:dvbt2.GI_19_128</opt>
+    </option>
+    <option>
+      <name>19/256</name>
+      <key>GI_19_256</key>
+      <opt>val:dvbt2.GI_19_256</opt>
     </option>
   </param>
   <param>

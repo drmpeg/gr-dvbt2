@@ -30,21 +30,22 @@ namespace gr {
   namespace dvbt2 {
 
     p1insertion_cc::sptr
-    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms)
+    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble)
     {
       return gnuradio::get_initial_sptr
-        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms));
+        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms, version, preamble));
     }
 
     /*
      * The private constructor
      */
-    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms)
+    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble)
       : gr::block("p1insertion_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
     {
         int s1, s2, index = 0;
+        int fef_present = FALSE;
         const gr_complex *in = (const gr_complex *) p1_freq;
         gr_complex *out = (gr_complex *) p1_time;
         switch (fftsize)
@@ -101,8 +102,12 @@ namespace gr {
                 break;
         }
         init_p1_randomizer();
-        s1 = PREAMBLE_T2_SISO;
+        s1 = preamble;
         s2 = fftsize << 1;
+        if (fef_present == TRUE)
+        {
+            s2 |= 1;
+        }
         for (int i = 0; i < 8; i++)
         {
             for (int j = 7; j >= 0; j--)

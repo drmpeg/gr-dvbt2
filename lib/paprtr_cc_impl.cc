@@ -32,16 +32,16 @@ namespace gr {
   namespace dvbt2 {
 
     paprtr_cc::sptr
-    paprtr_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, float vclip, int iterations, int vlength)
+    paprtr_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, float vclip, int iterations, int vlength)
     {
       return gnuradio::get_initial_sptr
-        (new paprtr_cc_impl(carriermode, fftsize, pilotpattern, numdatasyms, paprmode, vclip, iterations, vlength));
+        (new paprtr_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, version, vclip, iterations, vlength));
     }
 
     /*
      * The private constructor
      */
-    paprtr_cc_impl::paprtr_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, float vclip, int iterations, int vlength)
+    paprtr_cc_impl::paprtr_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, float vclip, int iterations, int vlength)
       : gr::sync_block("paprtr_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex) * vlength),
               gr::io_signature::make(1, 1, sizeof(gr_complex) * vlength))
@@ -425,6 +425,22 @@ namespace gr {
                 }
                 break;
         }
+        if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
+        {
+            N_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_1_32 && pilotpattern == gr::dvbt2::PILOT_PP4)
+        {
+            N_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_1_16 && pilotpattern == gr::dvbt2::PILOT_PP2)
+        {
+            N_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_19_256 && pilotpattern == gr::dvbt2::PILOT_PP2)
+        {
+            N_FC = 0;
+        }
         for (int i = 0; i < C_PS; i++)
         {
             p2_carrier_map[i] = DATA_CARRIER;
@@ -534,8 +550,17 @@ namespace gr {
         pilot_pattern = pilotpattern;
         carrier_mode = carriermode;
         papr_mode = paprmode;
-        v_clip = vclip;
-        num_iterations = iterations;
+        version_num = version;
+        if (version == gr::dvbt2::VERSION_131 && papr_mode == gr::dvbt2::PAPR_OFF)
+        {
+            v_clip = 3.0;
+            num_iterations = 1;
+        }
+        else
+        {
+            v_clip = vclip;
+            num_iterations = iterations;
+        }
         left_nulls = ((vlength - C_PS) / 2) + 1;
         right_nulls = (vlength - C_PS) / 2;
         papr_fft_size = vlength;
@@ -709,7 +734,7 @@ void paprtr_cc_impl::init_pilots(int symbol)
         const gr_complex *in = (const gr_complex *) input_items[0];
         gr_complex *out = (gr_complex *) output_items[0];
         gr_complex zero, one;
-        int index;
+        int index, valid;
         int L_FC = 0;
         gr_complex *dst;
         float normalization = 1.0 / N_TR;
@@ -729,11 +754,12 @@ void paprtr_cc_impl::init_pilots(int symbol)
         }
         for (int i = 0; i < noutput_items; i += num_symbols)
         {
-            if (papr_mode == gr::dvbt2::PAPR_TR || papr_mode == gr::dvbt2::PAPR_BOTH)
+            if (papr_mode == gr::dvbt2::PAPR_TR || papr_mode == gr::dvbt2::PAPR_BOTH || (version_num == gr::dvbt2::VERSION_131 && papr_mode == gr::dvbt2::PAPR_OFF))
             {
                 for (int j = 0; j < num_symbols; j++)
                 {
                     init_pilots(j);
+                    valid = FALSE;
                     if (j < N_P2)
                     {
                         index = 0;
@@ -752,8 +778,9 @@ void paprtr_cc_impl::init_pilots(int symbol)
                         }
                         memset(&ones_freq[index], 0, sizeof(gr_complex) * right_nulls);
                         papr_map = p2_papr_map;
+                        valid = TRUE;
                     }
-                    else if (j == (num_symbols - L_FC))
+                    else if (j == (num_symbols - L_FC) && (papr_mode == gr::dvbt2::PAPR_TR || papr_mode == gr::dvbt2::PAPR_BOTH))
                     {
                         index = 0;
                         memset(&ones_freq[index], 0, sizeof(gr_complex) * left_nulls);
@@ -771,8 +798,9 @@ void paprtr_cc_impl::init_pilots(int symbol)
                         }
                         memset(&ones_freq[index], 0, sizeof(gr_complex) * right_nulls);
                         papr_map = p2_papr_map;
+                        valid = TRUE;
                     }
-                    else
+                    else if (papr_mode == gr::dvbt2::PAPR_TR || papr_mode == gr::dvbt2::PAPR_BOTH)
                     {
                         index = 0;
                         memset(&ones_freq[index], 0, sizeof(gr_complex) * left_nulls);
@@ -790,92 +818,102 @@ void paprtr_cc_impl::init_pilots(int symbol)
                         }
                         memset(&ones_freq[index], 0, sizeof(gr_complex) * right_nulls);
                         papr_map = tr_papr_map;
+                        valid = TRUE;
                     }
-                    dst = papr_fft->get_inbuf();
-                    memcpy(&dst[papr_fft_size / 2], &ones_freq[0], sizeof(gr_complex) * papr_fft_size / 2);
-                    memcpy(&dst[0], &ones_freq[papr_fft_size / 2], sizeof(gr_complex) * papr_fft_size / 2);
-                    papr_fft->execute();
-                    memcpy(ones_time, papr_fft->get_outbuf(), sizeof(gr_complex) * papr_fft_size);
-                    volk_32fc_s32fc_multiply_32fc(ones_time, ones_time, normalization, papr_fft_size);
-                    memset(&r[0], 0, sizeof(gr_complex) * N_TR);
-                    memset(&c[0], 0, sizeof(gr_complex) * papr_fft_size);
-                    for (int k = 1; k <= num_iterations; k++)
+                    if (valid == TRUE)
                     {
-                        y = 0.0;
-                        volk_32f_x2_add_32f((float*)ctemp, (float*)in, (float*)c, papr_fft_size * 2);
-                        volk_32fc_magnitude_32f(magnitude, ctemp, papr_fft_size);
-                        for (int n = 0; n < papr_fft_size; n++)
+                        dst = papr_fft->get_inbuf();
+                        memcpy(&dst[papr_fft_size / 2], &ones_freq[0], sizeof(gr_complex) * papr_fft_size / 2);
+                        memcpy(&dst[0], &ones_freq[papr_fft_size / 2], sizeof(gr_complex) * papr_fft_size / 2);
+                        papr_fft->execute();
+                        memcpy(ones_time, papr_fft->get_outbuf(), sizeof(gr_complex) * papr_fft_size);
+                        volk_32fc_s32fc_multiply_32fc(ones_time, ones_time, normalization, papr_fft_size);
+                        memset(&r[0], 0, sizeof(gr_complex) * N_TR);
+                        memset(&c[0], 0, sizeof(gr_complex) * papr_fft_size);
+                        for (int k = 1; k <= num_iterations; k++)
                         {
-                            if (magnitude[n] > y)
+                            y = 0.0;
+                            volk_32f_x2_add_32f((float*)ctemp, (float*)in, (float*)c, papr_fft_size * 2);
+                            volk_32fc_magnitude_32f(magnitude, ctemp, papr_fft_size);
+                            for (int n = 0; n < papr_fft_size; n++)
                             {
-                                y = magnitude[n];
-                                m = n;
-                            }
-                        }
-                        if (y < v_clip)
-                        {
-                            break;
-                        }
-                        u.real() = (in[m].real() + c[m].real()) / y;
-                        u.imag() = (in[m].imag() + c[m].imag()) / y;
-                        alpha = y - v_clip;
-                        for (int n = 0; n < N_TR; n++)
-                        {
-                            vtemp = 0.0 + ((2 * M_PI * m * ((papr_map[n] + shift) - center)) / papr_fft_size * _Complex_I);
-                            vtemp = cexp(vtemp);
-                            ctemp[n].real() = creal(vtemp);
-                            ctemp[n].imag() = -cimag(vtemp);
-                        }
-                        volk_32fc_s32fc_multiply_32fc(v, ctemp, u, N_TR);
-                        temp.real() = alpha;
-                        temp.imag() = 0.0;
-                        volk_32fc_s32fc_multiply_32fc(rNew, v, temp, N_TR);
-                        volk_32f_x2_subtract_32f((float*)rNew, (float*)r, (float*)rNew, N_TR * 2);
-                        volk_32fc_x2_multiply_conjugate_32fc(ctemp, r, v, N_TR);
-                        for (int n = 0; n < N_TR; n++)
-                        {
-                            alphaLimit[n] = sqrt((aMax * aMax) - (ctemp[n].imag() * ctemp[n].imag())) + ctemp[n].real();
-                        }
-                        index = 0;
-                        volk_32fc_magnitude_32f(magnitude, rNew, N_TR);
-                        for (int n = 0; n < N_TR; n++)
-                        {
-                            if (magnitude[n] > aMax)
-                            {
-                                alphaLimitMax[index++] = alphaLimit[n];
-                            }
-                        }
-                        if (index != 0)
-                        {
-                            a = 1.0e+30;
-                            for (int n = 0; n < index; n++)
-                            {
-                                if (alphaLimitMax[n] < a)
+                                if (magnitude[n] > y)
                                 {
-                                    a = alphaLimitMax[n];
+                                    y = magnitude[n];
+                                    m = n;
                                 }
                             }
-                            alpha = a;
+                            if (y < v_clip)
+                            {
+                                break;
+                            }
+                            u.real() = (in[m].real() + c[m].real()) / y;
+                            u.imag() = (in[m].imag() + c[m].imag()) / y;
+                            alpha = y - v_clip;
+                            for (int n = 0; n < N_TR; n++)
+                            {
+                                vtemp = 0.0 + ((2 * M_PI * m * ((papr_map[n] + shift) - center)) / papr_fft_size * _Complex_I);
+                                vtemp = cexp(vtemp);
+                                ctemp[n].real() = creal(vtemp);
+                                ctemp[n].imag() = -cimag(vtemp);
+                            }
+                            volk_32fc_s32fc_multiply_32fc(v, ctemp, u, N_TR);
                             temp.real() = alpha;
                             temp.imag() = 0.0;
                             volk_32fc_s32fc_multiply_32fc(rNew, v, temp, N_TR);
                             volk_32f_x2_subtract_32f((float*)rNew, (float*)r, (float*)rNew, N_TR * 2);
+                            volk_32fc_x2_multiply_conjugate_32fc(ctemp, r, v, N_TR);
+                            for (int n = 0; n < N_TR; n++)
+                            {
+                                alphaLimit[n] = sqrt((aMax * aMax) - (ctemp[n].imag() * ctemp[n].imag())) + ctemp[n].real();
+                            }
+                            index = 0;
+                            volk_32fc_magnitude_32f(magnitude, rNew, N_TR);
+                            for (int n = 0; n < N_TR; n++)
+                            {
+                                if (magnitude[n] > aMax)
+                                {
+                                    alphaLimitMax[index++] = alphaLimit[n];
+                                }
+                            }
+                            if (index != 0)
+                            {
+                                a = 1.0e+30;
+                                for (int n = 0; n < index; n++)
+                                {
+                                    if (alphaLimitMax[n] < a)
+                                    {
+                                        a = alphaLimitMax[n];
+                                    }
+                                }
+                                alpha = a;
+                                temp.real() = alpha;
+                                temp.imag() = 0.0;
+                                volk_32fc_s32fc_multiply_32fc(rNew, v, temp, N_TR);
+                                volk_32f_x2_subtract_32f((float*)rNew, (float*)r, (float*)rNew, N_TR * 2);
+                            }
+                            for (int n = 0; n < papr_fft_size; n++)
+                            {
+                                ones_freq[(n + m) % papr_fft_size] = ones_time[n];
+                            }
+                            temp.real() = alpha;
+                            temp.imag() = 0.0;
+                            result.real() = (u.real() * temp.real()) - (u.imag() * temp.imag());
+                            result.imag() = (u.imag() * temp.real()) + (u.real() * temp.imag());
+                            volk_32fc_s32fc_multiply_32fc(ctemp, ones_freq, result, papr_fft_size);
+                            volk_32f_x2_subtract_32f((float*)c, (float*)c, (float*)ctemp, papr_fft_size * 2);
+                            memcpy(r, rNew, sizeof(gr_complex) * N_TR);
                         }
-                        for (int n = 0; n < papr_fft_size; n++)
-                        {
-                            ones_freq[(n + m) % papr_fft_size] = ones_time[n];
-                        }
-                        temp.real() = alpha;
-                        temp.imag() = 0.0;
-                        result.real() = (u.real() * temp.real()) - (u.imag() * temp.imag());
-                        result.imag() = (u.imag() * temp.real()) + (u.real() * temp.imag());
-                        volk_32fc_s32fc_multiply_32fc(ctemp, ones_freq, result, papr_fft_size);
-                        volk_32f_x2_subtract_32f((float*)c, (float*)c, (float*)ctemp, papr_fft_size * 2);
-                        memcpy(r, rNew, sizeof(gr_complex) * N_TR);
+                        volk_32f_x2_add_32f((float*)out, (float*)in, (float*)c, papr_fft_size * 2);
+                        in = in + papr_fft_size;
+                        out = out + papr_fft_size;
                     }
-                    volk_32f_x2_add_32f((float*)out, (float*)in, (float*)c, papr_fft_size * 2);
-                    in = in + papr_fft_size;
-                    out = out + papr_fft_size;
+                    else
+                    {
+                        memcpy(out, in, sizeof(gr_complex) * papr_fft_size);
+                        in = in + papr_fft_size;
+                        out = out + papr_fft_size;
+                    }
                 }
             }
             else

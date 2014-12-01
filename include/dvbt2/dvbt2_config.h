@@ -156,6 +156,17 @@ namespace gr {
       PILOT_PP8,
     };
 
+    enum dvbt2_version_t {
+      VERSION_111 = 0,
+      VERSION_121,
+      VERSION_131,
+    };
+
+    enum dvbt2_reservedbiasbits_t {
+      RESERVED_OFF = 0,
+      RESERVED_ON,
+    };
+
   } // namespace dvbt2
 } // namespace gr
 
@@ -172,7 +183,8 @@ typedef gr::dvbt2::dvbt2_guardinterval_t dvbt2_guardinterval_t;
 typedef gr::dvbt2::dvbt2_papr_t dvbt2_papr_t;
 typedef gr::dvbt2::dvbt2_l1constellation_t dvbt2_l1constellation_t;
 typedef gr::dvbt2::dvbt2_pilotpattern_t dvbt2_pilotpattern_t;
-
+typedef gr::dvbt2::dvbt2_version_t dvbt2_version_t;
+typedef gr::dvbt2::dvbt2_reservedbiasbits_t dvbt2_reservedbiasbits_t;
 
 #endif /* INCLUDED_DVBT2_CONFIG_H */
 

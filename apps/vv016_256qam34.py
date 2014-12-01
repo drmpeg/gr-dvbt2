@@ -2,7 +2,7 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Vv016 256Qam34
-# Generated: Wed Nov 26 18:16:57 2014
+# Generated: Mon Dec  1 03:30:32 2014
 ##################################################
 
 from gnuradio import blocks
@@ -50,14 +50,14 @@ class vv016_256qam34(grc_wxgui.top_block_gui):
         	size=(600,600),
         )
         self.Add(self.wxgui_fftsink2_0.win)
-        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.PILOT_PP7, 59, dvbt2.PAPR_TR, 32768)
-        self.dvbt2_paprtr_cc_0 = dvbt2.paprtr_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.PILOT_PP7, 59, dvbt2.PAPR_TR, 3.3, 3, 32768)
-        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.GI_1_128, 59)
+        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.PILOT_PP7, dvbt2.GI_1_128, 59, dvbt2.PAPR_TR, 32768)
+        self.dvbt2_paprtr_cc_0 = dvbt2.paprtr_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.PILOT_PP7, dvbt2.GI_1_128, 59, dvbt2.PAPR_TR, dvbt2.VERSION_111, 3.3, 3, 32768)
+        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.GI_1_128, 59, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO)
         self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON)
         self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C3_4)
         self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C3_4, dvbt2.MOD_256QAM)
-        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.PILOT_PP7, 59, dvbt2.PAPR_TR)
-        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C3_4, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON, 200, 3, dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.GI_1_128, dvbt2.L1_MOD_64QAM, dvbt2.PILOT_PP7, 2, 59, dvbt2.PAPR_TR)
+        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.PILOT_PP7, dvbt2.GI_1_128, 59, dvbt2.PAPR_TR)
+        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C3_4, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON, 200, 3, dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_32K_SGI, dvbt2.GI_1_128, dvbt2.L1_MOD_64QAM, dvbt2.PILOT_PP7, 2, 59, dvbt2.PAPR_TR, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.INPUTMODE_NORMAL, dvbt2.RESERVED_OFF)
         self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, 200, 3)
         self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C3_4)
         self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C3_4)

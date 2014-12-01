@@ -3,7 +3,7 @@
   <key>dvbt2_paprtr_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.paprtr_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $numdatasyms, $paprmode.val, $vclip, $iterations, $fftsize.vlength)</make>
+  <make>dvbt2.paprtr_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $guardinterval.val, $numdatasyms, $paprmode.val, $version.val, $vclip, $iterations, $fftsize.vlength)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -118,6 +118,46 @@
     </option>
   </param>
   <param>
+    <name>Guard Interval</name>
+    <key>guardinterval</key>
+    <type>enum</type>
+    <option>
+      <name>1/32</name>
+      <key>GI_1_32</key>
+      <opt>val:dvbt2.GI_1_32</opt>
+    </option>
+    <option>
+      <name>1/16</name>
+      <key>GI_1_16</key>
+      <opt>val:dvbt2.GI_1_16</opt>
+    </option>
+    <option>
+      <name>1/8</name>
+      <key>GI_1_8</key>
+      <opt>val:dvbt2.GI_1_8</opt>
+    </option>
+    <option>
+      <name>1/4</name>
+      <key>GI_1_4</key>
+      <opt>val:dvbt2.GI_1_4</opt>
+    </option>
+    <option>
+      <name>1/128</name>
+      <key>GI_1_128</key>
+      <opt>val:dvbt2.GI_1_128</opt>
+    </option>
+    <option>
+      <name>19/128</name>
+      <key>GI_19_128</key>
+      <opt>val:dvbt2.GI_19_128</opt>
+    </option>
+    <option>
+      <name>19/256</name>
+      <key>GI_19_256</key>
+      <opt>val:dvbt2.GI_19_256</opt>
+    </option>
+  </param>
+  <param>
     <name>Number of Data Symbols</name>
     <key>numdatasyms</key>
     <value>100</value>
@@ -150,6 +190,21 @@
       <key>PAPR_BOTH</key>
       <opt>val:dvbt2.PAPR_BOTH</opt>
       <opt>hide_vclip:</opt>
+    </option>
+  </param>
+  <param>
+    <name>Specification Version</name>
+    <key>version</key>
+    <type>enum</type>
+    <option>
+      <name>1.1.1</name>
+      <key>VERSION_111</key>
+      <opt>val:dvbt2.VERSION_111</opt>
+    </option>
+    <option>
+      <name>1.3.1</name>
+      <key>VERSION_131</key>
+      <opt>val:dvbt2.VERSION_131</opt>
     </option>
   </param>
   <param>

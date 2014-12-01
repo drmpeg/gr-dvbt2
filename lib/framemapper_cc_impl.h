@@ -137,6 +137,9 @@ namespace gr {
       int eta_mod;
       int t2_frames;
       int t2_frame_num;
+      int fef_present;
+      int fef_length;
+      int fef_interval;
       int N_P2;
       int C_P2;
       int N_FC;
@@ -161,6 +164,7 @@ namespace gr {
       l1post_ldpc_encode_table l1post_ldpc_encode;
       unsigned char l1_temp[FRAME_SIZE_SHORT];
       unsigned char l1_interleave[FRAME_SIZE_SHORT];
+      unsigned char l1_map[KBCH_1_2];
       gr_complex *zigzag_interleave;
       gr_complex *dummy_randomize;
       gr_complex l1pre_cache[1840];
@@ -174,6 +178,9 @@ namespace gr {
       const static int ldpc_tab_1_2S[20][9];
 
       const static int pre_puncture[36];
+      const static int post_padding_bqpsk[20];
+      const static int post_padding_16qam[20];
+      const static int post_padding_64qam[20];
       const static int post_puncture_bqpsk[25];
       const static int post_puncture_16qam[25];
       const static int post_puncture_64qam[25];
@@ -182,7 +189,7 @@ namespace gr {
       const static int mux64[12];
 
      public:
-      framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode);
+      framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits);
       ~framemapper_cc_impl();
 
       // Where all the action really happens

@@ -52,7 +52,7 @@ namespace gr {
       const static unsigned char s2_modulation_patterns[16][32];
 
      public:
-      p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms);
+      p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble);
       ~p1insertion_cc_impl();
 
       // Where all the action really happens

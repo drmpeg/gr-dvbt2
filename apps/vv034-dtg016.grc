@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ASCII'?>
 <flow_graph>
-  <timestamp>Tue Nov 25 01:28:25 2014</timestamp>
+  <timestamp>Mon Dec  1 03:37:10 2014</timestamp>
   <block>
     <key>options</key>
     <param>
@@ -85,57 +85,6 @@
     <param>
       <key>_coordinate</key>
       <value>(10, 89)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>blocks_throttle</key>
-    <param>
-      <key>id</key>
-      <value>blocks_throttle_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>complex</value>
-    </param>
-    <param>
-      <key>samples_per_second</key>
-      <value>samp_rate</value>
-    </param>
-    <param>
-      <key>vlen</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>ignoretag</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(878, 437)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -358,7 +307,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(59, 258)</value>
+      <value>(58, 231)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -405,7 +354,58 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(272, 258)</value>
+      <value>(268, 231)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>dvbt2_cellinterleaver_cc</key>
+    <param>
+      <key>id</key>
+      <value>dvbt2_cellinterleaver_cc_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>framesize</key>
+      <value>FECFRAME_SHORT</value>
+    </param>
+    <param>
+      <key>constellation</key>
+      <value>MOD_QPSK</value>
+    </param>
+    <param>
+      <key>fecblocks</key>
+      <value>204</value>
+    </param>
+    <param>
+      <key>tiblocks</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(512, 223)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -479,6 +479,22 @@
       <value>PAPR_OFF</value>
     </param>
     <param>
+      <key>version</key>
+      <value>VERSION_111</value>
+    </param>
+    <param>
+      <key>preamble</key>
+      <value>PREAMBLE_T2_SISO</value>
+    </param>
+    <param>
+      <key>inputmode</key>
+      <value>FECFRAME_NORMAL</value>
+    </param>
+    <param>
+      <key>reservedbiasbits</key>
+      <value>RESERVED_OFF</value>
+    </param>
+    <param>
       <key>alias</key>
       <value></value>
     </param>
@@ -496,7 +512,168 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(755, 178)</value>
+      <value>(755, 165)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>dvbt2_p1insertion_cc</key>
+    <param>
+      <key>id</key>
+      <value>dvbt2_p1insertion_cc_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>carriermode</key>
+      <value>CARRIERS_NORMAL</value>
+    </param>
+    <param>
+      <key>fftsize</key>
+      <value>FFTSIZE_4K</value>
+    </param>
+    <param>
+      <key>guardinterval</key>
+      <value>GI_1_16</value>
+    </param>
+    <param>
+      <key>numdatasyms</key>
+      <value>500</value>
+    </param>
+    <param>
+      <key>version</key>
+      <value>VERSION_111</value>
+    </param>
+    <param>
+      <key>preamble</key>
+      <value>PREAMBLE_T2_SISO</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(585, 521)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>digital_ofdm_cyclic_prefixer</key>
+    <param>
+      <key>id</key>
+      <value>digital_ofdm_cyclic_prefixer_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>input_size</key>
+      <value>4096</value>
+    </param>
+    <param>
+      <key>cp_len</key>
+      <value>4096/16</value>
+    </param>
+    <param>
+      <key>rolloff</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>tagname</key>
+      <value></value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(351, 537)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_throttle</key>
+    <param>
+      <key>id</key>
+      <value>blocks_throttle_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>samples_per_second</key>
+      <value>samp_rate</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>ignoretag</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(865, 458)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -526,6 +703,10 @@
       <value>PILOT_PP5</value>
     </param>
     <param>
+      <key>guardinterval</key>
+      <value>GI_1_16</value>
+    </param>
+    <param>
       <key>numdatasyms</key>
       <value>500</value>
     </param>
@@ -551,7 +732,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1022, 250)</value>
+      <value>(1020, 237)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -559,30 +740,38 @@
     </param>
   </block>
   <block>
-    <key>dvbt2_cellinterleaver_cc</key>
+    <key>dvbt2_pilotgenerator_cc</key>
     <param>
       <key>id</key>
-      <value>dvbt2_cellinterleaver_cc_0</value>
+      <value>dvbt2_pilotgenerator_cc_0</value>
     </param>
     <param>
       <key>_enabled</key>
       <value>True</value>
     </param>
     <param>
-      <key>framesize</key>
-      <value>FECFRAME_SHORT</value>
+      <key>carriermode</key>
+      <value>CARRIERS_NORMAL</value>
     </param>
     <param>
-      <key>constellation</key>
-      <value>MOD_QPSK</value>
+      <key>fftsize</key>
+      <value>FFTSIZE_4K</value>
     </param>
     <param>
-      <key>fecblocks</key>
-      <value>204</value>
+      <key>pilotpattern</key>
+      <value>PILOT_PP5</value>
     </param>
     <param>
-      <key>tiblocks</key>
-      <value>0</value>
+      <key>guardinterval</key>
+      <value>GI_1_16</value>
+    </param>
+    <param>
+      <key>numdatasyms</key>
+      <value>500</value>
+    </param>
+    <param>
+      <key>paprmode</key>
+      <value>PAPR_OFF</value>
     </param>
     <param>
       <key>alias</key>
@@ -602,7 +791,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(513, 250)</value>
+      <value>(62, 513)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -661,34 +850,34 @@
     </param>
   </block>
   <block>
-    <key>dvbt2_pilotgenerator_cc</key>
+    <key>blocks_file_sink</key>
     <param>
       <key>id</key>
-      <value>dvbt2_pilotgenerator_cc_0</value>
+      <value>blocks_file_sink_0</value>
     </param>
     <param>
       <key>_enabled</key>
-      <value>True</value>
+      <value>False</value>
     </param>
     <param>
-      <key>carriermode</key>
-      <value>CARRIERS_NORMAL</value>
+      <key>file</key>
+      <value>/home/re/xfer/vv.cfile</value>
     </param>
     <param>
-      <key>fftsize</key>
-      <value>FFTSIZE_4K</value>
+      <key>type</key>
+      <value>complex</value>
     </param>
     <param>
-      <key>pilotpattern</key>
-      <value>PILOT_PP5</value>
+      <key>vlen</key>
+      <value>1</value>
     </param>
     <param>
-      <key>numdatasyms</key>
-      <value>500</value>
+      <key>unbuffered</key>
+      <value>False</value>
     </param>
     <param>
-      <key>paprmode</key>
-      <value>PAPR_OFF</value>
+      <key>append</key>
+      <value>False</value>
     </param>
     <param>
       <key>alias</key>
@@ -699,122 +888,12 @@
       <value></value>
     </param>
     <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
       <key>_coordinate</key>
-      <value>(59, 508)</value>
+      <value>(845, 530)</value>
     </param>
     <param>
       <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>digital_ofdm_cyclic_prefixer</key>
-    <param>
-      <key>id</key>
-      <value>digital_ofdm_cyclic_prefixer_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>input_size</key>
-      <value>4096</value>
-    </param>
-    <param>
-      <key>cp_len</key>
-      <value>4096/16</value>
-    </param>
-    <param>
-      <key>rolloff</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>tagname</key>
-      <value></value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(358, 524)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>dvbt2_p1insertion_cc</key>
-    <param>
-      <key>id</key>
-      <value>dvbt2_p1insertion_cc_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>carriermode</key>
-      <value>CARRIERS_NORMAL</value>
-    </param>
-    <param>
-      <key>fftsize</key>
-      <value>FFTSIZE_4K</value>
-    </param>
-    <param>
-      <key>guardinterval</key>
-      <value>GI_1_16</value>
-    </param>
-    <param>
-      <key>numdatasyms</key>
-      <value>500</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(585, 516)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
+      <value>180</value>
     </param>
   </block>
   <block>
@@ -914,53 +993,6 @@
     <param>
       <key>_rotation</key>
       <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>blocks_file_sink</key>
-    <param>
-      <key>id</key>
-      <value>blocks_file_sink_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>file</key>
-      <value>/home/re/xfer/vv.cfile</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>complex</value>
-    </param>
-    <param>
-      <key>vlen</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>unbuffered</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>append</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(844, 525)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>180</value>
     </param>
   </block>
   <connection>

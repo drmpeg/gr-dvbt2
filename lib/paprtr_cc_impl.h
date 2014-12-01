@@ -50,6 +50,7 @@ namespace gr {
       int pilot_pattern;
       int carrier_mode;
       int papr_mode;
+      int version_num;
       double v_clip;
       int num_iterations;
       const int *papr_map;
@@ -95,7 +96,7 @@ namespace gr {
       const static int tr_papr_map_32k[288];
 
      public:
-      paprtr_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, float vclip, int iterations, int vlength);
+      paprtr_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, float vclip, int iterations, int vlength);
       ~paprtr_cc_impl();
 
       // Where all the action really happens

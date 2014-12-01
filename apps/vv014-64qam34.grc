@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ASCII'?>
 <flow_graph>
-  <timestamp>Wed Nov 26 18:20:43 2014</timestamp>
+  <timestamp>Mon Dec  1 03:24:33 2014</timestamp>
   <block>
     <key>options</key>
     <param>
@@ -479,6 +479,22 @@
       <value>PAPR_TR</value>
     </param>
     <param>
+      <key>version</key>
+      <value>VERSION_111</value>
+    </param>
+    <param>
+      <key>preamble</key>
+      <value>PREAMBLE_T2_SISO</value>
+    </param>
+    <param>
+      <key>inputmode</key>
+      <value>FECFRAME_NORMAL</value>
+    </param>
+    <param>
+      <key>reservedbiasbits</key>
+      <value>RESERVED_OFF</value>
+    </param>
+    <param>
       <key>alias</key>
       <value></value>
     </param>
@@ -524,6 +540,10 @@
     <param>
       <key>pilotpattern</key>
       <value>PILOT_PP7</value>
+    </param>
+    <param>
+      <key>guardinterval</key>
+      <value>GI_1_32</value>
     </param>
     <param>
       <key>numdatasyms</key>
@@ -585,6 +605,14 @@
       <value>242</value>
     </param>
     <param>
+      <key>version</key>
+      <value>VERSION_111</value>
+    </param>
+    <param>
+      <key>preamble</key>
+      <value>PREAMBLE_T2_SISO</value>
+    </param>
+    <param>
       <key>alias</key>
       <value></value>
     </param>
@@ -603,57 +631,6 @@
     <param>
       <key>_coordinate</key>
       <value>(809, 550)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>blocks_throttle</key>
-    <param>
-      <key>id</key>
-      <value>blocks_throttle_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>complex</value>
-    </param>
-    <param>
-      <key>samples_per_second</key>
-      <value>samp_rate</value>
-    </param>
-    <param>
-      <key>vlen</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>ignoretag</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>minoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>maxoutbuf</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(878, 437)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -683,6 +660,10 @@
       <value>PILOT_PP7</value>
     </param>
     <param>
+      <key>guardinterval</key>
+      <value>GI_1_32</value>
+    </param>
+    <param>
       <key>numdatasyms</key>
       <value>242</value>
     </param>
@@ -708,7 +689,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(64, 487)</value>
+      <value>(63, 502)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -738,12 +719,20 @@
       <value>PILOT_PP7</value>
     </param>
     <param>
+      <key>guardinterval</key>
+      <value>GI_1_32</value>
+    </param>
+    <param>
       <key>numdatasyms</key>
       <value>242</value>
     </param>
     <param>
       <key>paprmode</key>
       <value>PAPR_TR</value>
+    </param>
+    <param>
+      <key>version</key>
+      <value>VERSION_111</value>
     </param>
     <param>
       <key>vclip</key>
@@ -771,7 +760,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(335, 471)</value>
+      <value>(332, 478)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -822,7 +811,58 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(594, 558)</value>
+      <value>(598, 566)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_throttle</key>
+    <param>
+      <key>id</key>
+      <value>blocks_throttle_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>samples_per_second</key>
+      <value>samp_rate</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>ignoretag</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>minoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>maxoutbuf</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(855, 448)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -1019,7 +1059,7 @@
     </param>
     <param>
       <key>_coordinate</key>
-      <value>(1075, 420)</value>
+      <value>(1070, 449)</value>
     </param>
     <param>
       <key>_rotation</key>

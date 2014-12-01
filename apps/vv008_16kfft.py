@@ -2,7 +2,7 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Vv008 16Kfft
-# Generated: Tue Nov 25 01:22:46 2014
+# Generated: Mon Dec  1 03:07:31 2014
 ##################################################
 
 from gnuradio import blocks
@@ -50,13 +50,13 @@ class vv008_16kfft(grc_wxgui.top_block_gui):
         	size=(600,600),
         )
         self.Add(self.wxgui_fftsink2_0.win)
-        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6, 100, dvbt2.PAPR_OFF, 16384)
-        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_1_32, 100)
+        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6, dvbt2.GI_1_32, 100, dvbt2.PAPR_OFF, 16384)
+        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_1_32, 100, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO)
         self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON)
         self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM)
-        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6, 100, dvbt2.PAPR_OFF)
-        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON, 168, 3, dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_1_32, dvbt2.L1_MOD_64QAM, dvbt2.PILOT_PP6, 2, 100, dvbt2.PAPR_OFF)
+        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP6, dvbt2.GI_1_32, 100, dvbt2.PAPR_OFF)
+        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5, dvbt2.MOD_256QAM, dvbt2.ROTATION_ON, 168, 3, dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_1_32, dvbt2.L1_MOD_64QAM, dvbt2.PILOT_PP6, 2, 100, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.INPUTMODE_NORMAL, dvbt2.RESERVED_OFF)
         self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_256QAM, 168, 3)
         self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)
         self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C4_5)

@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     framemapper_cc::sptr
-    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode)
+    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits)
     {
       return gnuradio::get_initial_sptr
-        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode));
+        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode, version, preamble, inputmode, reservedbiasbits));
     }
 
     /*
      * The private constructor
      */
-    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode)
+    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits)
       : gr::block("framemapper_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -84,10 +84,12 @@ namespace gr {
                     break;
             }
         }
-
+        fef_present = FALSE;
+        fef_length = 1124864;
+        fef_interval = 1;
         l1preinit->type = gr::dvbt2::STREAMTYPE_TS;
         l1preinit->bwt_ext = carriermode;
-        l1preinit->s1 = gr::dvbt2::PREAMBLE_T2_SISO;
+        l1preinit->s1 = preamble;
         l1preinit->s2 = fftsize;
         l1preinit->l1_repetition_flag = FALSE;
         l1preinit->guard_interval = guardinterval;
@@ -95,7 +97,14 @@ namespace gr {
         l1preinit->l1_mod = l1constellation;
         l1preinit->l1_cod = 0;
         l1preinit->l1_fec_type = 0;
-        l1preinit->l1_post_info_size = KSIG_POST - 32;
+        if (fef_present == FALSE)
+        {
+            l1preinit->l1_post_info_size = KSIG_POST - 32;
+        }
+        else
+        {
+            l1preinit->l1_post_info_size = KSIG_POST + 34 - 32;
+        }
         l1preinit->pilot_pattern = pilotpattern;
         l1preinit->tx_id_availability = 0;
         l1preinit->cell_id = 0;
@@ -107,9 +116,17 @@ namespace gr {
         l1preinit->l1_post_extension = FALSE;
         l1preinit->num_rf = 1;
         l1preinit->current_rf_index = 0;
-        l1preinit->t2_version = 0;
+        l1preinit->t2_version = version;
         l1preinit->l1_post_scrambled = FALSE;
         l1preinit->t2_base_lite = FALSE;
+        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        {
+            l1preinit->reserved = 0;
+        }
+        else
+        {
+            l1preinit->reserved = 0xf;
+        }
 
         l1postinit->sub_slices_per_frame = 1;
         l1postinit->num_plp = 1;
@@ -123,7 +140,14 @@ namespace gr {
         l1postinit->ff_flag = 0;
         l1postinit->first_rf_idx = 0;
         l1postinit->first_frame_idx = 0;
-        l1postinit->plp_group_id = 1;
+        if (fef_present == FALSE)
+        {
+            l1postinit->plp_group_id = 1;
+        }
+        else
+        {
+            l1postinit->plp_group_id = 0;
+        }
         l1postinit->plp_cod = rate;
         l1postinit->plp_mod = constellation;
         l1postinit->plp_rotation = rotation;
@@ -133,24 +157,75 @@ namespace gr {
         l1postinit->time_il_length = tiblocks;
         l1postinit->time_il_type = 0;
         l1postinit->in_band_a_flag = 0;
-        l1postinit->in_band_b_flag = 0;
-        l1postinit->reserved_1 = 0;
-        l1postinit->plp_mode = 0;
-        l1postinit->static_flag = 0;
-        l1postinit->static_padding_flag = 0;
+        if (preamble == gr::dvbt2::PREAMBLE_T2_LITE_SISO)
+        {
+            l1postinit->in_band_b_flag = 1;
+        }
+        else
+        {
+            l1postinit->in_band_b_flag = 0;
+        }
+        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        {
+            l1postinit->reserved_1 = 0;
+        }
+        else
+        {
+            l1postinit->reserved_1 = 0x7ff;
+        }
+        if (version == gr::dvbt2::VERSION_111)
+        {
+            l1postinit->plp_mode = 0;
+        }
+        else
+        {
+            l1postinit->plp_mode = inputmode + 1;
+        }
+        if (fef_present == FALSE)
+        {
+            l1postinit->static_flag = 0;
+            l1postinit->static_padding_flag = 0;    /* fix */
+        }
+        else
+        {
+            l1postinit->static_flag = 1;
+            l1postinit->static_padding_flag = 1;
+        }
         l1postinit->fef_length_msb = 0;
-        l1postinit->reserved_2 = 0;
+        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        {
+            l1postinit->reserved_2 = 0;
+        }
+        else
+        {
+            l1postinit->reserved_2 = 0x3fffffff;
+        }
         l1postinit->frame_idx = 0;
         l1postinit->sub_slice_interval = 0;
         l1postinit->type_2_start = 0;
         l1postinit->l1_change_counter = 0;
         l1postinit->start_rf_idx = 0;
-        l1postinit->reserved_3 = 0;
+        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        {
+            l1postinit->reserved_3 = 0;
+        }
+        else
+        {
+            l1postinit->reserved_3 = 0xff;
+        }
         l1postinit->plp_id = 0;
         l1postinit->plp_start = 0;
         l1postinit->plp_num_blocks = fecblocks;
-        l1postinit->reserved_4 = 0;
-        l1postinit->reserved_5 = 0;
+        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        {
+            l1postinit->reserved_4 = 0;
+            l1postinit->reserved_5 = 0;
+        }
+        else
+        {
+            l1postinit->reserved_4 = 0xff;
+            l1postinit->reserved_5 = 0xff;
+        }
 
         bch_poly_build_tables();
         l1pre_ldpc_lookup_generate();
@@ -1012,8 +1087,36 @@ namespace gr {
                 }
                 break;
         }
-        N_punc_temp = (6 * (KBCH_1_2 - KSIG_POST)) / 5;
-        N_post_temp = KSIG_POST + NBCH_PARITY + 9000 - N_punc_temp;
+        if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
+        {
+            N_FC = 0;
+            C_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_1_32 && pilotpattern == gr::dvbt2::PILOT_PP4)
+        {
+            N_FC = 0;
+            C_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_1_16 && pilotpattern == gr::dvbt2::PILOT_PP2)
+        {
+            N_FC = 0;
+            C_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_19_256 && pilotpattern == gr::dvbt2::PILOT_PP2)
+        {
+            N_FC = 0;
+            C_FC = 0;
+        }
+        if (fef_present == FALSE)
+        {
+            N_punc_temp = (6 * (KBCH_1_2 - KSIG_POST)) / 5;
+            N_post_temp = KSIG_POST + NBCH_PARITY + 9000 - N_punc_temp;
+        }
+        else
+        {
+            N_punc_temp = (6 * (KBCH_1_2 - (KSIG_POST + 34))) / 5;
+            N_post_temp = (KSIG_POST + 34) + NBCH_PARITY + 9000 - N_punc_temp;
+        }
         if (N_P2 == 1)
         {
             N_post = ceil((float)N_post_temp / (2 * (float)eta_mod)) * 2 * eta_mod;
@@ -1264,7 +1367,14 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
     {
         l1pre[offset_bits++] = temp & (1 << n) ? 1 : 0;
     }
-    l1pre[offset_bits++] = 0;
+    if (fef_present == FALSE)
+    {
+        l1pre[offset_bits++] = 0;
+    }
+    else
+    {
+        l1pre[offset_bits++] = 1;
+    }
     l1pre[offset_bits++] = l1preinit->l1_repetition_flag;
     temp = l1preinit->guard_interval;
     for (int n = 2; n >= 0; n--)
@@ -1359,9 +1469,10 @@ void framemapper_cc_impl::add_l1pre(gr_complex *out)
     }
     l1pre[offset_bits++] = l1preinit->l1_post_scrambled;
     l1pre[offset_bits++] = l1preinit->t2_base_lite;
+    temp = l1preinit->reserved;
     for (int n = 3; n >= 0; n--)
     {
-        l1pre[offset_bits++] = 0;
+        l1pre[offset_bits++] = temp & (1 << n) ? 1 : 0;
     }
     offset_bits += add_crc32_bits(l1pre, offset_bits);
     /* Padding */
@@ -1447,9 +1558,10 @@ void framemapper_cc_impl::add_l1post(gr_complex *out, int t2_frame_num)
     int plen = FRAME_SIZE_SHORT - NBCH_1_4;
     const unsigned char *d;
     unsigned char *p;
-    unsigned char *l1post = l1_temp;
+    unsigned char *l1post = l1_interleave;
     L1Post *l1postinit = &L1_Signalling[0].l1post_data;
-    int g, o, index;
+    int m, g, o, last, index;
+    const int *post_padding;
     const int *post_puncture;
     int rows, numCols, mod, offset, pack, produced;
     unsigned char *cols[12];
@@ -1483,6 +1595,24 @@ void framemapper_cc_impl::add_l1post(gr_complex *out, int t2_frame_num)
     for (int n = 31; n >= 0; n--)
     {
         l1post[offset_bits++] = temp & (1 << n) ? 1 : 0;
+    }
+    if (fef_present == TRUE)
+    {
+        temp = 0;
+        for (int n = 3; n >= 0; n--)
+        {
+            l1post[offset_bits++] = temp & (1 << n) ? 1 : 0;
+        }
+        temp = fef_length;
+        for (int n = 21; n >= 0; n--)
+        {
+            l1post[offset_bits++] = temp & (1 << n) ? 1 : 0;
+        }
+        temp = fef_interval;
+        for (int n = 7; n >= 0; n--)
+        {
+            l1post[offset_bits++] = temp & (1 << n) ? 1 : 0;
+        }
     }
     temp = l1postinit->plp_id;
     for (int n = 7; n >= 0; n--)
@@ -1569,7 +1699,7 @@ void framemapper_cc_impl::add_l1post(gr_complex *out, int t2_frame_num)
     temp = l1postinit->reserved_2;
     for (int n = 29; n >= 0; n--)
     {
-        l1post[offset_bits++] = 0;
+        l1post[offset_bits++] = temp & (1 << n) ? 1 : 0;
     }
     temp = t2_frame_num;
     for (int n = 7; n >= 0; n--)
@@ -1627,10 +1757,78 @@ void framemapper_cc_impl::add_l1post(gr_complex *out, int t2_frame_num)
         l1post[offset_bits++] = temp & (1 << n) ? 1 : 0;
     }
     offset_bits += add_crc32_bits(l1post, offset_bits);
-    /* Padding TODO: implement full L1 post padding algorithm */
-    for (int n = KBCH_1_2 - offset_bits - 1; n >= 0; n--)
+    /* Padding */
+    switch (l1_constellation)
     {
-        l1post[offset_bits++] = 0;
+        case gr::dvbt2::L1_MOD_BPSK:
+            post_padding = post_padding_bqpsk;
+            break;
+        case gr::dvbt2::L1_MOD_QPSK:
+            post_padding = post_padding_bqpsk;
+            break;
+        case gr::dvbt2::L1_MOD_16QAM:
+            post_padding = post_padding_16qam;
+            break;
+        case gr::dvbt2::L1_MOD_64QAM:
+            post_padding = post_padding_64qam;
+            break;
+        default:
+            post_padding = post_padding_bqpsk;
+            break;
+    }
+    memset(l1_map, 0, KBCH_1_2);
+    if (offset_bits <= 360)
+    {
+        m = 20 - 1;
+        last = 360 - offset_bits;
+    }
+    else
+    {
+        m = (KBCH_1_2 - offset_bits) / 360;
+        last = KBCH_1_2 - offset_bits - (360 * m);
+    }
+    for (int n = 0; n < m; n++)
+    {
+        index = post_padding[n] * 360;
+        if (post_padding[n] == 19)
+        {
+            for (int w = 0; w < 192; w++)
+            {
+                l1_map[index++] = 0x7;
+            }
+        }
+        else
+        {
+            for (int w = 0; w < 360; w++)
+            {
+                l1_map[index++] = 0x7;
+            }
+        }
+    }
+    if (post_padding[m] == 19)
+    {
+        index = (post_padding[m] * 360) + 192 - last;
+    }
+    else
+    {
+        index = (post_padding[m] * 360) + 360 - last;
+    }
+    for (int w = 0; w < last; w++)
+    {
+        l1_map[index++] = 0x7;
+    }
+    index = 0;
+    l1post = l1_temp;
+    for (int n = 0; n < KBCH_1_2; n++)
+    {
+        if (l1_map[n] != 0x7)
+        {
+            l1post[n] = l1_interleave[index++];
+        }
+        else
+        {
+            l1post[n] = 0;
+        }
     }
     /* BCH */
     offset_bits = 0;
@@ -1703,9 +1901,12 @@ void framemapper_cc_impl::add_l1post(gr_complex *out, int t2_frame_num)
     }
     /* remove padding and punctured bits */
     index = 0;
-    for (int w = 0; w < KSIG_POST; w++)
+    for (int w = 0; w < KBCH_1_2; w++)
     {
-        l1_interleave[index++] = l1_temp[w];
+        if (l1_map[w] != 0x7)
+        {
+            l1_interleave[index++] = l1_temp[w];
+        }
     }
     for (int w = 0; w < NBCH_PARITY; w++)
     {
@@ -1984,6 +2185,21 @@ const int framemapper_cc_impl::ldpc_tab_1_2S[20][9]=
     const int framemapper_cc_impl::pre_puncture[36] = 
     {
         27, 13, 29, 32, 5, 0, 11, 21, 33, 20, 25, 28, 18, 35, 8, 3, 9, 31, 22, 24, 7, 14, 17, 4, 2, 26, 16, 34, 19, 10, 12, 23, 1, 6, 30, 15
+    };
+
+    const int framemapper_cc_impl::post_padding_bqpsk[20] = 
+    {
+        18, 17, 16, 15, 14, 13, 12, 11, 4, 10, 9, 8, 3, 2, 7, 6, 5, 1, 19, 0
+    };
+
+    const int framemapper_cc_impl::post_padding_16qam[20] = 
+    {
+        18, 17, 16, 15, 14, 13, 12, 11, 4, 10, 9, 8, 7, 3, 2, 1, 6, 5, 19, 0
+    };
+
+    const int framemapper_cc_impl::post_padding_64qam[20] = 
+    {
+        18, 17, 16, 4, 15, 14, 13, 12, 3, 11, 10, 9, 2, 8, 7, 1, 6, 5, 19, 0
     };
 
     const int framemapper_cc_impl::post_puncture_bqpsk[25] = 

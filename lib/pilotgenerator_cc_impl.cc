@@ -31,16 +31,16 @@ namespace gr {
   namespace dvbt2 {
 
     pilotgenerator_cc::sptr
-    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, int vlength)
+    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, int vlength)
     {
       return gnuradio::get_initial_sptr
-        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, numdatasyms, paprmode, vlength));
+        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, vlength));
     }
 
     /*
      * The private constructor
      */
-    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, int vlength)
+    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, int vlength)
       : gr::block("pilotgenerator_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex) * vlength))
@@ -622,6 +622,26 @@ namespace gr {
                     }
                 }
                 break;
+        }
+        if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
+        {
+            N_FC = 0;
+            C_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_1_32 && pilotpattern == gr::dvbt2::PILOT_PP4)
+        {
+            N_FC = 0;
+            C_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_1_16 && pilotpattern == gr::dvbt2::PILOT_PP2)
+        {
+            N_FC = 0;
+            C_FC = 0;
+        }
+        if (guardinterval == gr::dvbt2::GI_19_256 && pilotpattern == gr::dvbt2::PILOT_PP2)
+        {
+            N_FC = 0;
+            C_FC = 0;
         }
         init_prbs();
         for (int i = 0; i < C_PS; i++)

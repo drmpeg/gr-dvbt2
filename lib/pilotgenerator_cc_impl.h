@@ -143,7 +143,7 @@ namespace gr {
       const static int pp8_32k[6];
 
      public:
-      pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, int numdatasyms, dvbt2_papr_t paprmode, int vlength);
+      pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, int vlength);
       ~pilotgenerator_cc_impl();
 
       // Where all the action really happens
