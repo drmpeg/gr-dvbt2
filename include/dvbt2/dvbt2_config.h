@@ -61,7 +61,9 @@
 namespace gr {
   namespace dvbt2 {
     enum dvbt2_code_rate_t {
-      C1_2 = 0,
+      C1_3 = 0,
+      C2_5,
+      C1_2,
       C3_5,
       C2_3,
       C3_4,

@@ -47,6 +47,8 @@ namespace gr {
         {
             switch (rate)
             {
+                case gr::dvbt2::C1_3:
+                case gr::dvbt2::C2_5:
                 case gr::dvbt2::C1_2:
                     kbch = 32208;
                     break;
@@ -71,6 +73,12 @@ namespace gr {
         {
             switch (rate)
             {
+                case gr::dvbt2::C1_3:
+                    kbch = 5232;
+                    break;
+                case gr::dvbt2::C2_5:
+                    kbch = 6312;
+                    break;
                 case gr::dvbt2::C1_2:
                     kbch = 7032;
                     break;

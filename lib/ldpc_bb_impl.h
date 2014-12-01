@@ -50,6 +50,8 @@ namespace gr {
       const static int ldpc_tab_4_5N[144][12];
       const static int ldpc_tab_5_6N[150][14];
 
+      const static int ldpc_tab_1_3S[15][13];
+      const static int ldpc_tab_2_5S[18][13];
       const static int ldpc_tab_1_2S[20][9];
       const static int ldpc_tab_3_5S[27][13];
       const static int ldpc_tab_2_3S[30][14];

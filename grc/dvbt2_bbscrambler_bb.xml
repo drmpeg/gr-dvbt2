@@ -24,6 +24,16 @@
     <key>rate</key>
     <type>enum</type>
     <option>
+      <name>1/3</name>
+      <key>C1_3</key>
+      <opt>val:dvbt2.C1_3</opt>
+    </option>
+    <option>
+      <name>2/5</name>
+      <key>C2_5</key>
+      <opt>val:dvbt2.C2_5</opt>
+    </option>
+    <option>
       <name>1/2</name>
       <key>C1_2</key>
       <opt>val:dvbt2.C1_2</opt>

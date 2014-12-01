@@ -51,6 +51,8 @@ namespace gr {
             frame_size = FRAME_SIZE_NORMAL;
             switch (rate)
             {
+                case gr::dvbt2::C1_3:
+                case gr::dvbt2::C2_5:
                 case gr::dvbt2::C1_2:
                     nbch = 32400;
                     q_val = 90;
@@ -82,6 +84,14 @@ namespace gr {
             frame_size = FRAME_SIZE_SHORT;
             switch (rate)
             {
+                case gr::dvbt2::C1_3:
+                    nbch = 5400;
+                    q_val = 30;
+                    break;
+                case gr::dvbt2::C2_5:
+                    nbch = 6480;
+                    q_val = 27;
+                    break;
                 case gr::dvbt2::C1_2:
                     nbch = 7200;
                     q_val = 25;
@@ -167,10 +177,35 @@ namespace gr {
                 for (int i = 0; i < noutput_items; i += packed_items)
                 {
                     rows = frame_size / 2;
-                    for (int j = 0; j < rows; j++)
+                    if (code_rate == gr::dvbt2::C1_3 || code_rate == gr::dvbt2::C2_5)
                     {
-                        out[produced] = in[consumed++] << 1;
-                        out[produced++] |= in[consumed++];
+                        for (int k = 0; k < nbch; k++)
+                        {
+                            tempu[k] = *in++;
+                        }
+                        for (int t = 0; t < q_val; t++)
+                        {
+                            for (int s = 0; s < 360; s++)
+                            {
+                                tempu[nbch + (360 * t) + s] = in[(q_val * s) + t];
+                            }
+                        }
+                        in = in + (q_val * 360);
+                        index = 0;
+                        for (int j = 0; j < rows; j++)
+                        {
+                            out[produced] = tempu[index++] << 1;
+                            out[produced++] |= tempu[index++];
+                            consumed += 2;
+                        }
+                    }
+                    else
+                    {
+                        for (int j = 0; j < rows; j++)
+                        {
+                            out[produced] = in[consumed++] << 1;
+                            out[produced++] |= in[consumed++];
+                        }
                     }
                 }
                 break;
