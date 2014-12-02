@@ -3,7 +3,7 @@
   <key>dvbt2_framemapper_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.framemapper_cc($framesize.val, $rate.val, $constellation.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val, $t2frames, $numdatasyms, $paprmode.val, $version.val, $preamble.val, $inputmode.val, $reservedbiasbits.val)</make>
+  <make>dvbt2.framemapper_cc($framesize.val, $rate.val, $constellation.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val, $t2frames, $numdatasyms, $paprmode.val, $version.val, $preamble.val, $inputmode.val, $reservedbiasbits.val, $l1scrambled.val)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>
@@ -23,6 +23,16 @@
     <name>Code rate</name>
     <key>rate</key>
     <type>enum</type>
+    <option>
+      <name>1/3</name>
+      <key>C1_3</key>
+      <opt>val:dvbt2.C1_3</opt>
+    </option>
+    <option>
+      <name>2/5</name>
+      <key>C2_5</key>
+      <opt>val:dvbt2.C2_5</opt>
+    </option>
     <option>
       <name>1/2</name>
       <key>C1_2</key>
@@ -376,6 +386,22 @@
       <name>On</name>
       <key>RESERVED_ON</key>
       <opt>val:dvbt2.RESERVED_ON</opt>
+    </option>
+  </param>
+  <param>
+    <name>L1-post Scrambling</name>
+    <key>l1scrambled</key>
+    <type>enum</type>
+    <hide>$version.hide_131</hide>
+    <option>
+      <name>Off</name>
+      <key>L1_SCRAMBLED_OFF</key>
+      <opt>val:dvbt2.L1_SCRAMBLED_OFF</opt>
+    </option>
+    <option>
+      <name>On</name>
+      <key>L1_SCRAMBLED_ON</key>
+      <opt>val:dvbt2.L1_SCRAMBLED_ON</opt>
     </option>
   </param>
   <sink>

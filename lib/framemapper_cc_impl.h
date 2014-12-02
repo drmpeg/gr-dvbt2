@@ -137,6 +137,7 @@ namespace gr {
       int eta_mod;
       int t2_frames;
       int t2_frame_num;
+      int l1_scrambled;
       int fef_present;
       int fef_length;
       int fef_interval;
@@ -160,11 +161,13 @@ namespace gr {
       void l1pre_ldpc_lookup_generate(void);
       void l1post_ldpc_lookup_generate(void);
       void init_dummy_randomizer(void);
+      void init_l1_randomizer(void);
       l1pre_ldpc_encode_table l1pre_ldpc_encode;
       l1post_ldpc_encode_table l1post_ldpc_encode;
       unsigned char l1_temp[FRAME_SIZE_SHORT];
       unsigned char l1_interleave[FRAME_SIZE_SHORT];
       unsigned char l1_map[KBCH_1_2];
+      unsigned char l1_randomize[KBCH_1_2];
       gr_complex *zigzag_interleave;
       gr_complex *dummy_randomize;
       gr_complex l1pre_cache[1840];
@@ -189,7 +192,7 @@ namespace gr {
       const static int mux64[12];
 
      public:
-      framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits);
+      framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled);
       ~framemapper_cc_impl();
 
       // Where all the action really happens

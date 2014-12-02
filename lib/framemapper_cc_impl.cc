@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     framemapper_cc::sptr
-    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits)
+    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled)
     {
       return gnuradio::get_initial_sptr
-        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode, version, preamble, inputmode, reservedbiasbits));
+        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode, version, preamble, inputmode, reservedbiasbits, l1scrambled));
     }
 
     /*
      * The private constructor
      */
-    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits)
+    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled)
       : gr::block("framemapper_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -84,9 +84,9 @@ namespace gr {
                     break;
             }
         }
-        fef_present = FALSE;
-        fef_length = 1124864;
-        fef_interval = 1;
+        fef_present = FALSE;    /* for testing only */
+        fef_length = 134144;    /*  "     "     "   */
+        fef_interval = 1;       /*  "     "     "   */
         l1preinit->type = gr::dvbt2::STREAMTYPE_TS;
         l1preinit->bwt_ext = carriermode;
         l1preinit->s1 = preamble;
@@ -117,7 +117,7 @@ namespace gr {
         l1preinit->num_rf = 1;
         l1preinit->current_rf_index = 0;
         l1preinit->t2_version = version;
-        l1preinit->l1_post_scrambled = FALSE;
+        l1preinit->l1_post_scrambled = l1scrambled;
         l1preinit->t2_base_lite = FALSE;
         if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
         {
@@ -1132,6 +1132,7 @@ namespace gr {
         fft_size = fftsize;
         t2_frames = t2frames;
         t2_frame_num = 0;
+        l1_scrambled = l1scrambled;
         if (N_FC == 0)
         {
             set_output_multiple((N_P2 * C_P2) + (numdatasyms * C_DATA));
@@ -1160,6 +1161,7 @@ namespace gr {
             exit(1);
         }
         init_dummy_randomizer();
+        init_l1_randomizer();
     }
 
     /*
@@ -1757,6 +1759,13 @@ void framemapper_cc_impl::add_l1post(gr_complex *out, int t2_frame_num)
         l1post[offset_bits++] = temp & (1 << n) ? 1 : 0;
     }
     offset_bits += add_crc32_bits(l1post, offset_bits);
+    if (l1_scrambled == TRUE)
+    {
+        for (int n = 0; n < offset_bits; n++)
+        {
+            l1post[n] = l1post[n] ^ l1_randomize[n];
+        }
+    }
     /* Padding */
     switch (l1_constellation)
     {
@@ -2024,6 +2033,18 @@ void framemapper_cc_impl::init_dummy_randomizer(void)
         else
             dummy_randomize[i].real() = 1.0;
         dummy_randomize[i].imag() = 0;
+        sr >>= 1;
+        if(b) sr |= 0x4000;
+    }
+}
+
+void framemapper_cc_impl::init_l1_randomizer(void)
+{
+    int sr = 0x4A80;
+    for (int i = 0; i < KBCH_1_2; i++)
+    {
+        int b = ((sr) ^ (sr >> 1)) & 1;
+        l1_randomize[i] = b;
         sr >>= 1;
         if(b) sr |= 0x4000;
     }

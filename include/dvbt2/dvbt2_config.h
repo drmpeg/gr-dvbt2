@@ -61,14 +61,14 @@
 namespace gr {
   namespace dvbt2 {
     enum dvbt2_code_rate_t {
-      C1_3 = 0,
-      C2_5,
-      C1_2,
+      C1_2 = 0,
       C3_5,
       C2_3,
       C3_4,
       C4_5,
       C5_6,
+      C1_3,
+      C2_5,
     };
 
     enum dvbt2_constellation_t {
@@ -169,6 +169,11 @@ namespace gr {
       RESERVED_ON,
     };
 
+    enum dvbt2_l1scrambled_t {
+      L1_SCRAMBLED_OFF = 0,
+      L1_SCRAMBLED_ON,
+    };
+
   } // namespace dvbt2
 } // namespace gr
 
@@ -187,6 +192,7 @@ typedef gr::dvbt2::dvbt2_l1constellation_t dvbt2_l1constellation_t;
 typedef gr::dvbt2::dvbt2_pilotpattern_t dvbt2_pilotpattern_t;
 typedef gr::dvbt2::dvbt2_version_t dvbt2_version_t;
 typedef gr::dvbt2::dvbt2_reservedbiasbits_t dvbt2_reservedbiasbits_t;
+typedef gr::dvbt2::dvbt2_l1scrambled_t dvbt2_l1scrambled_t;
 
 #endif /* INCLUDED_DVBT2_CONFIG_H */
 
