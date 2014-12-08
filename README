@@ -51,6 +51,13 @@ VV015-8KFFT, VV016-256QAM34, VV019-NOROT and VV034-DTG016 profiles.
 The VV003-CR23 profile is the current HD broadcast mode (32K/256QAM
 at 40.2 Mbps or Ofcom Mode 7) in the UK.
 
+Test streams for the VV003-CR23 and VV009-4KFFT profiles with an
+8 MHz channel are available.
+
+http://www.w6rz.net/adv32k256qam.ts
+
+http://www.w6rz.net/adv4k64qam.ts
+
 IMPORTANT: The tone reservation PAPR block is very floating point
 intensive and only runs in real-time on the VV016-256QAM34 profile.
 
