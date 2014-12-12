@@ -23,172 +23,53 @@
 #endif
 
 #include <gnuradio/io_signature.h>
-#include "freqinterleaver_cc_impl.h"
-#include <stdio.h>
+#include "miso_cc_impl.h"
 
 namespace gr {
   namespace dvbt2 {
 
-    freqinterleaver_cc::sptr
-    freqinterleaver_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2)
+    miso_cc::sptr
+    miso_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode)
     {
       return gnuradio::get_initial_sptr
-        (new freqinterleaver_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, version, preamble1, preamble2));
+        (new miso_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode));
     }
 
     /*
      * The private constructor
      */
-    freqinterleaver_cc_impl::freqinterleaver_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2)
-      : gr::sync_block("freqinterleaver_cc",
+    miso_cc_impl::miso_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode)
+      : gr::sync_block("miso_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
-              gr::io_signature::make(1, 1, sizeof(gr_complex)))
+              gr::io_signature::make(2, 2, sizeof(gr_complex)))
     {
-        int max_states, xor_size, pn_mask, result;
-        int q_even = 0;
-        int q_odd = 0;
-        int q_evenP2 = 0;
-        int q_oddP2 = 0;
-        int q_evenFC = 0;
-        int q_oddFC = 0;
-        int lfsr = 0;
-        int logic1k[2] = {0, 4};
-        int logic2k[2] = {0, 3};
-        int logic4k[2] = {0, 2};
-        int logic8k[4] = {0, 1, 4, 6};
-        int logic16k[6] = {0, 1, 4, 5, 9, 11};
-        int logic32k[4] = {0, 1, 2, 12};
-        int *logic;
-        const int *bitpermeven, *bitpermodd;
-        int pn_degree, even, odd;
-        if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
-        {
-            switch (fftsize)
-            {
-                case gr::dvbt2::FFTSIZE_1K:
-                    N_P2 = 16;
-                    C_P2 = 558;
-                    break;
-                case gr::dvbt2::FFTSIZE_2K:
-                    N_P2 = 8;
-                    C_P2 = 1118;
-                    break;
-                case gr::dvbt2::FFTSIZE_4K:
-                    N_P2 = 4;
-                    C_P2 = 2236;
-                    break;
-                case gr::dvbt2::FFTSIZE_8K_NORM:
-                case gr::dvbt2::FFTSIZE_8K_SGI:
-                    N_P2 = 2;
-                    C_P2 = 4472;
-                    break;
-               case gr::dvbt2::FFTSIZE_16K:
-                    N_P2 = 1;
-                    C_P2 = 8944;
-                    break;
-                case gr::dvbt2::FFTSIZE_32K_NORM:
-                case gr::dvbt2::FFTSIZE_32K_SGI:
-                    N_P2 = 1;
-                    C_P2 = 22432;
-                    break;
-            }
-        }
-        else
-        {
-            switch (fftsize)
-            {
-                case gr::dvbt2::FFTSIZE_1K:
-                    N_P2 = 16;
-                    C_P2 = 546;
-                    break;
-                case gr::dvbt2::FFTSIZE_2K:
-                    N_P2 = 8;
-                    C_P2 = 1098;
-                    break;
-                case gr::dvbt2::FFTSIZE_4K:
-                    N_P2 = 4;
-                    C_P2 = 2198;
-                    break;
-                case gr::dvbt2::FFTSIZE_8K_NORM:
-                case gr::dvbt2::FFTSIZE_8K_SGI:
-                    N_P2 = 2;
-                    C_P2 = 4398;
-                    break;
-               case gr::dvbt2::FFTSIZE_16K:
-                    N_P2 = 1;
-                    C_P2 = 8814;
-                    break;
-                case gr::dvbt2::FFTSIZE_32K_NORM:
-                case gr::dvbt2::FFTSIZE_32K_SGI:
-                    N_P2 = 1;
-                    C_P2 = 17612;
-                    break;
-            }
-        }
         switch (fftsize)
         {
             case gr::dvbt2::FFTSIZE_1K:
-                pn_degree = 9;
-                pn_mask = 0x1ff;
-                max_states = 1024;
-                logic = &logic1k[0];
-                xor_size = 2;
-                bitpermeven = &bitperm1keven[0];
-                bitpermodd = &bitperm1kodd[0];
+                N_P2 = 16;
+                C_P2 = 546;
                 break;
             case gr::dvbt2::FFTSIZE_2K:
-                pn_degree = 10;
-                pn_mask = 0x3ff;
-                max_states = 2048;
-                logic = &logic2k[0];
-                xor_size = 2;
-                bitpermeven = &bitperm2keven[0];
-                bitpermodd = &bitperm2kodd[0];
+                N_P2 = 8;
+                C_P2 = 1098;
                 break;
             case gr::dvbt2::FFTSIZE_4K:
-                pn_degree = 11;
-                pn_mask = 0x7ff;
-                max_states = 4096;
-                logic = &logic4k[0];
-                xor_size = 2;
-                bitpermeven = &bitperm4keven[0];
-                bitpermodd = &bitperm4kodd[0];
+                N_P2 = 4;
+                C_P2 = 2198;
                 break;
             case gr::dvbt2::FFTSIZE_8K_NORM:
             case gr::dvbt2::FFTSIZE_8K_SGI:
-                pn_degree = 12;
-                pn_mask = 0xfff;
-                max_states = 8192;
-                logic = &logic8k[0];
-                xor_size = 4;
-                bitpermeven = &bitperm8keven[0];
-                bitpermodd = &bitperm8kodd[0];
+                N_P2 = 2;
+                C_P2 = 4398;
                 break;
             case gr::dvbt2::FFTSIZE_16K:
-                pn_degree = 13;
-                pn_mask = 0x1fff;
-                max_states = 16384;
-                logic = &logic16k[0];
-                xor_size = 6;
-                bitpermeven = &bitperm16keven[0];
-                bitpermodd = &bitperm16kodd[0];
+                N_P2 = 1;
+                C_P2 = 8814;
                 break;
             case gr::dvbt2::FFTSIZE_32K_NORM:
             case gr::dvbt2::FFTSIZE_32K_SGI:
-                pn_degree = 14;
-                pn_mask = 0x3fff;
-                max_states = 32768;
-                logic = &logic32k[0];
-                xor_size = 4;
-                bitpermeven = &bitperm32k[0];
-                bitpermodd = &bitperm32k[0];
-                break;
-            default:
-                pn_degree = 0;
-                pn_mask = 0;
-                max_states = 0;
-                logic = &logic1k[0];
-                xor_size = 0;
+                N_P2 = 1;
+                C_P2 = 17612;
                 break;
         }
         switch (fftsize)
@@ -703,252 +584,55 @@ namespace gr {
                 }
                 break;
         }
-        if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
-        {
-            if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
-            {
-                N_FC = 0;
-                C_FC = 0;
-            }
-            if (guardinterval == gr::dvbt2::GI_1_32 && pilotpattern == gr::dvbt2::PILOT_PP4)
-            {
-                N_FC = 0;
-                C_FC = 0;
-            }
-            if (guardinterval == gr::dvbt2::GI_1_16 && pilotpattern == gr::dvbt2::PILOT_PP2)
-            {
-                N_FC = 0;
-                C_FC = 0;
-            }
-            if (guardinterval == gr::dvbt2::GI_19_256 && pilotpattern == gr::dvbt2::PILOT_PP2)
-            {
-                N_FC = 0;
-                C_FC = 0;
-            }
-        }
-        for (int i = 0; i < max_states; i++)
-        {
-            if (i == 0 || i == 1)
-            {
-                lfsr = 0;
-            }
-            else if (i == 2)
-            {
-                lfsr = 1;
-            }
-            else
-            {
-                result = 0;
-                for (int k = 0; k < xor_size; k++)
-                {
-                    result ^= (lfsr >> logic[k]) & 1;
-                }
-                lfsr &= pn_mask;
-                lfsr >>= 1;
-                lfsr |= result << (pn_degree - 1);
-            }
-            even = 0;
-            odd = 0;
-            for (int n = 0; n < pn_degree; n++)
-            {
-                even |= ((lfsr >> n) & 0x1) << bitpermeven[n];
-            }
-            for (int n = 0; n < pn_degree; n++)
-            {
-                odd |= ((lfsr >> n) & 0x1) << bitpermodd[n];
-            }
-            even = even + ((i % 2) * (max_states / 2));
-            odd = odd + ((i % 2) * (max_states / 2));
-            if (even < C_DATA)
-            {
-                Heven[q_even++] = even;
-            }
-            if (odd < C_DATA)
-            {
-                Hodd[q_odd++] = odd;
-            }
-            if (even < C_P2)
-            {
-                HevenP2[q_evenP2++] = even;
-            }
-            if (odd < C_P2)
-            {
-                HoddP2[q_oddP2++] = odd;
-            }
-            if (even < N_FC)
-            {
-                HevenFC[q_evenFC++] = even;
-            }
-            if (odd < N_FC)
-            {
-                HoddFC[q_oddFC++] = odd;
-            }
-        }
-        if (fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI)
-        {
-            for (int j = 0; j < q_odd; j++)
-            {
-                int a;
-                a = Hodd[j];
-                Heven[a] = j;
-            }
-            for (int j = 0; j < q_oddP2; j++)
-            {
-                int a;
-                a = HoddP2[j];
-                HevenP2[a] = j;
-            }
-            for (int j = 0; j < q_oddFC; j++)
-            {
-                int a;
-                a = HoddFC[j];
-                HevenFC[a] = j;
-            }
-        }
         if (N_FC == 0)
         {
             set_output_multiple((N_P2 * C_P2) + (numdatasyms * C_DATA));
-            interleaved_items = (N_P2 * C_P2) + (numdatasyms * C_DATA);
-            num_data_symbols = numdatasyms;
+            miso_items = (N_P2 * C_P2) + (numdatasyms * C_DATA);
         }
         else
         {
             set_output_multiple((N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC);
-            interleaved_items = (N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC;
-            num_data_symbols = numdatasyms - 1;
+            miso_items = (N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC;
         }
     }
 
     /*
      * Our virtual destructor.
      */
-    freqinterleaver_cc_impl::~freqinterleaver_cc_impl()
+    miso_cc_impl::~miso_cc_impl()
     {
     }
 
     int
-    freqinterleaver_cc_impl::work(int noutput_items,
+    miso_cc_impl::work(int noutput_items,
 			  gr_vector_const_void_star &input_items,
 			  gr_vector_void_star &output_items)
     {
         const gr_complex *in = (const gr_complex *) input_items[0];
-        gr_complex *out = (gr_complex *) output_items[0];
-        int symbol = 0;
-        int *H;
+        gr_complex *out1 = (gr_complex *) output_items[0];
+        gr_complex *out2 = (gr_complex *) output_items[1];
+        gr_complex temp1, temp2;
 
-        for (int i = 0; i < noutput_items; i += interleaved_items)
+        for (int i = 0; i < noutput_items; i += miso_items)
         {
-            for (int j = 0; j < N_P2; j++)
+            memcpy(out1, in, sizeof(gr_complex) * miso_items);
+            out1 += miso_items;
+            for (int j = 0; j < miso_items; j += 2)
             {
-                if ((symbol % 2) == 0)
-                {
-                    H = HevenP2;
-                }
-                else
-                {
-                    H = HoddP2;
-                }
-                for (int j = 0; j < C_P2; j++)
-                {
-                    *out++ = in[H[j]];
-                }
-                symbol++;
-                in += C_P2;
-            }
-            for (int j = 0; j < num_data_symbols; j++)
-            {
-                if ((symbol % 2) == 0)
-                {
-                    H = Heven;
-                }
-                else
-                {
-                    H = Hodd;
-                }
-                for (int j = 0; j < C_DATA; j++)
-                {
-                    *out++ = in[H[j]];
-                }
-                symbol++;
-                in += C_DATA;
-            }
-            if (N_FC != 0)
-            {
-                if ((symbol % 2) == 0)
-                {
-                    H = HevenFC;
-                }
-                else
-                {
-                    H = HoddFC;
-                }
-                for (int j = 0; j < N_FC; j++)
-                {
-                    *out++ = in[H[j]];
-                }
-                symbol++;
-                in += N_FC;
+                temp1 = *in++;
+                temp2 = *in++;
+                out2->real() = -temp2.real();
+                out2->imag() = temp2.imag();
+                out2++;
+                out2->real() = temp1.real();
+                out2->imag() = -temp1.imag();
+                out2++;
             }
         }
 
         // Tell runtime system how many output items we produced.
         return noutput_items;
     }
-
-    const int freqinterleaver_cc_impl::bitperm1keven[9] = 
-    {
-        8, 7, 6, 5, 0, 1, 2, 3, 4
-    };
-
-    const int freqinterleaver_cc_impl::bitperm1kodd[9] = 
-    {
-        6, 8, 7, 4, 1, 0, 5, 2, 3
-    };
-
-    const int freqinterleaver_cc_impl::bitperm2keven[10] = 
-    {
-        4, 3, 9, 6, 2, 8, 1, 5, 7, 0
-    };
-
-    const int freqinterleaver_cc_impl::bitperm2kodd[10] = 
-    {
-       6, 9, 4, 8, 5, 1, 0, 7, 2, 3
-    };
-
-    const int freqinterleaver_cc_impl::bitperm4keven[11] = 
-    {
-        6, 3, 0, 9, 4, 2, 1, 8, 5, 10, 7
-    };
-
-    const int freqinterleaver_cc_impl::bitperm4kodd[11] = 
-    {
-        5, 9, 1, 4, 3, 0, 8, 10, 7, 2, 6
-    };
-
-    const int freqinterleaver_cc_impl::bitperm8keven[12] = 
-    {
-        7, 1, 4, 2, 9, 6, 8, 10, 0, 3, 11, 5
-    };
-
-    const int freqinterleaver_cc_impl::bitperm8kodd[12] = 
-    {
-        11, 4, 9, 3, 1, 2, 5, 0, 6, 7, 10, 8
-    };
-
-    const int freqinterleaver_cc_impl::bitperm16keven[13] = 
-    {
-        9, 7, 6, 10, 12, 5, 1, 11, 0, 2, 3, 4, 8
-    };
-
-    const int freqinterleaver_cc_impl::bitperm16kodd[13] = 
-    {
-        6, 8, 10, 12, 2, 0, 4, 1, 11, 3, 5, 9, 7
-    };
-
-    const int freqinterleaver_cc_impl::bitperm32k[14] = 
-    {
-        7, 13, 3, 4, 9, 2, 12, 11, 1, 8, 10, 0, 5, 6
-    };
 
   } /* namespace dvbt2 */
 } /* namespace gr */

@@ -33,7 +33,10 @@ enum dvbt2_carrier_type_t {
   P2PAPR_CARRIER,
   TRPAPR_CARRIER,
   SCATTERED_CARRIER,
-  CONTINUAL_CARRIER
+  CONTINUAL_CARRIER,
+  P2PILOT_CARRIER_INVERTED,
+  SCATTERED_CARRIER_INVERTED,
+  CONTINUAL_CARRIER_INVERTED
 };
 
 namespace gr {
@@ -54,6 +57,9 @@ namespace gr {
       gr_complex p2_bpsk[2];
       gr_complex sp_bpsk[2];
       gr_complex cp_bpsk[2];
+      gr_complex p2_bpsk_inverted[2];
+      gr_complex sp_bpsk_inverted[2];
+      gr_complex cp_bpsk_inverted[2];
       int prbs[MAX_CARRIERS];
       int pn_sequence[CHIPS];
       int p2_carrier_map[MAX_CARRIERS];
@@ -66,8 +72,11 @@ namespace gr {
       int C_DATA;
       int K_EXT;
       int C_PS;
+      int K_OFFSET;
       int dx;
       int dy;
+      int miso;
+      int miso_group;
       void init_prbs(void);
       void init_pilots(int);
 
@@ -143,7 +152,7 @@ namespace gr {
       const static int pp8_32k[6];
 
      public:
-      pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, int vlength);
+      pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, int vlength);
       ~pilotgenerator_cc_impl();
 
       // Where all the action really happens

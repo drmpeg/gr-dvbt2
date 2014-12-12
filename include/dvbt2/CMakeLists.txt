@@ -33,5 +33,6 @@ install(FILES
     freqinterleaver_cc.h
     pilotgenerator_cc.h
     p1insertion_cc.h
-    paprtr_cc.h DESTINATION include/dvbt2
+    paprtr_cc.h
+    miso_cc.h DESTINATION include/dvbt2
 )

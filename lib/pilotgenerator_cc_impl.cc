@@ -31,83 +31,154 @@ namespace gr {
   namespace dvbt2 {
 
     pilotgenerator_cc::sptr
-    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, int vlength)
+    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, int vlength)
     {
       return gnuradio::get_initial_sptr
-        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, vlength));
+        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, version, preamble1, preamble2, misogroup1, misogroup2, vlength));
     }
 
     /*
      * The private constructor
      */
-    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, int vlength)
+    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, int vlength)
       : gr::block("pilotgenerator_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex) * vlength))
     {
-        int step;
+        int step, ki;
+        if (version == gr::dvbt2::VERSION_111)
+        {
+            miso_group = misogroup1;
+        }
+        else
+        {
+            miso_group = misogroup2;
+        }
+        if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
+        {
+            miso = FALSE;
+            switch (fftsize)
+            {
+                case gr::dvbt2::FFTSIZE_1K:
+                    N_P2 = 16;
+                    C_P2 = 558;
+                    break;
+                case gr::dvbt2::FFTSIZE_2K:
+                    N_P2 = 8;
+                    C_P2 = 1118;
+                    break;
+                case gr::dvbt2::FFTSIZE_4K:
+                    N_P2 = 4;
+                    C_P2 = 2236;
+                    break;
+                case gr::dvbt2::FFTSIZE_8K_NORM:
+                case gr::dvbt2::FFTSIZE_8K_SGI:
+                    N_P2 = 2;
+                    C_P2 = 4472;
+                    break;
+               case gr::dvbt2::FFTSIZE_16K:
+                    N_P2 = 1;
+                    C_P2 = 8944;
+                    break;
+                case gr::dvbt2::FFTSIZE_32K_NORM:
+                case gr::dvbt2::FFTSIZE_32K_SGI:
+                    N_P2 = 1;
+                    C_P2 = 22432;
+                    break;
+            }
+        }
+        else
+        {
+            miso = TRUE;
+            switch (fftsize)
+            {
+                case gr::dvbt2::FFTSIZE_1K:
+                    N_P2 = 16;
+                    C_P2 = 546;
+                    break;
+                case gr::dvbt2::FFTSIZE_2K:
+                    N_P2 = 8;
+                    C_P2 = 1098;
+                    break;
+                case gr::dvbt2::FFTSIZE_4K:
+                    N_P2 = 4;
+                    C_P2 = 2198;
+                    break;
+                case gr::dvbt2::FFTSIZE_8K_NORM:
+                case gr::dvbt2::FFTSIZE_8K_SGI:
+                    N_P2 = 2;
+                    C_P2 = 4398;
+                    break;
+               case gr::dvbt2::FFTSIZE_16K:
+                    N_P2 = 1;
+                    C_P2 = 8814;
+                    break;
+                case gr::dvbt2::FFTSIZE_32K_NORM:
+                case gr::dvbt2::FFTSIZE_32K_SGI:
+                    N_P2 = 1;
+                    C_P2 = 17612;
+                    break;
+            }
+        }
         switch (fftsize)
         {
             case gr::dvbt2::FFTSIZE_1K:
-                N_P2 = 16;
-                C_P2 = 558;
                 C_PS = 853;
                 K_EXT = 0;
+                K_OFFSET = 0;
                 break;
             case gr::dvbt2::FFTSIZE_2K:
-                N_P2 = 8;
-                C_P2 = 1118;
                 C_PS = 1705;
                 K_EXT = 0;
+                K_OFFSET = 0;
                 break;
             case gr::dvbt2::FFTSIZE_4K:
-                N_P2 = 4;
-                C_P2 = 2236;
                 C_PS = 3409;
                 K_EXT = 0;
+                K_OFFSET = 0;
                 break;
             case gr::dvbt2::FFTSIZE_8K_NORM:
             case gr::dvbt2::FFTSIZE_8K_SGI:
-                N_P2 = 2;
-                C_P2 = 4472;
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     C_PS = 6817;
                     K_EXT = 0;
+                    K_OFFSET = 48;
                 }
                 else
                 {
                     C_PS = 6913;
                     K_EXT = 48;
+                    K_OFFSET = 0;
                 }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
-                N_P2 = 1;
-                C_P2 = 8944;
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     C_PS = 13633;
                     K_EXT = 0;
+                    K_OFFSET = 144;
                 }
                 else
                 {
                     C_PS = 13921;
                     K_EXT = 144;
+                    K_OFFSET = 0;
                 }
                 break;
             case gr::dvbt2::FFTSIZE_32K_NORM:
             case gr::dvbt2::FFTSIZE_32K_SGI:
-                N_P2 = 1;
-                C_P2 = 22432;
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     C_PS = 27265;
                     K_EXT = 0;
+                    K_OFFSET = 288;
                 }
                 else
                 {
                     C_PS = 27841;
                     K_EXT = 288;
+                    K_OFFSET = 0;
                 }
                 break;
         }
@@ -623,32 +694,35 @@ namespace gr {
                 }
                 break;
         }
-        if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
+        if (miso == FALSE)
         {
-            N_FC = 0;
-            C_FC = 0;
-        }
-        if (guardinterval == gr::dvbt2::GI_1_32 && pilotpattern == gr::dvbt2::PILOT_PP4)
-        {
-            N_FC = 0;
-            C_FC = 0;
-        }
-        if (guardinterval == gr::dvbt2::GI_1_16 && pilotpattern == gr::dvbt2::PILOT_PP2)
-        {
-            N_FC = 0;
-            C_FC = 0;
-        }
-        if (guardinterval == gr::dvbt2::GI_19_256 && pilotpattern == gr::dvbt2::PILOT_PP2)
-        {
-            N_FC = 0;
-            C_FC = 0;
+            if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
+            {
+                N_FC = 0;
+                C_FC = 0;
+            }
+            if (guardinterval == gr::dvbt2::GI_1_32 && pilotpattern == gr::dvbt2::PILOT_PP4)
+            {
+                N_FC = 0;
+                C_FC = 0;
+            }
+            if (guardinterval == gr::dvbt2::GI_1_16 && pilotpattern == gr::dvbt2::PILOT_PP2)
+            {
+                N_FC = 0;
+                C_FC = 0;
+            }
+            if (guardinterval == gr::dvbt2::GI_19_256 && pilotpattern == gr::dvbt2::PILOT_PP2)
+            {
+                N_FC = 0;
+                C_FC = 0;
+            }
         }
         init_prbs();
         for (int i = 0; i < C_PS; i++)
         {
             p2_carrier_map[i] = DATA_CARRIER;
         }
-        if (fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI)
+        if ((fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI) && (miso == FALSE))
         {
             step = 6;
         }
@@ -658,15 +732,58 @@ namespace gr {
         }
         for (int i = 0; i < C_PS; i += step)
         {
-            p2_carrier_map[i] = P2PILOT_CARRIER;
+            if (miso == TRUE && miso_group == MISO_TX2)
+            {
+                if (((i / 3) % 2) && (i % 3 == 0))
+                {
+                    p2_carrier_map[i] = P2PILOT_CARRIER_INVERTED;
+                }
+                else
+                {
+                    p2_carrier_map[i] = P2PILOT_CARRIER;
+                }
+            }
+            else
+            {
+                p2_carrier_map[i] = P2PILOT_CARRIER;
+            }
         }
         if (carriermode == gr::dvbt2::CARRIERS_EXTENDED)
         {
             for (int i = 0; i < K_EXT; i++)
             {
-                p2_carrier_map[i] = P2PILOT_CARRIER;
-                p2_carrier_map[i + (C_PS - K_EXT)] = P2PILOT_CARRIER;
+                if (miso == TRUE && miso_group == MISO_TX2)
+                {
+                    if (((i / 3) % 2) && (i % 3 == 0))
+                    {
+                        p2_carrier_map[i] = P2PILOT_CARRIER_INVERTED;
+                    }
+                    else
+                    {
+                        p2_carrier_map[i] = P2PILOT_CARRIER;
+                    }
+                    if ((((i + (C_PS - K_EXT)) / 3) % 2) && ((i + (C_PS - K_EXT)) % 3 == 0))
+                    {
+                        p2_carrier_map[i + (C_PS - K_EXT)] = P2PILOT_CARRIER_INVERTED;
+                    }
+                    else
+                    {
+                        p2_carrier_map[i + (C_PS - K_EXT)] = P2PILOT_CARRIER;
+                    }
+                }
+                else
+                {
+                    p2_carrier_map[i] = P2PILOT_CARRIER;
+                    p2_carrier_map[i + (C_PS - K_EXT)] = P2PILOT_CARRIER;
+                }
             }
+        }
+        if (miso == TRUE)
+        {
+            p2_carrier_map[K_EXT + 1] = P2PILOT_CARRIER;
+            p2_carrier_map[K_EXT + 2] = P2PILOT_CARRIER;
+            p2_carrier_map[C_PS - K_EXT - 2] = P2PILOT_CARRIER;
+            p2_carrier_map[C_PS - K_EXT - 3] = P2PILOT_CARRIER;
         }
         switch (fftsize)
         {
@@ -675,30 +792,147 @@ namespace gr {
                 {
                     p2_carrier_map[p2_papr_map_1k[i]] = P2PAPR_CARRIER;
                 }
+                if (miso == TRUE)
+                {
+                    for (int i = 0; i < 10; i++)
+                    {
+                        ki = p2_papr_map_1k[i] + K_EXT;
+                        if (i < 9)
+                        {
+                            if (((ki % 3) == 1) && ((ki + 1) != (p2_papr_map_1k[i + 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 1)
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        if (i > 0)
+                        {
+                            if (((ki % 3) == 2) && ((ki - 1) != (p2_papr_map_1k[i - 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 2)
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                    }
+                }
                 cp_bpsk[0].real() = 4.0 / 3.0;
                 cp_bpsk[0].imag() = 0.0;
                 cp_bpsk[1].real() = -4.0 / 3.0;
                 cp_bpsk[1].imag() = 0.0;
+                cp_bpsk_inverted[0].real() = -4.0 / 3.0;
+                cp_bpsk_inverted[0].imag() = 0.0;
+                cp_bpsk_inverted[1].real() = 4.0 / 3.0;
+                cp_bpsk_inverted[1].imag() = 0.0;
                 break;
             case gr::dvbt2::FFTSIZE_2K:
                 for (int i = 0; i < 18; i++)
                 {
                     p2_carrier_map[p2_papr_map_2k[i]] = P2PAPR_CARRIER;
                 }
+                if (miso == TRUE)
+                {
+                    for (int i = 0; i < 18; i++)
+                    {
+                        ki = p2_papr_map_2k[i] + K_EXT;
+                        if (i < 17)
+                        {
+                            if (((ki % 3) == 1) && ((ki + 1) != (p2_papr_map_2k[i + 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 1)
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        if (i > 0)
+                        {
+                            if (((ki % 3) == 2) && ((ki - 1) != (p2_papr_map_2k[i - 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 2)
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                    }
+                }
                 cp_bpsk[0].real() = 4.0 / 3.0;
                 cp_bpsk[0].imag() = 0.0;
                 cp_bpsk[1].real() = -4.0 / 3.0;
                 cp_bpsk[1].imag() = 0.0;
+                cp_bpsk_inverted[0].real() = -4.0 / 3.0;
+                cp_bpsk_inverted[0].imag() = 0.0;
+                cp_bpsk_inverted[1].real() = 4.0 / 3.0;
+                cp_bpsk_inverted[1].imag() = 0.0;
                 break;
             case gr::dvbt2::FFTSIZE_4K:
                 for (int i = 0; i < 36; i++)
                 {
                     p2_carrier_map[p2_papr_map_4k[i]] = P2PAPR_CARRIER;
                 }
+                if (miso == TRUE)
+                {
+                    for (int i = 0; i < 36; i++)
+                    {
+                        ki = p2_papr_map_4k[i] + K_EXT;
+                        if (i < 35)
+                        {
+                            if (((ki % 3) == 1) && ((ki + 1) != (p2_papr_map_4k[i + 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 1)
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        if (i > 0)
+                        {
+                            if (((ki % 3) == 2) && ((ki - 1) != (p2_papr_map_4k[i - 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 2)
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                    }
+                }
                 cp_bpsk[0].real() = (4.0 * sqrt(2)) / 3.0;
                 cp_bpsk[0].imag() = 0.0;
                 cp_bpsk[1].real() = -(4.0 * sqrt(2)) / 3.0;
                 cp_bpsk[1].imag() = 0.0;
+                cp_bpsk_inverted[0].real() = -(4.0 * sqrt(2)) / 3.0;
+                cp_bpsk_inverted[0].imag() = 0.0;
+                cp_bpsk_inverted[1].real() = (4.0 * sqrt(2)) / 3.0;
+                cp_bpsk_inverted[1].imag() = 0.0;
                 break;
             case gr::dvbt2::FFTSIZE_8K_NORM:
             case gr::dvbt2::FFTSIZE_8K_SGI:
@@ -706,20 +940,98 @@ namespace gr {
                 {
                     p2_carrier_map[p2_papr_map_8k[i] + K_EXT] = P2PAPR_CARRIER;
                 }
+                if (miso == TRUE)
+                {
+                    for (int i = 0; i < 72; i++)
+                    {
+                        ki = p2_papr_map_8k[i] + K_EXT;
+                        if (i < 71)
+                        {
+                            if (((ki % 3) == 1) && ((ki + 1) != (p2_papr_map_8k[i + 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 1)
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        if (i > 0)
+                        {
+                            if (((ki % 3) == 2) && ((ki - 1) != (p2_papr_map_8k[i - 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 2)
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                    }
+                }
                 cp_bpsk[0].real() = 8.0 / 3.0;
                 cp_bpsk[0].imag() = 0.0;
                 cp_bpsk[1].real() = -8.0 / 3.0;
                 cp_bpsk[1].imag() = 0.0;
+                cp_bpsk_inverted[0].real() = -8.0 / 3.0;
+                cp_bpsk_inverted[0].imag() = 0.0;
+                cp_bpsk_inverted[1].real() = 8.0 / 3.0;
+                cp_bpsk_inverted[1].imag() = 0.0;
                 break;
             case gr::dvbt2::FFTSIZE_16K:
                 for (int i = 0; i < 144; i++)
                 {
                     p2_carrier_map[p2_papr_map_16k[i] + K_EXT] = P2PAPR_CARRIER;
                 }
+                if (miso == TRUE)
+                {
+                    for (int i = 0; i < 144; i++)
+                    {
+                        ki = p2_papr_map_16k[i] + K_EXT;
+                        if (i < 143)
+                        {
+                            if (((ki % 3) == 1) && ((ki + 1) != (p2_papr_map_16k[i + 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 1)
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        if (i > 0)
+                        {
+                            if (((ki % 3) == 2) && ((ki - 1) != (p2_papr_map_16k[i - 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 2)
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                    }
+                }
                 cp_bpsk[0].real() = 8.0 / 3.0;
                 cp_bpsk[0].imag() = 0.0;
                 cp_bpsk[1].real() = -8.0 / 3.0;
                 cp_bpsk[1].imag() = 0.0;
+                cp_bpsk_inverted[0].real() = -8.0 / 3.0;
+                cp_bpsk_inverted[0].imag() = 0.0;
+                cp_bpsk_inverted[1].real() = 8.0 / 3.0;
+                cp_bpsk_inverted[1].imag() = 0.0;
                 break;
             case gr::dvbt2::FFTSIZE_32K_NORM:
             case gr::dvbt2::FFTSIZE_32K_SGI:
@@ -727,10 +1039,49 @@ namespace gr {
                 {
                     p2_carrier_map[p2_papr_map_32k[i] + K_EXT] = P2PAPR_CARRIER;
                 }
+                if (miso == TRUE)
+                {
+                    for (int i = 0; i < 288; i++)
+                    {
+                        ki = p2_papr_map_32k[i] + K_EXT;
+                        if (i < 287)
+                        {
+                            if (((ki % 3) == 1) && ((ki + 1) != (p2_papr_map_32k[i + 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 1)
+                            {
+                                p2_carrier_map[ki + 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        if (i > 0)
+                        {
+                            if (((ki % 3) == 2) && ((ki - 1) != (p2_papr_map_32k[i - 1] + K_EXT)))
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            if ((ki % 3) == 2)
+                            {
+                                p2_carrier_map[ki - 1] = P2PILOT_CARRIER;
+                            }
+                        }
+                    }
+                }
                 cp_bpsk[0].real() = 8.0 / 3.0;
                 cp_bpsk[0].imag() = 0.0;
                 cp_bpsk[1].real() = -8.0 / 3.0;
                 cp_bpsk[1].imag() = 0.0;
+                cp_bpsk_inverted[0].real() = -8.0 / 3.0;
+                cp_bpsk_inverted[0].imag() = 0.0;
+                cp_bpsk_inverted[1].real() = 8.0 / 3.0;
+                cp_bpsk_inverted[1].imag() = 0.0;
                 break;
         }
         switch (pilotpattern)
@@ -740,6 +1091,10 @@ namespace gr {
                 sp_bpsk[0].imag() = 0.0;
                 sp_bpsk[1].real() = -4.0 / 3.0;
                 sp_bpsk[1].imag() = 0.0;
+                sp_bpsk_inverted[0].real() = -4.0 / 3.0;
+                sp_bpsk_inverted[0].imag() = 0.0;
+                sp_bpsk_inverted[1].real() = 4.0 / 3.0;
+                sp_bpsk_inverted[1].imag() = 0.0;
                 dx = 3;
                 dy = 4;
                 break;
@@ -748,6 +1103,10 @@ namespace gr {
                 sp_bpsk[0].imag() = 0.0;
                 sp_bpsk[1].real() = -4.0 / 3.0;
                 sp_bpsk[1].imag() = 0.0;
+                sp_bpsk_inverted[0].real() = -4.0 / 3.0;
+                sp_bpsk_inverted[0].imag() = 0.0;
+                sp_bpsk_inverted[1].real() = 4.0 / 3.0;
+                sp_bpsk_inverted[1].imag() = 0.0;
                 dx = 6;
                 dy = 2;
                 break;
@@ -756,6 +1115,10 @@ namespace gr {
                 sp_bpsk[0].imag() = 0.0;
                 sp_bpsk[1].real() = -7.0 / 4.0;
                 sp_bpsk[1].imag() = 0.0;
+                sp_bpsk_inverted[0].real() = -7.0 / 4.0;
+                sp_bpsk_inverted[0].imag() = 0.0;
+                sp_bpsk_inverted[1].real() = 7.0 / 4.0;
+                sp_bpsk_inverted[1].imag() = 0.0;
                 dx = 6;
                 dy = 4;
                 break;
@@ -764,6 +1127,10 @@ namespace gr {
                 sp_bpsk[0].imag() = 0.0;
                 sp_bpsk[1].real() = -7.0 / 4.0;
                 sp_bpsk[1].imag() = 0.0;
+                sp_bpsk_inverted[0].real() = -7.0 / 4.0;
+                sp_bpsk_inverted[0].imag() = 0.0;
+                sp_bpsk_inverted[1].real() = 7.0 / 4.0;
+                sp_bpsk_inverted[1].imag() = 0.0;
                 dx = 12;
                 dy = 2;
                 break;
@@ -772,6 +1139,10 @@ namespace gr {
                 sp_bpsk[0].imag() = 0.0;
                 sp_bpsk[1].real() = -7.0 / 3.0;
                 sp_bpsk[1].imag() = 0.0;
+                sp_bpsk_inverted[0].real() = -7.0 / 3.0;
+                sp_bpsk_inverted[0].imag() = 0.0;
+                sp_bpsk_inverted[1].real() = 7.0 / 3.0;
+                sp_bpsk_inverted[1].imag() = 0.0;
                 dx = 12;
                 dy = 4;
                 break;
@@ -780,6 +1151,10 @@ namespace gr {
                 sp_bpsk[0].imag() = 0.0;
                 sp_bpsk[1].real() = -7.0 / 3.0;
                 sp_bpsk[1].imag() = 0.0;
+                sp_bpsk_inverted[0].real() = -7.0 / 3.0;
+                sp_bpsk_inverted[0].imag() = 0.0;
+                sp_bpsk_inverted[1].real() = 7.0 / 3.0;
+                sp_bpsk_inverted[1].imag() = 0.0;
                 dx = 24;
                 dy = 2;
                 break;
@@ -788,6 +1163,10 @@ namespace gr {
                 sp_bpsk[0].imag() = 0.0;
                 sp_bpsk[1].real() = -7.0 / 3.0;
                 sp_bpsk[1].imag() = 0.0;
+                sp_bpsk_inverted[0].real() = -7.0 / 3.0;
+                sp_bpsk_inverted[0].imag() = 0.0;
+                sp_bpsk_inverted[1].real() = 7.0 / 3.0;
+                sp_bpsk_inverted[1].imag() = 0.0;
                 dx = 24;
                 dy = 4;
                 break;
@@ -796,6 +1175,10 @@ namespace gr {
                 sp_bpsk[0].imag() = 0.0;
                 sp_bpsk[1].real() = -7.0 / 3.0;
                 sp_bpsk[1].imag() = 0.0;
+                sp_bpsk_inverted[0].real() = -7.0 / 3.0;
+                sp_bpsk_inverted[0].imag() = 0.0;
+                sp_bpsk_inverted[1].real() = 7.0 / 3.0;
+                sp_bpsk_inverted[1].imag() = 0.0;
                 dx = 6;
                 dy = 16;
                 break;
@@ -808,7 +1191,21 @@ namespace gr {
         {
             if (i % dx == 0)
             {
-                fc_carrier_map[i] = SCATTERED_CARRIER;
+                if (miso == TRUE && miso_group == MISO_TX2)
+                {
+                    if ((i / dx) % 2)
+                    {
+                        fc_carrier_map[i] = SCATTERED_CARRIER_INVERTED;
+                    }
+                    else
+                    {
+                        fc_carrier_map[i] = SCATTERED_CARRIER;
+                    }
+                }
+                else
+                {
+                    fc_carrier_map[i] = SCATTERED_CARRIER;
+                }
             }
         }
         if (fftsize == gr::dvbt2::FFTSIZE_1K && pilotpattern == gr::dvbt2::PILOT_PP4)
@@ -823,8 +1220,24 @@ namespace gr {
         {
             fc_carrier_map[C_PS - 2] = SCATTERED_CARRIER;
         }
-        fc_carrier_map[0] = SCATTERED_CARRIER;
-        fc_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
+        if (miso == TRUE && miso_group == MISO_TX2)
+        {
+            if ((numdatasyms + N_P2 - 1) % 2)
+            {
+                fc_carrier_map[0] = SCATTERED_CARRIER_INVERTED;
+                fc_carrier_map[C_PS - 1] = SCATTERED_CARRIER_INVERTED;
+            }
+            else
+            {
+                fc_carrier_map[0] = SCATTERED_CARRIER;
+                fc_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
+            }
+        }
+        else
+        {
+            fc_carrier_map[0] = SCATTERED_CARRIER;
+            fc_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
+        }
         if (paprmode == gr::dvbt2::PAPR_TR || paprmode == gr::dvbt2::PAPR_BOTH)
         {
             switch (fftsize)
@@ -883,12 +1296,16 @@ namespace gr {
         papr_mode = paprmode;
         left_nulls = ((vlength - C_PS) / 2) + 1;
         right_nulls = (vlength - C_PS) / 2;
-        if (fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI)
+        if ((fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI) && (miso == FALSE))
         {
             p2_bpsk[0].real() = sqrt(37.0) / 5.0;
             p2_bpsk[0].imag() = 0.0;
             p2_bpsk[1].real() = -(sqrt(37.0) / 5.0);
             p2_bpsk[1].imag() = 0.0;
+            p2_bpsk_inverted[0].real() = -(sqrt(37.0) / 5.0);
+            p2_bpsk_inverted[0].imag() = 0.0;
+            p2_bpsk_inverted[1].real() = sqrt(37.0) / 5.0;
+            p2_bpsk_inverted[1].imag() = 0.0;
         }
         else
         {
@@ -896,6 +1313,10 @@ namespace gr {
             p2_bpsk[0].imag() = 0.0;
             p2_bpsk[1].real() = -(sqrt(31.0) / 5.0);
             p2_bpsk[1].imag() = 0.0;
+            p2_bpsk_inverted[0].real() = -(sqrt(31.0) / 5.0);
+            p2_bpsk_inverted[0].imag() = 0.0;
+            p2_bpsk_inverted[1].real() = sqrt(31.0) / 5.0;
+            p2_bpsk_inverted[1].imag() = 0.0;
         }
         normalization = 5.0 / sqrt(27.0 * C_PS);
         ofdm_fft_size = vlength;
@@ -956,7 +1377,21 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP1:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp1[i] % 1632) / dx)) % 2 && (((pp1_cp1[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP2:
@@ -968,7 +1403,21 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP3:
                     for (int i = 0; i < 22; i++)
                     {
-                        data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp1[i] % 1632) / dx)) % 2 && (((pp3_cp1[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP4:
@@ -1001,11 +1450,39 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP1:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp1[i] % 1632) / dx)) % 2 && (((pp1_cp1[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 25; i++)
                     {
-                        data_carrier_map[pp1_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp2[i] % 1632) / dx)) % 2 && (((pp1_cp2[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp2[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP2:
@@ -1021,31 +1498,115 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP3:
                     for (int i = 0; i < 22; i++)
                     {
-                        data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp1[i] % 1632) / dx)) % 2 && (((pp3_cp1[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp3_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp2[i] % 1632) / dx)) % 2 && (((pp3_cp2[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp2[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP4:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp4_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp1[i] % 1632) / dx)) % 2 && (((pp4_cp1[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp1[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp4_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp2[i] % 1632) / dx)) % 2 && (((pp4_cp2[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp2[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP5:
                     for (int i = 0; i < 19; i++)
                     {
-                        data_carrier_map[pp5_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp1[i] % 1632) / dx)) % 2 && (((pp5_cp1[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp1[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp1[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp5_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp2[i] % 1632) / dx)) % 2 && (((pp5_cp2[i] % 1632) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp2[i] % 1632] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp2[i] % 1632] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP6:
@@ -1070,11 +1631,39 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP1:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp1_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp1[i] % 3264) / dx)) % 2 && (((pp1_cp1[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp1[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 25; i++)
                     {
-                        data_carrier_map[pp1_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp2[i] % 3264) / dx)) % 2 && (((pp1_cp2[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp2[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP2:
@@ -1094,43 +1683,169 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP3:
                     for (int i = 0; i < 22; i++)
                     {
-                        data_carrier_map[pp3_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp1[i] % 3264) / dx)) % 2 && (((pp3_cp1[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp1[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp3_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp2[i] % 3264) / dx)) % 2 && (((pp3_cp2[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp2[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp3_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp3[i] % 3264) / dx)) % 2 && (((pp3_cp3[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp3[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP4:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp4_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp1[i] % 3264) / dx)) % 2 && (((pp4_cp1[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp1[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp4_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp2[i] % 3264) / dx)) % 2 && (((pp4_cp2[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp2[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp4_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp3[i] % 3264) / dx)) % 2 && (((pp4_cp3[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp3[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP5:
                     for (int i = 0; i < 19; i++)
                     {
-                        data_carrier_map[pp5_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp1[i] % 3264) / dx)) % 2 && (((pp5_cp1[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp1[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp1[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp5_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp2[i] % 3264) / dx)) % 2 && (((pp5_cp2[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp2[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp2[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 3; i++)
                     {
-                        data_carrier_map[pp5_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp3[i] % 3264) / dx)) % 2 && (((pp5_cp3[i] % 3264) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp3[i] % 3264] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp3[i] % 3264] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP6:
@@ -1160,11 +1875,39 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP1:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp1_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp1[i] % 6528) / dx)) % 2 && (((pp1_cp1[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp1[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 25; i++)
                     {
-                        data_carrier_map[pp1_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp2[i] % 6528) / dx)) % 2 && (((pp1_cp2[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp2[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP2:
@@ -1195,65 +1938,247 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP3:
                     for (int i = 0; i < 22; i++)
                     {
-                        data_carrier_map[pp3_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp1[i] % 6528) / dx)) % 2 && (((pp3_cp1[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp1[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp3_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp2[i] % 6528) / dx)) % 2 && (((pp3_cp2[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp2[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp3_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp3[i] % 6528) / dx)) % 2 && (((pp3_cp3[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp3[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            data_carrier_map[pp3_8k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp3_8k[i] / dx)) % 2 && ((pp3_8k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp3_8k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp3_8k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_8k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP4:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp4_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp1[i] % 6528) / dx)) % 2 && (((pp4_cp1[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp1[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp4_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp2[i] % 6528) / dx)) % 2 && (((pp4_cp2[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp2[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp4_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp3[i] % 6528) / dx)) % 2 && (((pp4_cp3[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp3[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 2; i++)
                     {
-                        data_carrier_map[pp4_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp4[i] % 6528) / dx)) % 2 && (((pp4_cp4[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp4[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            data_carrier_map[pp4_8k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp4_8k[i] / dx)) % 2 && ((pp4_8k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp4_8k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp4_8k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_8k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP5:
                     for (int i = 0; i < 19; i++)
                     {
-                        data_carrier_map[pp5_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp1[i] % 6528) / dx)) % 2 && (((pp5_cp1[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp1[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp1[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp5_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp2[i] % 6528) / dx)) % 2 && (((pp5_cp2[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp2[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp2[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 3; i++)
                     {
-                        data_carrier_map[pp5_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp3[i] % 6528) / dx)) % 2 && (((pp5_cp3[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp3[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp3[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp5_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp4[i] % 6528) / dx)) % 2 && (((pp5_cp4[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp4[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP6:
@@ -1286,13 +2211,41 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP8:
                     for (int i = 0; i < 47; i++)
                     {
-                        data_carrier_map[pp8_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp8_cp4[i] % 6528) / dx)) % 2 && (((pp8_cp4[i] % 6528) % dx) == 0))
+                            {
+                                data_carrier_map[pp8_cp4[i] % 6528] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp8_cp4[i] % 6528] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 5; i++)
                         {
-                            data_carrier_map[pp8_8k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp8_8k[i] / dx)) % 2 && ((pp8_8k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp8_8k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp8_8k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_8k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
@@ -1304,21 +2257,77 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP1:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp1_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp1[i] % 13056) / dx)) % 2 && (((pp1_cp1[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp1[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 25; i++)
                     {
-                        data_carrier_map[pp1_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp2[i] % 13056) / dx)) % 2 && (((pp1_cp2[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp2[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 44; i++)
                     {
-                        data_carrier_map[pp1_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp1_cp5[i] % 13056) / dx)) % 2 && (((pp1_cp5[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp1_cp5[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp1_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 4; i++)
                         {
-                            data_carrier_map[pp1_16k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp1_16k[i] / dx)) % 2 && ((pp1_16k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp1_16k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp1_16k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp1_16k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
@@ -1354,83 +2363,321 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP3:
                     for (int i = 0; i < 22; i++)
                     {
-                        data_carrier_map[pp3_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp1[i] % 13056) / dx)) % 2 && (((pp3_cp1[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp1[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp3_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp2[i] % 13056) / dx)) % 2 && (((pp3_cp2[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp2[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp3_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp3[i] % 13056) / dx)) % 2 && (((pp3_cp3[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp3[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 44; i++)
                     {
-                        data_carrier_map[pp3_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp3_cp5[i] % 13056) / dx)) % 2 && (((pp3_cp5[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp3_cp5[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp3_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            data_carrier_map[pp3_16k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp3_16k[i] / dx)) % 2 && ((pp3_16k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp3_16k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp3_16k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp3_16k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP4:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp4_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp1[i] % 13056) / dx)) % 2 && (((pp4_cp1[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp1[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp4_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp2[i] % 13056) / dx)) % 2 && (((pp4_cp2[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp2[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp4_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp3[i] % 13056) / dx)) % 2 && (((pp4_cp3[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp3[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 2; i++)
                     {
-                        data_carrier_map[pp4_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp4[i] % 13056) / dx)) % 2 && (((pp4_cp4[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp4[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 44; i++)
                     {
-                        data_carrier_map[pp4_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp4_cp5[i] % 13056) / dx)) % 2 && (((pp4_cp5[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp5[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            data_carrier_map[pp4_16k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp4_16k[i] / dx)) % 2 && ((pp4_16k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp4_16k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp4_16k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_16k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
                 case gr::dvbt2::PILOT_PP5:
                     for (int i = 0; i < 19; i++)
                     {
-                        data_carrier_map[pp5_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp1[i] % 13056) / dx)) % 2 && (((pp5_cp1[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp1[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp1[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp5_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp2[i] % 13056) / dx)) % 2 && (((pp5_cp2[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp2[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp2[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 3; i++)
                     {
-                        data_carrier_map[pp5_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp3[i] % 13056) / dx)) % 2 && (((pp5_cp3[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp3[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp3[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp5_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp4[i] % 13056) / dx)) % 2 && (((pp5_cp4[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp4[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                       }
                     }
                     for (int i = 0; i < 44; i++)
                     {
-                        data_carrier_map[pp5_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp5_cp5[i] % 13056) / dx)) % 2 && (((pp5_cp5[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp5_cp5[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp5_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            data_carrier_map[pp5_16k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp5_16k[i] / dx)) % 2 && ((pp5_16k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp5_16k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp5_16k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp5_16k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
@@ -1479,17 +2726,59 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP8:
                     for (int i = 0; i < 47; i++)
                     {
-                        data_carrier_map[pp8_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp8_cp4[i] % 13056) / dx)) % 2 && (((pp8_cp4[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp8_cp4[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp8_cp4[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 39; i++)
                     {
-                        data_carrier_map[pp8_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if ((((pp8_cp5[i] % 13056) / dx)) % 2 && (((pp8_cp5[i] % 13056) % dx) == 0))
+                            {
+                                data_carrier_map[pp8_cp5[i] % 13056] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp8_cp5[i] % 13056] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 3; i++)
                         {
-                            data_carrier_map[pp8_16k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp8_16k[i] / dx)) % 2 && ((pp8_16k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp8_16k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp8_16k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_16k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
@@ -1516,33 +2805,131 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP2:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp2_cp1[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp2_cp1[i] / dx)) % 2 && ((pp2_cp1[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp2_cp1[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp2_cp1[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp2_cp1[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 22; i++)
                     {
-                        data_carrier_map[pp2_cp2[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp2_cp2[i] / dx)) % 2 && ((pp2_cp2[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp2_cp2[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp2_cp2[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp2_cp2[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 2; i++)
                     {
-                        data_carrier_map[pp2_cp3[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp2_cp3[i] / dx)) % 2 && ((pp2_cp3[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp2_cp3[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp2_cp3[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp2_cp3[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 2; i++)
                     {
-                        data_carrier_map[pp2_cp4[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp2_cp4[i] / dx)) % 2 && ((pp2_cp4[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp2_cp4[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp2_cp4[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp2_cp4[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 41; i++)
                     {
-                        data_carrier_map[pp2_cp5[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp2_cp5[i] / dx)) % 2 && ((pp2_cp5[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp2_cp5[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp2_cp5[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp2_cp5[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 88; i++)
                     {
-                        data_carrier_map[pp2_cp6[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp2_cp6[i] / dx)) % 2 && ((pp2_cp6[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp2_cp6[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp2_cp6[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp2_cp6[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            data_carrier_map[pp2_32k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp2_32k[i] / dx)) % 2 && ((pp2_32k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp2_32k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp2_32k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp2_32k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
@@ -1571,33 +2958,131 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP4:
                     for (int i = 0; i < 20; i++)
                     {
-                        data_carrier_map[pp4_cp1[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp4_cp1[i] / dx)) % 2 && ((pp4_cp1[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp1[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp1[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp1[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 23; i++)
                     {
-                        data_carrier_map[pp4_cp2[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp4_cp2[i] / dx)) % 2 && ((pp4_cp2[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp2[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp2[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp2[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 1; i++)
                     {
-                        data_carrier_map[pp4_cp3[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp4_cp3[i] / dx)) % 2 && ((pp4_cp3[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp3[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp3[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp3[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 2; i++)
                     {
-                        data_carrier_map[pp4_cp4[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp4_cp4[i] / dx)) % 2 && ((pp4_cp4[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp4[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp4[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp4[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 44; i++)
                     {
-                        data_carrier_map[pp4_cp5[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp4_cp5[i] / dx)) % 2 && ((pp4_cp5[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp5[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp5[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp5[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 86; i++)
                     {
-                        data_carrier_map[pp4_cp6[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp4_cp6[i] / dx)) % 2 && ((pp4_cp6[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp4_cp6[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_cp6[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp4_cp6[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 2; i++)
                         {
-                            data_carrier_map[pp4_32k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp4_32k[i] / dx)) % 2 && ((pp4_32k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp4_32k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp4_32k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp4_32k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
@@ -1626,17 +3111,59 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP6:
                     for (int i = 0; i < 88; i++)
                     {
-                        data_carrier_map[pp6_cp5[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp6_cp5[i] / dx)) % 2 && ((pp6_cp5[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp6_cp5[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp6_cp5[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp6_cp5[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 88; i++)
                     {
-                        data_carrier_map[pp6_cp6[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp6_cp6[i] / dx)) % 2 && ((pp6_cp6[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp6_cp6[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp6_cp6[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp6_cp6[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 4; i++)
                         {
-                            data_carrier_map[pp6_32k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp6_32k[i] / dx)) % 2 && ((pp6_32k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp6_32k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp6_32k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp6_32k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
@@ -1676,21 +3203,77 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                 case gr::dvbt2::PILOT_PP8:
                     for (int i = 0; i < 47; i++)
                     {
-                        data_carrier_map[pp8_cp4[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp8_cp4[i] / dx)) % 2 && ((pp8_cp4[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp8_cp4[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_cp4[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp8_cp4[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 39; i++)
                     {
-                        data_carrier_map[pp8_cp5[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp8_cp5[i] / dx)) % 2 && ((pp8_cp5[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp8_cp5[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_cp5[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp8_cp5[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     for (int i = 0; i < 89; i++)
                     {
-                        data_carrier_map[pp8_cp6[i]] = CONTINUAL_CARRIER;
+                        if (miso == TRUE && miso_group == MISO_TX2)
+                        {
+                            if (((pp8_cp6[i] / dx)) % 2 && ((pp8_cp6[i] % dx) == 0))
+                            {
+                                data_carrier_map[pp8_cp6[i]] = CONTINUAL_CARRIER_INVERTED;
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_cp6[i]] = CONTINUAL_CARRIER;
+                            }
+                        }
+                        else
+                        {
+                            data_carrier_map[pp8_cp6[i]] = CONTINUAL_CARRIER;
+                        }
                     }
                     if (carrier_mode == gr::dvbt2::CARRIERS_EXTENDED)
                     {
                         for (int i = 0; i < 6; i++)
                         {
-                            data_carrier_map[pp8_32k[i]] = CONTINUAL_CARRIER;
+                            if (miso == TRUE && miso_group == MISO_TX2)
+                            {
+                                if (((pp8_32k[i] / dx)) % 2 && ((pp8_32k[i] % dx) == 0))
+                                {
+                                    data_carrier_map[pp8_32k[i]] = CONTINUAL_CARRIER_INVERTED;
+                                }
+                                else
+                                {
+                                    data_carrier_map[pp8_32k[i]] = CONTINUAL_CARRIER;
+                                }
+                            }
+                            else
+                            {
+                                data_carrier_map[pp8_32k[i]] = CONTINUAL_CARRIER;
+                            }
                         }
                     }
                     break;
@@ -1706,11 +3289,41 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
         }
         if (remainder == (dx * (symbol % dy)))
         {
-            data_carrier_map[i] = SCATTERED_CARRIER;
+            if (miso == TRUE && miso_group == MISO_TX2)
+            {
+                if ((i / dx) % 2)
+                {
+                    data_carrier_map[i] = SCATTERED_CARRIER_INVERTED;
+                }
+                else
+                {
+                    data_carrier_map[i] = SCATTERED_CARRIER;
+                }
+            }
+            else
+            {
+                data_carrier_map[i] = SCATTERED_CARRIER;
+            }
         }
     }
-    data_carrier_map[0] = SCATTERED_CARRIER;
-    data_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
+    if (miso == TRUE && miso_group == MISO_TX2)
+    {
+        if (symbol % 2)
+        {
+            data_carrier_map[0] = SCATTERED_CARRIER_INVERTED;
+            data_carrier_map[C_PS - 1] = SCATTERED_CARRIER_INVERTED;
+        }
+        else
+        {
+            data_carrier_map[0] = SCATTERED_CARRIER;
+            data_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
+        }
+    }
+    else
+    {
+        data_carrier_map[0] = SCATTERED_CARRIER;
+        data_carrier_map[C_PS - 1] = SCATTERED_CARRIER;
+    }
     if (papr_mode == gr::dvbt2::PAPR_TR || papr_mode == gr::dvbt2::PAPR_BOTH)
     {
         if (carrier_mode == gr::dvbt2::CARRIERS_NORMAL)
@@ -1798,7 +3411,11 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     {
                         if (p2_carrier_map[n] == P2PILOT_CARRIER)
                         {
-                            *out++ = p2_bpsk[prbs[n] ^ pn_sequence[j]];
+                            *out++ = p2_bpsk[prbs[n + K_OFFSET] ^ pn_sequence[j]];
+                        }
+                        else if (p2_carrier_map[n] == P2PILOT_CARRIER_INVERTED)
+                        {
+                            *out++ = p2_bpsk_inverted[prbs[n + K_OFFSET] ^ pn_sequence[j]];
                         }
                         else if (p2_carrier_map[n] == P2PAPR_CARRIER)
                         {
@@ -1824,7 +3441,11 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     {
                         if (fc_carrier_map[n] == SCATTERED_CARRIER)
                         {
-                            *out++ = sp_bpsk[prbs[n] ^ pn_sequence[j]];
+                            *out++ = sp_bpsk[prbs[n + K_OFFSET] ^ pn_sequence[j]];
+                        }
+                        else if (fc_carrier_map[n] == SCATTERED_CARRIER_INVERTED)
+                        {
+                            *out++ = sp_bpsk_inverted[prbs[n + K_OFFSET] ^ pn_sequence[j]];
                         }
                         else if (fc_carrier_map[n] == TRPAPR_CARRIER)
                         {
@@ -1850,11 +3471,19 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     {
                         if (data_carrier_map[n] == SCATTERED_CARRIER)
                         {
-                            *out++ = sp_bpsk[prbs[n] ^ pn_sequence[j]];
+                            *out++ = sp_bpsk[prbs[n + K_OFFSET] ^ pn_sequence[j]];
+                        }
+                        else if (data_carrier_map[n] == SCATTERED_CARRIER_INVERTED)
+                        {
+                            *out++ = sp_bpsk_inverted[prbs[n + K_OFFSET] ^ pn_sequence[j]];
                         }
                         else if (data_carrier_map[n] == CONTINUAL_CARRIER)
                         {
-                            *out++ = cp_bpsk[prbs[n] ^ pn_sequence[j]];
+                            *out++ = cp_bpsk[prbs[n + K_OFFSET] ^ pn_sequence[j]];
+                        }
+                        else if (data_carrier_map[n] == CONTINUAL_CARRIER_INVERTED)
+                        {
+                            *out++ = cp_bpsk_inverted[prbs[n + K_OFFSET] ^ pn_sequence[j]];
                         }
                         else if (data_carrier_map[n] == TRPAPR_CARRIER)
                         {

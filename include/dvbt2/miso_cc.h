@@ -19,8 +19,8 @@
  */
 
 
-#ifndef INCLUDED_DVBT2_FREQINTERLEAVER_CC_H
-#define INCLUDED_DVBT2_FREQINTERLEAVER_CC_H
+#ifndef INCLUDED_DVBT2_MISO_CC_H
+#define INCLUDED_DVBT2_MISO_CC_H
 
 #include <dvbt2/api.h>
 #include <dvbt2/dvbt2_config.h>
@@ -34,24 +34,24 @@ namespace gr {
      * \ingroup dvbt2
      *
      */
-    class DVBT2_API freqinterleaver_cc : virtual public gr::sync_block
+    class DVBT2_API miso_cc : virtual public gr::sync_block
     {
      public:
-      typedef boost::shared_ptr<freqinterleaver_cc> sptr;
+      typedef boost::shared_ptr<miso_cc> sptr;
 
       /*!
-       * \brief Return a shared_ptr to a new instance of dvbt2::freqinterleaver_cc.
+       * \brief Return a shared_ptr to a new instance of dvbt2::miso_cc.
        *
-       * To avoid accidental use of raw pointers, dvbt2::freqinterleaver_cc's
+       * To avoid accidental use of raw pointers, dvbt2::miso_cc's
        * constructor is in a private implementation
-       * class. dvbt2::freqinterleaver_cc::make is the public interface for
+       * class. dvbt2::miso_cc::make is the public interface for
        * creating new instances.
        */
-      static sptr make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2);
+      static sptr make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode);
     };
 
   } // namespace dvbt2
 } // namespace gr
 
-#endif /* INCLUDED_DVBT2_FREQINTERLEAVER_CC_H */
+#endif /* INCLUDED_DVBT2_MISO_CC_H */
 

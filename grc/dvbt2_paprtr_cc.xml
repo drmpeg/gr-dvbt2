@@ -48,7 +48,7 @@
       <opt>vlength:8192</opt>
     </option>
     <option>
-      <name>8K Short GI</name>
+      <name>8K DVB-T2 GI</name>
       <key>FFTSIZE_8K_EXT</key>
       <opt>val:dvbt2.FFTSIZE_8K_SGI</opt>
       <opt>vlength:8192</opt>
@@ -66,7 +66,7 @@
       <opt>vlength:32768</opt>
     </option>
     <option>
-      <name>32K Short GI</name>
+      <name>32K DVB-T2 GI</name>
       <key>FFTSIZE_32K_EXT</key>
       <opt>val:dvbt2.FFTSIZE_32K_SGI</opt>
       <opt>vlength:32768</opt>

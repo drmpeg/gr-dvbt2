@@ -21,6 +21,7 @@
 #include "dvbt2/pilotgenerator_cc.h"
 #include "dvbt2/p1insertion_cc.h"
 #include "dvbt2/paprtr_cc.h"
+#include "dvbt2/miso_cc.h"
 %}
 
 
@@ -50,3 +51,5 @@ GR_SWIG_BLOCK_MAGIC2(dvbt2, pilotgenerator_cc);
 GR_SWIG_BLOCK_MAGIC2(dvbt2, p1insertion_cc);
 %include "dvbt2/paprtr_cc.h"
 GR_SWIG_BLOCK_MAGIC2(dvbt2, paprtr_cc);
+%include "dvbt2/miso_cc.h"
+GR_SWIG_BLOCK_MAGIC2(dvbt2, miso_cc);

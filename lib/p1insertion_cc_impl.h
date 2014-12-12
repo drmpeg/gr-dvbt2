@@ -44,6 +44,12 @@ namespace gr {
       gr_complex p1_timeshft[1024];
       void init_p1_randomizer(void);
 
+      int show_levels;
+      float real_positive;
+      float real_negative;
+      float imag_positive;
+      float imag_negative;
+
       fft::fft_complex *p1_fft;
       int p1_fft_size;
 
@@ -52,7 +58,7 @@ namespace gr {
       const static unsigned char s2_modulation_patterns[16][32];
 
      public:
-      p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble);
+      p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels);
       ~p1insertion_cc_impl();
 
       // Where all the action really happens

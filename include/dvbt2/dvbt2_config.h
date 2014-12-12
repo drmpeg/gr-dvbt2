@@ -174,6 +174,16 @@ namespace gr {
       L1_SCRAMBLED_ON,
     };
 
+    enum dvbt2_misogroup_t {
+      MISO_TX1 = 0,
+      MISO_TX2,
+    };
+
+    enum dvbt2_showlevels_t {
+      SHOWLEVELS_OFF = 0,
+      SHOWLEVELS_ON,
+    };
+
   } // namespace dvbt2
 } // namespace gr
 
@@ -193,6 +203,8 @@ typedef gr::dvbt2::dvbt2_pilotpattern_t dvbt2_pilotpattern_t;
 typedef gr::dvbt2::dvbt2_version_t dvbt2_version_t;
 typedef gr::dvbt2::dvbt2_reservedbiasbits_t dvbt2_reservedbiasbits_t;
 typedef gr::dvbt2::dvbt2_l1scrambled_t dvbt2_l1scrambled_t;
+typedef gr::dvbt2::dvbt2_misogroup_t dvbt2_misogroup_t;
+typedef gr::dvbt2::dvbt2_showlevels_t dvbt2_showlevels_t;
 
 #endif /* INCLUDED_DVBT2_CONFIG_H */
 

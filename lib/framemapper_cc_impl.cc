@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     framemapper_cc::sptr
-    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled)
+    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled)
     {
       return gnuradio::get_initial_sptr
-        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode, version, preamble, inputmode, reservedbiasbits, l1scrambled));
+        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode, version, preamble1, preamble2, inputmode, reservedbiasbits, l1scrambled));
     }
 
     /*
      * The private constructor
      */
-    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled)
+    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled)
       : gr::block("framemapper_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -89,7 +89,14 @@ namespace gr {
         fef_interval = 1;       /*  "     "     "   */
         l1preinit->type = gr::dvbt2::STREAMTYPE_TS;
         l1preinit->bwt_ext = carriermode;
-        l1preinit->s1 = preamble;
+        if (version == gr::dvbt2::VERSION_111)
+        {
+            l1preinit->s1 = preamble1;
+        }
+        else
+        {
+            l1preinit->s1 = preamble2;
+        }
         l1preinit->s2 = fftsize;
         l1preinit->l1_repetition_flag = FALSE;
         l1preinit->guard_interval = guardinterval;
@@ -157,7 +164,7 @@ namespace gr {
         l1postinit->time_il_length = tiblocks;
         l1postinit->time_il_type = 0;
         l1postinit->in_band_a_flag = 0;
-        if (preamble == gr::dvbt2::PREAMBLE_T2_LITE_SISO)
+        if (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131)
         {
             l1postinit->in_band_b_flag = 1;
         }
@@ -546,34 +553,69 @@ namespace gr {
 #endif
                 break;
         }
-        switch (fftsize)
+        if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
         {
-            case gr::dvbt2::FFTSIZE_1K:
-                N_P2 = 16;
-                C_P2 = 558;
-                break;
-            case gr::dvbt2::FFTSIZE_2K:
-                N_P2 = 8;
-                C_P2 = 1118;
-                break;
-            case gr::dvbt2::FFTSIZE_4K:
-                N_P2 = 4;
-                C_P2 = 2236;
-                break;
-            case gr::dvbt2::FFTSIZE_8K_NORM:
-            case gr::dvbt2::FFTSIZE_8K_SGI:
-                N_P2 = 2;
-                C_P2 = 4472;
-                break;
-            case gr::dvbt2::FFTSIZE_16K:
-                N_P2 = 1;
-                C_P2 = 8944;
-                break;
-            case gr::dvbt2::FFTSIZE_32K_NORM:
-            case gr::dvbt2::FFTSIZE_32K_SGI:
-                N_P2 = 1;
-                C_P2 = 22432;
-                break;
+            switch (fftsize)
+            {
+                case gr::dvbt2::FFTSIZE_1K:
+                    N_P2 = 16;
+                    C_P2 = 558;
+                    break;
+                case gr::dvbt2::FFTSIZE_2K:
+                    N_P2 = 8;
+                    C_P2 = 1118;
+                    break;
+                case gr::dvbt2::FFTSIZE_4K:
+                    N_P2 = 4;
+                    C_P2 = 2236;
+                    break;
+                case gr::dvbt2::FFTSIZE_8K_NORM:
+                case gr::dvbt2::FFTSIZE_8K_SGI:
+                    N_P2 = 2;
+                    C_P2 = 4472;
+                    break;
+               case gr::dvbt2::FFTSIZE_16K:
+                    N_P2 = 1;
+                    C_P2 = 8944;
+                    break;
+                case gr::dvbt2::FFTSIZE_32K_NORM:
+                case gr::dvbt2::FFTSIZE_32K_SGI:
+                    N_P2 = 1;
+                    C_P2 = 22432;
+                    break;
+            }
+        }
+        else
+        {
+            switch (fftsize)
+            {
+                case gr::dvbt2::FFTSIZE_1K:
+                    N_P2 = 16;
+                    C_P2 = 546;
+                    break;
+                case gr::dvbt2::FFTSIZE_2K:
+                    N_P2 = 8;
+                    C_P2 = 1098;
+                    break;
+                case gr::dvbt2::FFTSIZE_4K:
+                    N_P2 = 4;
+                    C_P2 = 2198;
+                    break;
+                case gr::dvbt2::FFTSIZE_8K_NORM:
+                case gr::dvbt2::FFTSIZE_8K_SGI:
+                    N_P2 = 2;
+                    C_P2 = 4398;
+                    break;
+               case gr::dvbt2::FFTSIZE_16K:
+                    N_P2 = 1;
+                    C_P2 = 8814;
+                    break;
+                case gr::dvbt2::FFTSIZE_32K_NORM:
+                case gr::dvbt2::FFTSIZE_32K_SGI:
+                    N_P2 = 1;
+                    C_P2 = 17612;
+                    break;
+            }
         }
         switch (fftsize)
         {
@@ -1087,25 +1129,28 @@ namespace gr {
                 }
                 break;
         }
-        if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
+        if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
         {
-            N_FC = 0;
-            C_FC = 0;
-        }
-        if (guardinterval == gr::dvbt2::GI_1_32 && pilotpattern == gr::dvbt2::PILOT_PP4)
-        {
-            N_FC = 0;
-            C_FC = 0;
-        }
-        if (guardinterval == gr::dvbt2::GI_1_16 && pilotpattern == gr::dvbt2::PILOT_PP2)
-        {
-            N_FC = 0;
-            C_FC = 0;
-        }
-        if (guardinterval == gr::dvbt2::GI_19_256 && pilotpattern == gr::dvbt2::PILOT_PP2)
-        {
-            N_FC = 0;
-            C_FC = 0;
+            if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
+            {
+                N_FC = 0;
+                C_FC = 0;
+            }
+            if (guardinterval == gr::dvbt2::GI_1_32 && pilotpattern == gr::dvbt2::PILOT_PP4)
+            {
+                N_FC = 0;
+                C_FC = 0;
+            }
+            if (guardinterval == gr::dvbt2::GI_1_16 && pilotpattern == gr::dvbt2::PILOT_PP2)
+            {
+                N_FC = 0;
+                C_FC = 0;
+            }
+            if (guardinterval == gr::dvbt2::GI_19_256 && pilotpattern == gr::dvbt2::PILOT_PP2)
+            {
+                N_FC = 0;
+                C_FC = 0;
+            }
         }
         if (fef_present == FALSE)
         {

@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     p1insertion_cc::sptr
-    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble)
+    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels)
     {
       return gnuradio::get_initial_sptr
-        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms, version, preamble));
+        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms, version, preamble1, preamble2, showlevels));
     }
 
     /*
      * The private constructor
      */
-    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble)
+    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels)
       : gr::block("p1insertion_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -102,7 +102,14 @@ namespace gr {
                 break;
         }
         init_p1_randomizer();
-        s1 = preamble;
+        if (version == gr::dvbt2::VERSION_111)
+        {
+            s1 = preamble1;
+        }
+        else
+        {
+            s1 = preamble2;
+        }
         s2 = fftsize << 1;
         if (fef_present == TRUE)
         {
@@ -190,6 +197,11 @@ namespace gr {
         frame_items = ((numdatasyms + N_P2) * fft_size) + ((numdatasyms + N_P2) * guard_interval);
         insertion_items = frame_items + 2048;
         set_output_multiple(frame_items + 2048);
+        show_levels = showlevels;
+        real_positive = 0.0;
+        real_negative = 0.0;
+        imag_positive = 0.0;
+        imag_negative = 0.0;
     }
 
 void p1insertion_cc_impl::init_p1_randomizer(void)
@@ -233,9 +245,11 @@ void p1insertion_cc_impl::init_p1_randomizer(void)
     {
         const gr_complex *in = (const gr_complex *) input_items[0];
         gr_complex *out = (gr_complex *) output_items[0];
+        gr_complex *level;
 
         for (int i = 0; i < noutput_items; i += insertion_items)
         {
+            level = out;
             for (int j = 0; j < 542; j++)
             {
                 *out++ = p1_timeshft[j];
@@ -249,6 +263,30 @@ void p1insertion_cc_impl::init_p1_randomizer(void)
                 *out++ = p1_timeshft[j];
             }
             memcpy(out, in, sizeof(gr_complex) * frame_items);
+            if (show_levels == TRUE)
+            {
+                for (int j = 0; j < frame_items + 2048; j++)
+                {
+                    if (level[j].real() > real_positive)
+                    {
+                       real_positive = level[j].real();
+                    }
+                    if (level[j].real() < real_negative)
+                    {
+                        real_negative = level[j].real();
+                    }
+                    if (level[j].imag() > imag_positive)
+                    {
+                        imag_positive = level[j].imag();
+                    }
+                    if (level[j].imag() < imag_negative)
+                    {
+                        imag_negative = level[j].imag();
+                    }
+                }
+                printf("peak real = %+e, %+e\n", real_positive, real_negative);
+                printf("peak imag = %+e, %+e\n", imag_positive, imag_negative);
+            }
             out += frame_items;
             in += frame_items;
         }

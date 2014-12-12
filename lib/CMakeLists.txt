@@ -36,7 +36,8 @@ list(APPEND dvbt2_sources
     freqinterleaver_cc_impl.cc
     pilotgenerator_cc_impl.cc
     p1insertion_cc_impl.cc
-    paprtr_cc_impl.cc )
+    paprtr_cc_impl.cc
+    miso_cc_impl.cc )
 
 set(dvbt2_sources "${dvbt2_sources}" PARENT_SCOPE)
 if(NOT dvbt2_sources)
