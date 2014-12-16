@@ -534,7 +534,7 @@ namespace gr {
                                 pack <<= 1;
                             }
                             pack >>= 1;
-                            out[produced++] = pack & 0xf;
+                            out[produced++] = pack & 0xff;
                             index += mod;
                             consumed += mod;
                         }
