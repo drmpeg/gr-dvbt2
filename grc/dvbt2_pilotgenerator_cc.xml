@@ -261,12 +261,12 @@
     <type>enum</type>
     <hide>$preamble1.hide_miso</hide>
     <option>
-      <name>MISO Group TX1</name>
+      <name>TX1</name>
       <key>MISO_TX1</key>
       <opt>val:dvbt2.MISO_TX1</opt>
     </option>
     <option>
-      <name>MISO Group TX2</name>
+      <name>TX2</name>
       <key>MISO_TX2</key>
       <opt>val:dvbt2.MISO_TX2</opt>
     </option>

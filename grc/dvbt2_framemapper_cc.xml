@@ -3,7 +3,7 @@
   <key>dvbt2_framemapper_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.framemapper_cc($framesize.val, $rate.val, $constellation.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val, $t2frames, $numdatasyms, $paprmode.val, $version.val, $preamble1.val, $preamble2.val, $inputmode.val, $reservedbiasbits.val, $l1scrambled.val)</make>
+  <make>dvbt2.framemapper_cc($framesize.val, $rate.val, $constellation.val, $rotation.val, $fecblocks, $tiblocks, $carriermode.val, $fftsize.val, $guardinterval.val, $l1constellation.val, $pilotpattern.val, $t2frames, $numdatasyms, $paprmode.val, $version.val, $preamble1.val, $preamble2.val, $inputmode.val, $reservedbiasbits.val, $l1scrambled.val, $inband.val)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>
@@ -430,6 +430,22 @@
       <name>On</name>
       <key>L1_SCRAMBLED_ON</key>
       <opt>val:dvbt2.L1_SCRAMBLED_ON</opt>
+    </option>
+  </param>
+  <param>
+    <name>In-band Signalling</name>
+    <key>inband</key>
+    <type>enum</type>
+    <hide>$version.hide_131</hide>
+    <option>
+      <name>Off</name>
+      <key>INBAND_OFF</key>
+      <opt>val:dvbt2.INBAND_OFF</opt>
+    </option>
+    <option>
+      <name>Type B</name>
+      <key>INBAND_ON</key>
+      <opt>val:dvbt2.INBAND_ON</opt>
     </option>
   </param>
   <sink>

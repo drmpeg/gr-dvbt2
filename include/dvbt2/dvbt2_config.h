@@ -184,6 +184,11 @@ namespace gr {
       SHOWLEVELS_ON,
     };
 
+    enum dvbt2_inband_t {
+      INBAND_OFF = 0,
+      INBAND_ON,
+    };
+
   } // namespace dvbt2
 } // namespace gr
 
@@ -205,6 +210,7 @@ typedef gr::dvbt2::dvbt2_reservedbiasbits_t dvbt2_reservedbiasbits_t;
 typedef gr::dvbt2::dvbt2_l1scrambled_t dvbt2_l1scrambled_t;
 typedef gr::dvbt2::dvbt2_misogroup_t dvbt2_misogroup_t;
 typedef gr::dvbt2::dvbt2_showlevels_t dvbt2_showlevels_t;
+typedef gr::dvbt2::dvbt2_inband_t dvbt2_inband_t;
 
 #endif /* INCLUDED_DVBT2_CONFIG_H */
 

@@ -52,14 +52,19 @@ namespace gr {
       unsigned char crc;
       unsigned int input_mode;
       unsigned int extra;
+      int inband_type_b;
+      int fec_blocks;
+      int fec_block;
+      int ts_rate;
       FrameFormat m_format[1];
       unsigned char crc_tab[256];
-      void add_bbheader(unsigned char *, int);
+      void add_bbheader(unsigned char *, int, int);
       void build_crc8_table(void);
       int add_crc8_bits(unsigned char *, int);
+      void add_inband_type_b(unsigned char *, int);
 
      public:
-      bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode);
+      bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode, dvbt2_inband_t inband, int fecblocks, int tsrate);
       ~bbheader_bb_impl();
 
       // Where all the action really happens

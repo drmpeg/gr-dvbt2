@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     bbheader_bb::sptr
-    bbheader_bb::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode)
+    bbheader_bb::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode, dvbt2_inband_t inband, int fecblocks, int tsrate)
     {
       return gnuradio::get_initial_sptr
-        (new bbheader_bb_impl(framesize, rate, mode));
+        (new bbheader_bb_impl(framesize, rate, mode, inband, fecblocks, tsrate));
     }
 
     /*
      * The private constructor
      */
-    bbheader_bb_impl::bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode)
+    bbheader_bb_impl::bbheader_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_inputmode_t mode, dvbt2_inband_t inband, int fecblocks, int tsrate)
       : gr::block("bbheader_bb",
               gr::io_signature::make(1, 1, sizeof(unsigned char)),
               gr::io_signature::make(1, 1, sizeof(unsigned char)))
@@ -125,6 +125,10 @@ namespace gr {
 
         build_crc8_table();
         input_mode = mode;
+        inband_type_b = inband;
+        fec_blocks = fecblocks;
+        fec_block = 0;
+        ts_rate = tsrate;
         extra = (((kbch - 80) / 8) / 187) + 1;
         set_output_multiple(kbch);
     }
@@ -202,7 +206,7 @@ int bbheader_bb_impl::add_crc8_bits(unsigned char *in, int length)
     return 8;// Length of CRC
 }
 
-void bbheader_bb_impl::add_bbheader(unsigned char *out, int count)
+void bbheader_bb_impl::add_bbheader(unsigned char *out, int count, int padding)
 {
     int temp, m_frame_offset_bits;
     unsigned char *m_frame = out;
@@ -237,7 +241,7 @@ void bbheader_bb_impl::add_bbheader(unsigned char *out, int count)
     {
         m_frame[m_frame_offset_bits++] = temp & (1 << n) ? 1 : 0;
     }
-    temp = h->dfl;
+    temp = h->dfl - padding;
     for (int n = 15; n >= 0; n--)
     {
         m_frame[m_frame_offset_bits++] = temp & (1 << n) ? 1 : 0;
@@ -262,6 +266,46 @@ void bbheader_bb_impl::add_bbheader(unsigned char *out, int count)
     m_frame_offset_bits += add_crc8_bits(m_frame, len);
 }
 
+void bbheader_bb_impl::add_inband_type_b(unsigned char *out, int ts_rate)
+{
+    int temp, m_frame_offset_bits;
+    unsigned char *m_frame = out;
+
+    m_frame[0] = 0;
+    m_frame[1] = 1;
+    m_frame_offset_bits = 2;
+    temp = 0;
+    for (int n = 30; n >= 0; n--)
+    {
+        m_frame[m_frame_offset_bits++] = temp & (1 << n) ? 1 : 0;
+    }
+    temp = 0;
+    for (int n = 21; n >= 0; n--)
+    {
+        m_frame[m_frame_offset_bits++] = temp & (1 << n) ? 1 : 0;
+    }
+    temp = 0;
+    for (int n = 1; n >= 0; n--)
+    {
+        m_frame[m_frame_offset_bits++] = temp & (1 << n) ? 1 : 0;
+    }
+    temp = 0;
+    for (int n = 9; n >= 0; n--)
+    {
+        m_frame[m_frame_offset_bits++] = temp & (1 << n) ? 1 : 0;
+    }
+    temp = ts_rate;
+    for (int n = 26; n >= 0; n--)
+    {
+        m_frame[m_frame_offset_bits++] = temp & (1 << n) ? 1 : 0;
+    }
+    temp = 0;
+    for (int n = 9; n >= 0; n--)
+    {
+        m_frame[m_frame_offset_bits++] = temp & (1 << n) ? 1 : 0;
+    }
+}
+
     int
     bbheader_bb_impl::general_work (int noutput_items,
                        gr_vector_int &ninput_items,
@@ -272,16 +316,25 @@ void bbheader_bb_impl::add_bbheader(unsigned char *out, int count)
         unsigned char *out = (unsigned char *) output_items[0];
         int consumed = 0;
         int offset = 0;
+        int padding;
         unsigned char b;
 
         for (int i = 0; i < noutput_items; i += kbch)
         {
-            add_bbheader(&out[offset], count);
+            if (fec_block == 0 && inband_type_b == TRUE)
+            {
+                padding = 104;
+            }
+            else
+            {
+                padding = 0;
+            }
+            add_bbheader(&out[offset], count, padding);
             offset = offset + 80;
 
             if (input_mode == gr::dvbt2::INPUTMODE_HIEFF)
             {
-                for (int j = 0; j < (int)((kbch - 80) / 8); j++)
+                for (int j = 0; j < (int)((kbch - 80 - padding) / 8); j++)
                 {
                     if (count == 0)
                     {
@@ -303,10 +356,15 @@ void bbheader_bb_impl::add_bbheader(unsigned char *out, int count)
                     count = (count + 1) % 188;
                     consumed++;
                 }
+                if (fec_block == 0 && inband_type_b == TRUE)
+                {
+                    add_inband_type_b(&out[offset], ts_rate);
+                    offset = offset + 104;
+                }
             }
             else
             {
-                for (int j = 0; j < (int)((kbch - 80) / 8); j++)
+                for (int j = 0; j < (int)((kbch - 80 - padding) / 8); j++)
                 {
                     if (count == 0)
                     {
@@ -330,6 +388,15 @@ void bbheader_bb_impl::add_bbheader(unsigned char *out, int count)
                         out[offset++] = b & (1 << n) ? 1 : 0;
                     }
                 }
+                if (fec_block == 0 && inband_type_b == TRUE)
+                {
+                    add_inband_type_b(&out[offset], ts_rate);
+                    offset = offset + 104;
+                }
+            }
+            if (inband_type_b == TRUE)
+            {
+                fec_block = (fec_block + 1) % fec_blocks;
             }
         }
 

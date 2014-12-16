@@ -3,7 +3,7 @@
   <key>dvbt2_bbheader_bb</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.bbheader_bb($framesize.val, $rate.val, $mode.val)</make>
+  <make>dvbt2.bbheader_bb($framesize.val, $rate.val, $mode.val, $inband.val, $fecblocks, $tsrate)</make>
   <param>
     <name>FECFRAME size</name>
     <key>framesize</key>
@@ -78,6 +78,37 @@
       <key>FECFRAME_SHORT</key>
       <opt>val:dvbt2.INPUTMODE_HIEFF</opt>
     </option>
+  </param>
+  <param>
+    <name>In-band Signalling</name>
+    <key>inband</key>
+    <type>enum</type>
+    <option>
+      <name>Off</name>
+      <key>INBAND_OFF</key>
+      <opt>val:dvbt2.INBAND_OFF</opt>
+      <opt>hide_rate:all</opt>
+    </option>
+    <option>
+      <name>Type B</name>
+      <key>INBAND_ON</key>
+      <opt>val:dvbt2.INBAND_ON</opt>
+      <opt>hide_rate:</opt>
+    </option>
+  </param>
+  <param>
+    <name>FEC blocks per frame</name>
+    <key>fecblocks</key>
+    <value>168</value>
+    <type>int</type>
+    <hide>$inband.hide_rate</hide>
+  </param>
+  <param>
+    <name>Transport Stream Rate</name>
+    <key>tsrate</key>
+    <value>4000000</value>
+    <type>int</type>
+    <hide>$inband.hide_rate</hide>
   </param>
   <sink>
     <name>in</name>
