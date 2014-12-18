@@ -124,15 +124,22 @@ namespace gr {
         l1preinit->num_rf = 1;
         l1preinit->current_rf_index = 0;
         l1preinit->t2_version = version;
-        l1preinit->l1_post_scrambled = l1scrambled;
-        l1preinit->t2_base_lite = FALSE;
-        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        if (version == gr::dvbt2::VERSION_131)
         {
-            l1preinit->reserved = 0;
+            l1preinit->l1_post_scrambled = l1scrambled;
         }
         else
         {
+            l1preinit->l1_post_scrambled = FALSE;
+        }
+        l1preinit->t2_base_lite = FALSE;
+        if (reservedbiasbits == gr::dvbt2::RESERVED_ON && version == gr::dvbt2::VERSION_131)
+        {
             l1preinit->reserved = 0xf;
+        }
+        else
+        {
+            l1preinit->reserved = 0x0;
         }
 
         l1postinit->sub_slices_per_frame = 1;
@@ -172,13 +179,13 @@ namespace gr {
         {
             l1postinit->in_band_b_flag = 0;
         }
-        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        if (reservedbiasbits == gr::dvbt2::RESERVED_ON && version == gr::dvbt2::VERSION_131)
         {
-            l1postinit->reserved_1 = 0;
+            l1postinit->reserved_1 = 0x7ff;
         }
         else
         {
-            l1postinit->reserved_1 = 0x7ff;
+            l1postinit->reserved_1 = 0x0;
         }
         if (version == gr::dvbt2::VERSION_111)
         {
@@ -199,39 +206,39 @@ namespace gr {
             l1postinit->static_padding_flag = 1;
         }
         l1postinit->fef_length_msb = 0;
-        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        if (reservedbiasbits == gr::dvbt2::RESERVED_ON && version == gr::dvbt2::VERSION_131)
         {
-            l1postinit->reserved_2 = 0;
+            l1postinit->reserved_2 = 0x3fffffff;
         }
         else
         {
-            l1postinit->reserved_2 = 0x3fffffff;
+            l1postinit->reserved_2 = 0;
         }
         l1postinit->frame_idx = 0;
         l1postinit->sub_slice_interval = 0;
         l1postinit->type_2_start = 0;
         l1postinit->l1_change_counter = 0;
         l1postinit->start_rf_idx = 0;
-        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
+        if (reservedbiasbits == gr::dvbt2::RESERVED_ON && version == gr::dvbt2::VERSION_131)
         {
-            l1postinit->reserved_3 = 0;
+            l1postinit->reserved_3 = 0xff;
         }
         else
         {
-            l1postinit->reserved_3 = 0xff;
+            l1postinit->reserved_3 = 0;
         }
         l1postinit->plp_id = 0;
         l1postinit->plp_start = 0;
         l1postinit->plp_num_blocks = fecblocks;
-        if (reservedbiasbits == gr::dvbt2::RESERVED_OFF)
-        {
-            l1postinit->reserved_4 = 0;
-            l1postinit->reserved_5 = 0;
-        }
-        else
+        if (reservedbiasbits == gr::dvbt2::RESERVED_ON && version == gr::dvbt2::VERSION_131)
         {
             l1postinit->reserved_4 = 0xff;
             l1postinit->reserved_5 = 0xff;
+        }
+        else
+        {
+            l1postinit->reserved_4 = 0;
+            l1postinit->reserved_5 = 0;
         }
 
         bch_poly_build_tables();
@@ -1178,10 +1185,16 @@ namespace gr {
         t2_frames = t2frames;
         t2_frame_num = 0;
         l1_scrambled = l1scrambled;
+        stream_items = cell_size * fecblocks;
         if (N_FC == 0)
         {
             set_output_multiple((N_P2 * C_P2) + (numdatasyms * C_DATA));
             mapped_items = (N_P2 * C_P2) + (numdatasyms * C_DATA);
+            if (mapped_items < (stream_items + 1840 + (N_post / eta_mod) + (N_FC - C_FC)))
+            {
+                fprintf(stderr, "Too many FEC blocks in T2 frame.\n");
+                mapped_items = stream_items + 1840 + (N_post / eta_mod) + (N_FC - C_FC);    /* avoid segfault */
+            }
             zigzag_interleave = (gr_complex *) malloc(sizeof(gr_complex) * mapped_items);
             if (zigzag_interleave == NULL) {
                 fprintf(stderr, "Frame mapper 1st malloc, Out of memory.\n");
@@ -1192,13 +1205,17 @@ namespace gr {
         {
             set_output_multiple((N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC);
             mapped_items = (N_P2 * C_P2) + ((numdatasyms - 1) * C_DATA) + N_FC;
+            if (mapped_items < (stream_items + 1840 + (N_post / eta_mod) + (N_FC - C_FC)))
+            {
+                fprintf(stderr, "Too many FEC blocks in T2 frame.\n");
+                mapped_items = stream_items + 1840 + (N_post / eta_mod) + (N_FC - C_FC);    /* avoid segfault */
+            }
             zigzag_interleave = (gr_complex *) malloc(sizeof(gr_complex) * mapped_items);
             if (zigzag_interleave == NULL) {
                 fprintf(stderr, "Frame mapper 1st malloc, Out of memory.\n");
                 exit(1);
             }
         }
-        stream_items = cell_size * fecblocks;
         dummy_randomize = (gr_complex *) malloc(sizeof(gr_complex) * mapped_items - stream_items - 1840 - (N_post / eta_mod) - (N_FC - C_FC));
         if (dummy_randomize == NULL) {
             free(zigzag_interleave);
