@@ -49,6 +49,14 @@ namespace gr {
       float real_negative;
       float imag_positive;
       float imag_negative;
+      float real_positive_threshold;
+      float real_negative_threshold;
+      float imag_positive_threshold;
+      float imag_negative_threshold;
+      int real_positive_threshold_count;
+      int real_negative_threshold_count;
+      int imag_positive_threshold_count;
+      int imag_negative_threshold_count;
 
       fft::fft_complex *p1_fft;
       int p1_fft_size;
@@ -58,7 +66,7 @@ namespace gr {
       const static unsigned char s2_modulation_patterns[16][32];
 
      public:
-      p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels);
+      p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels, float vclip);
       ~p1insertion_cc_impl();
 
       // Where all the action really happens

@@ -210,14 +210,14 @@
   <param>
     <name>Vclip</name>
     <key>vclip</key>
-    <value>2.57</value>
+    <value>3.3</value>
     <type>float</type>
     <hide>$paprmode.hide_vclip</hide>
   </param>
   <param>
     <name>Iterations</name>
     <key>iterations</key>
-    <value>50</value>
+    <value>10</value>
     <type>int</type>
     <hide>$paprmode.hide_vclip</hide>
   </param>

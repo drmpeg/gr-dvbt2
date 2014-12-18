@@ -5,7 +5,7 @@
   <import>import dvbt2</import>
   <import>from gnuradio import fft</import>
   <import>from gnuradio.fft import window</import>
-  <make>dvbt2.p1insertion_cc($carriermode.val, $fftsize.val, $guardinterval.val, $numdatasyms, $version.val, $preamble1.val, $preamble2.val, $showlevels.val)</make>
+  <make>dvbt2.p1insertion_cc($carriermode.val, $fftsize.val, $guardinterval.val, $numdatasyms, $version.val, $preamble1.val, $preamble2.val, $showlevels.val, $vclip)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -181,12 +181,21 @@
       <name>Off</name>
       <key>SHOWLEVELS_OFF</key>
       <opt>val:dvbt2.SHOWLEVELS_OFF</opt>
+      <opt>hide_vclip:all</opt>
     </option>
     <option>
       <name>On</name>
       <key>SHOWLEVELS_ON</key>
       <opt>val:dvbt2.SHOWLEVELS_ON</opt>
+      <opt>hide_vclip:</opt>
     </option>
+  </param>
+  <param>
+    <name>Vclip</name>
+    <key>vclip</key>
+    <value>3.3</value>
+    <type>float</type>
+    <hide>$showlevels.hide_vclip</hide>
   </param>
   <sink>
     <name>in</name>

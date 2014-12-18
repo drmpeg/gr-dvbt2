@@ -30,22 +30,22 @@ namespace gr {
   namespace dvbt2 {
 
     p1insertion_cc::sptr
-    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels)
+    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels, float vclip)
     {
       return gnuradio::get_initial_sptr
-        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms, version, preamble1, preamble2, showlevels));
+        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms, version, preamble1, preamble2, showlevels, vclip));
     }
 
     /*
      * The private constructor
      */
-    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels)
+    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels, float vclip)
       : gr::block("p1insertion_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
     {
         int s1, s2, index = 0;
-        int fef_present = FALSE;
+        int fef_present = FALSE;    /* for testing only */
         const gr_complex *in = (const gr_complex *) p1_freq;
         gr_complex *out = (gr_complex *) p1_time;
         switch (fftsize)
@@ -202,6 +202,14 @@ namespace gr {
         real_negative = 0.0;
         imag_positive = 0.0;
         imag_negative = 0.0;
+        real_positive_threshold = vclip;
+        real_negative_threshold = -vclip;
+        imag_positive_threshold = vclip;
+        imag_negative_threshold = -vclip;
+        real_positive_threshold_count = 0;
+        real_negative_threshold_count = 0;
+        imag_positive_threshold_count = 0;
+        imag_negative_threshold_count = 0;
     }
 
 void p1insertion_cc_impl::init_p1_randomizer(void)
@@ -283,9 +291,25 @@ void p1insertion_cc_impl::init_p1_randomizer(void)
                     {
                         imag_negative = level[j].imag();
                     }
+                    if (level[j].real() > real_positive_threshold)
+                    {
+                        real_positive_threshold_count++;
+                    }
+                    if (level[j].real() < real_negative_threshold)
+                    {
+                        real_negative_threshold_count++;
+                    }
+                    if (level[j].imag() > imag_positive_threshold)
+                    {
+                        imag_positive_threshold_count++;
+                    }
+                    if (level[j].imag() < imag_negative_threshold)
+                    {
+                        imag_negative_threshold_count++;
+                    }
                 }
-                printf("peak real = %+e, %+e\n", real_positive, real_negative);
-                printf("peak imag = %+e, %+e\n", imag_positive, imag_negative);
+                printf("peak real = %+e, %+e, %d, %d\n", real_positive, real_negative, real_positive_threshold_count, real_negative_threshold_count);
+                printf("peak imag = %+e, %+e, %d, %d\n", imag_positive, imag_negative, imag_positive_threshold_count, imag_negative_threshold_count);
             }
             out += frame_items;
             in += frame_items;
