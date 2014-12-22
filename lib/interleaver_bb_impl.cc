@@ -222,6 +222,14 @@ namespace gr {
                 {
                     mux = &mux16_35[0];
                 }
+                else if (code_rate == gr::dvbt2::C1_3 && frame_size == FRAME_SIZE_SHORT)
+                {
+                    mux = &mux16_13[0];
+                }
+                else if (code_rate == gr::dvbt2::C2_5 && frame_size == FRAME_SIZE_SHORT)
+                {
+                    mux = &mux16_25[0];
+                }
                 else
                 {
                     mux = &mux16[0];
@@ -302,6 +310,14 @@ namespace gr {
                 if (code_rate == gr::dvbt2::C3_5 && frame_size == FRAME_SIZE_NORMAL)
                 {
                     mux = &mux64_35[0];
+                }
+                else if (code_rate == gr::dvbt2::C1_3 && frame_size == FRAME_SIZE_SHORT)
+                {
+                    mux = &mux64_13[0];
+                }
+                else if (code_rate == gr::dvbt2::C2_5 && frame_size == FRAME_SIZE_SHORT)
+                {
+                    mux = &mux64_25[0];
                 }
                 else
                 {
@@ -477,6 +493,18 @@ namespace gr {
                 }
                 else
                 {
+                    if (code_rate == gr::dvbt2::C1_3)
+                    {
+                        mux = &mux256s_13[0];
+                    }
+                    else if (code_rate == gr::dvbt2::C2_5)
+                    {
+                        mux = &mux256s_25[0];
+                    }
+                    else
+                    {
+                        mux = &mux256s[0];
+                    }
                     for (int i = 0; i < noutput_items; i += packed_items)
                     {
                         rows = frame_size / mod;
@@ -529,7 +557,7 @@ namespace gr {
                             pack = 0;
                             for (int e = 0; e < mod; e++)
                             {
-                                offset = mux256s[e];
+                                offset = mux[e];
                                 pack |= tempu[index + offset];
                                 pack <<= 1;
                             }
@@ -601,9 +629,29 @@ namespace gr {
         0, 2, 3, 6, 4, 1, 7, 5
     };
 
+    const int interleaver_bb_impl::mux16_13[8] =
+    {
+        1, 6, 5, 2, 3, 4, 0, 7
+    };
+
+    const int interleaver_bb_impl::mux16_25[8] =
+    {
+        3, 5, 6, 4, 2, 1, 7, 0
+    };
+
     const int interleaver_bb_impl::mux64_35[12] =
     {
         4, 6, 0, 5, 8, 10, 2, 1, 7, 3, 11, 9
+    };
+
+    const int interleaver_bb_impl::mux64_13[12] =
+    {
+        2, 5, 1, 6, 0, 3, 4, 7, 8, 9, 10, 11
+    };
+
+    const int interleaver_bb_impl::mux64_25[12] =
+    {
+        1, 2, 4, 5, 0, 6, 3, 8, 7, 10, 9, 11
     };
 
     const int interleaver_bb_impl::mux256_35[16] =
@@ -619,6 +667,16 @@ namespace gr {
     const int interleaver_bb_impl::mux256s[8] =
     {
         7, 2, 4, 1, 6, 3, 5, 0
+    };
+
+    const int interleaver_bb_impl::mux256s_13[8] =
+    {
+        1, 2, 3, 5, 0, 4, 6, 7
+    };
+
+    const int interleaver_bb_impl::mux256s_25[8] =
+    {
+        1, 3, 4, 5, 0, 2, 6, 7
     };
 
   } /* namespace dvbt2 */

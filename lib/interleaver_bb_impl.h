@@ -52,11 +52,17 @@ namespace gr {
       const static int mux256[16];
 
       const static int mux16_35[8];
+      const static int mux16_13[8];
+      const static int mux16_25[8];
       const static int mux64_35[12];
+      const static int mux64_13[12];
+      const static int mux64_25[12];
       const static int mux256_35[16];
       const static int mux256_23[16];
 
       const static int mux256s[8];
+      const static int mux256s_13[8];
+      const static int mux256s_25[8];
 
      public:
       interleaver_bb_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation);
