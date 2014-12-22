@@ -81,8 +81,7 @@ Version 1.1.1 features not implemented:
 Version 1.3.1 features not implemented:
 
 1) L1-ACE
-2) T2-Lite 1/3 and 2/5 code rate 16/64/256QAM bit interleaver
-3) Correct T2-Lite S2 mapping for 16K modes
+2) Correct T2-Lite S2 mapping for 16K modes
 
 Build instructions:
 
