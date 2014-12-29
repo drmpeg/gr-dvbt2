@@ -57,17 +57,18 @@ namespace gr {
                 N_P2 = 4;
                 C_P2 = 2198;
                 break;
-            case gr::dvbt2::FFTSIZE_8K_NORM:
-            case gr::dvbt2::FFTSIZE_8K_SGI:
+            case gr::dvbt2::FFTSIZE_8K:
+            case gr::dvbt2::FFTSIZE_8K_T2GI:
                 N_P2 = 2;
                 C_P2 = 4398;
                 break;
             case gr::dvbt2::FFTSIZE_16K:
+            case gr::dvbt2::FFTSIZE_16K_T2GI:
                 N_P2 = 1;
                 C_P2 = 8814;
                 break;
-            case gr::dvbt2::FFTSIZE_32K_NORM:
-            case gr::dvbt2::FFTSIZE_32K_SGI:
+            case gr::dvbt2::FFTSIZE_32K:
+            case gr::dvbt2::FFTSIZE_32K_T2GI:
                 N_P2 = 1;
                 C_P2 = 17612;
                 break;
@@ -254,8 +255,8 @@ namespace gr {
                     }
                 }
                 break;
-            case gr::dvbt2::FFTSIZE_8K_NORM:
-            case gr::dvbt2::FFTSIZE_8K_SGI:
+            case gr::dvbt2::FFTSIZE_8K:
+            case gr::dvbt2::FFTSIZE_8K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)
@@ -365,6 +366,7 @@ namespace gr {
                 }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
+            case gr::dvbt2::FFTSIZE_16K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)
@@ -473,8 +475,8 @@ namespace gr {
                     }
                 }
                 break;
-            case gr::dvbt2::FFTSIZE_32K_NORM:
-            case gr::dvbt2::FFTSIZE_32K_SGI:
+            case gr::dvbt2::FFTSIZE_32K:
+            case gr::dvbt2::FFTSIZE_32K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)

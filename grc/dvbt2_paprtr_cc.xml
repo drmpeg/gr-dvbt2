@@ -43,14 +43,14 @@
     </option>
     <option>
       <name>8K</name>
-      <key>FFTSIZE_8K_NORM</key>
-      <opt>val:dvbt2.FFTSIZE_8K_NORM</opt>
+      <key>FFTSIZE_8K</key>
+      <opt>val:dvbt2.FFTSIZE_8K</opt>
       <opt>vlength:8192</opt>
     </option>
     <option>
       <name>8K DVB-T2 GI</name>
-      <key>FFTSIZE_8K_EXT</key>
-      <opt>val:dvbt2.FFTSIZE_8K_SGI</opt>
+      <key>FFTSIZE_8K_T2GI</key>
+      <opt>val:dvbt2.FFTSIZE_8K_T2GI</opt>
       <opt>vlength:8192</opt>
     </option>
     <option>
@@ -60,15 +60,21 @@
       <opt>vlength:16384</opt>
     </option>
     <option>
+      <name>16K DVB-T2 GI</name>
+      <key>FFTSIZE_16K_T2GI</key>
+      <opt>val:dvbt2.FFTSIZE_16K_T2GI</opt>
+      <opt>vlength:16384</opt>
+    </option>
+    <option>
       <name>32K</name>
-      <key>FFTSIZE_32K_NORM</key>
-      <opt>val:dvbt2.FFTSIZE_32K_NORM</opt>
+      <key>FFTSIZE_32K</key>
+      <opt>val:dvbt2.FFTSIZE_32K</opt>
       <opt>vlength:32768</opt>
     </option>
     <option>
       <name>32K DVB-T2 GI</name>
-      <key>FFTSIZE_32K_EXT</key>
-      <opt>val:dvbt2.FFTSIZE_32K_SGI</opt>
+      <key>FFTSIZE_32K_T2GI</key>
+      <opt>val:dvbt2.FFTSIZE_32K_T2GI</opt>
       <opt>vlength:32768</opt>
     </option>
   </param>
@@ -168,7 +174,7 @@
     <key>paprmode</key>
     <type>enum</type>
     <option>
-      <name>Off</name>
+      <name>Off (1.1.1) / P2 Only (1.3.1)</name>
       <key>PAPR_OFF</key>
       <opt>val:dvbt2.PAPR_OFF</opt>
       <opt>hide_vclip:all</opt>
@@ -186,7 +192,7 @@
       <opt>hide_vclip:</opt>
     </option>
     <option>
-      <name>Both TR and ACE</name>
+      <name>Both ACE and TR</name>
       <key>PAPR_BOTH</key>
       <opt>val:dvbt2.PAPR_BOTH</opt>
       <opt>hide_vclip:</opt>

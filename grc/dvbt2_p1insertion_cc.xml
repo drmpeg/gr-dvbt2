@@ -5,7 +5,7 @@
   <import>import dvbt2</import>
   <import>from gnuradio import fft</import>
   <import>from gnuradio.fft import window</import>
-  <make>dvbt2.p1insertion_cc($carriermode.val, $fftsize.val, $guardinterval.val, $numdatasyms, $version.val, $preamble1.val, $preamble2.val, $showlevels.val, $vclip)</make>
+  <make>dvbt2.p1insertion_cc($carriermode.val, $fftsize1.val, $fftsize2.val, $guardinterval.val, $numdatasyms, $version.val, $preamble1.val, $preamble2.val, $showlevels.val, $vclip)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -23,8 +23,9 @@
   </param>
   <param>
     <name>FFT Size</name>
-    <key>fftsize</key>
+    <key>fftsize1</key>
     <type>enum</type>
+    <hide>$preamble2.hide_base</hide>
     <option>
       <name>1K</name>
       <key>FFTSIZE_1K</key>
@@ -42,13 +43,13 @@
     </option>
     <option>
       <name>8K</name>
-      <key>FFTSIZE_8K_NORM</key>
-      <opt>val:dvbt2.FFTSIZE_8K_NORM</opt>
+      <key>FFTSIZE_8K</key>
+      <opt>val:dvbt2.FFTSIZE_8K</opt>
     </option>
     <option>
       <name>8K DVB-T2 GI</name>
-      <key>FFTSIZE_8K_EXT</key>
-      <opt>val:dvbt2.FFTSIZE_8K_SGI</opt>
+      <key>FFTSIZE_8K_T2GI</key>
+      <opt>val:dvbt2.FFTSIZE_8K_T2GI</opt>
     </option>
     <option>
       <name>16K</name>
@@ -57,13 +58,49 @@
     </option>
     <option>
       <name>32K</name>
-      <key>FFTSIZE_32K_NORM</key>
-      <opt>val:dvbt2.FFTSIZE_32K_NORM</opt>
+      <key>FFTSIZE_32K</key>
+      <opt>val:dvbt2.FFTSIZE_32K</opt>
     </option>
     <option>
       <name>32K DVB-T2 GI</name>
-      <key>FFTSIZE_32K_EXT</key>
-      <opt>val:dvbt2.FFTSIZE_32K_SGI</opt>
+      <key>FFTSIZE_32K_T2GI</key>
+      <opt>val:dvbt2.FFTSIZE_32K_T2GI</opt>
+    </option>
+  </param>
+  <param>
+    <name>FFT Size</name>
+    <key>fftsize2</key>
+    <type>enum</type>
+    <hide>$preamble2.hide_lite</hide>
+    <option>
+      <name>2K</name>
+      <key>FFTSIZE_2K</key>
+      <opt>val:dvbt2.FFTSIZE_2K</opt>
+    </option>
+    <option>
+      <name>4K</name>
+      <key>FFTSIZE_4K</key>
+      <opt>val:dvbt2.FFTSIZE_4K</opt>
+    </option>
+    <option>
+      <name>8K</name>
+      <key>FFTSIZE_8K</key>
+      <opt>val:dvbt2.FFTSIZE_8K</opt>
+    </option>
+    <option>
+      <name>8K DVB-T2 GI</name>
+      <key>FFTSIZE_8K_T2GI</key>
+      <opt>val:dvbt2.FFTSIZE_8K_T2GI</opt>
+    </option>
+    <option>
+      <name>16K</name>
+      <key>FFTSIZE_16K</key>
+      <opt>val:dvbt2.FFTSIZE_16K</opt>
+    </option>
+    <option>
+      <name>16K DVB-T2 GI</name>
+      <key>FFTSIZE_16K_T2GI</key>
+      <opt>val:dvbt2.FFTSIZE_16K_T2GI</opt>
     </option>
   </param>
   <param>
@@ -156,21 +193,29 @@
       <name>T2 SISO</name>
       <key>PREAMBLE_T2_SISO</key>
       <opt>val:dvbt2.PREAMBLE_T2_SISO</opt>
+      <opt>hide_lite:all</opt>
+      <opt>hide_base:</opt>
     </option>
     <option>
       <name>T2 MISO</name>
       <key>PREAMBLE_T2_MISO</key>
       <opt>val:dvbt2.PREAMBLE_T2_MISO</opt>
+      <opt>hide_lite:all</opt>
+      <opt>hide_base:</opt>
     </option>
     <option>
       <name>T2-Lite SISO</name>
       <key>PREAMBLE_T2_LITE_SISO</key>
       <opt>val:dvbt2.PREAMBLE_T2_LITE_SISO</opt>
+      <opt>hide_lite:</opt>
+      <opt>hide_base:all</opt>
     </option>
     <option>
       <name>T2-Lite MISO</name>
       <key>PREAMBLE_T2_LITE_MISO</key>
       <opt>val:dvbt2.PREAMBLE_T2_LITE_MISO</opt>
+      <opt>hide_lite:</opt>
+      <opt>hide_base:all</opt>
     </option>
   </param>
   <param>

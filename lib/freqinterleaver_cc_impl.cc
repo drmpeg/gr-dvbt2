@@ -77,17 +77,18 @@ namespace gr {
                     N_P2 = 4;
                     C_P2 = 2236;
                     break;
-                case gr::dvbt2::FFTSIZE_8K_NORM:
-                case gr::dvbt2::FFTSIZE_8K_SGI:
+                case gr::dvbt2::FFTSIZE_8K:
+                case gr::dvbt2::FFTSIZE_8K_T2GI:
                     N_P2 = 2;
                     C_P2 = 4472;
                     break;
-               case gr::dvbt2::FFTSIZE_16K:
+                case gr::dvbt2::FFTSIZE_16K:
+                case gr::dvbt2::FFTSIZE_16K_T2GI:
                     N_P2 = 1;
                     C_P2 = 8944;
                     break;
-                case gr::dvbt2::FFTSIZE_32K_NORM:
-                case gr::dvbt2::FFTSIZE_32K_SGI:
+                case gr::dvbt2::FFTSIZE_32K:
+                case gr::dvbt2::FFTSIZE_32K_T2GI:
                     N_P2 = 1;
                     C_P2 = 22432;
                     break;
@@ -109,17 +110,18 @@ namespace gr {
                     N_P2 = 4;
                     C_P2 = 2198;
                     break;
-                case gr::dvbt2::FFTSIZE_8K_NORM:
-                case gr::dvbt2::FFTSIZE_8K_SGI:
+                case gr::dvbt2::FFTSIZE_8K:
+                case gr::dvbt2::FFTSIZE_8K_T2GI:
                     N_P2 = 2;
                     C_P2 = 4398;
                     break;
-               case gr::dvbt2::FFTSIZE_16K:
+                case gr::dvbt2::FFTSIZE_16K:
+                case gr::dvbt2::FFTSIZE_16K_T2GI:
                     N_P2 = 1;
                     C_P2 = 8814;
                     break;
-                case gr::dvbt2::FFTSIZE_32K_NORM:
-                case gr::dvbt2::FFTSIZE_32K_SGI:
+                case gr::dvbt2::FFTSIZE_32K:
+                case gr::dvbt2::FFTSIZE_32K_T2GI:
                     N_P2 = 1;
                     C_P2 = 17612;
                     break;
@@ -154,8 +156,8 @@ namespace gr {
                 bitpermeven = &bitperm4keven[0];
                 bitpermodd = &bitperm4kodd[0];
                 break;
-            case gr::dvbt2::FFTSIZE_8K_NORM:
-            case gr::dvbt2::FFTSIZE_8K_SGI:
+            case gr::dvbt2::FFTSIZE_8K:
+            case gr::dvbt2::FFTSIZE_8K_T2GI:
                 pn_degree = 12;
                 pn_mask = 0xfff;
                 max_states = 8192;
@@ -165,6 +167,7 @@ namespace gr {
                 bitpermodd = &bitperm8kodd[0];
                 break;
             case gr::dvbt2::FFTSIZE_16K:
+            case gr::dvbt2::FFTSIZE_16K_T2GI:
                 pn_degree = 13;
                 pn_mask = 0x1fff;
                 max_states = 16384;
@@ -173,8 +176,8 @@ namespace gr {
                 bitpermeven = &bitperm16keven[0];
                 bitpermodd = &bitperm16kodd[0];
                 break;
-            case gr::dvbt2::FFTSIZE_32K_NORM:
-            case gr::dvbt2::FFTSIZE_32K_SGI:
+            case gr::dvbt2::FFTSIZE_32K:
+            case gr::dvbt2::FFTSIZE_32K_T2GI:
                 pn_degree = 14;
                 pn_mask = 0x3fff;
                 max_states = 32768;
@@ -373,8 +376,8 @@ namespace gr {
                     }
                 }
                 break;
-            case gr::dvbt2::FFTSIZE_8K_NORM:
-            case gr::dvbt2::FFTSIZE_8K_SGI:
+            case gr::dvbt2::FFTSIZE_8K:
+            case gr::dvbt2::FFTSIZE_8K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)
@@ -484,6 +487,7 @@ namespace gr {
                 }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
+            case gr::dvbt2::FFTSIZE_16K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)
@@ -592,8 +596,8 @@ namespace gr {
                     }
                 }
                 break;
-            case gr::dvbt2::FFTSIZE_32K_NORM:
-            case gr::dvbt2::FFTSIZE_32K_SGI:
+            case gr::dvbt2::FFTSIZE_32K:
+            case gr::dvbt2::FFTSIZE_32K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)
@@ -784,7 +788,7 @@ namespace gr {
                 HoddFC[q_oddFC++] = odd;
             }
         }
-        if (fftsize == gr::dvbt2::FFTSIZE_32K_NORM || fftsize == gr::dvbt2::FFTSIZE_32K_SGI)
+        if (fftsize == gr::dvbt2::FFTSIZE_32K || fftsize == gr::dvbt2::FFTSIZE_32K_T2GI)
         {
             for (int j = 0; j < q_odd; j++)
             {

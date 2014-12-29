@@ -63,8 +63,8 @@ namespace gr {
                 C_PS = 3409;
                 K_EXT = 0;
                 break;
-            case gr::dvbt2::FFTSIZE_8K_NORM:
-            case gr::dvbt2::FFTSIZE_8K_SGI:
+            case gr::dvbt2::FFTSIZE_8K:
+            case gr::dvbt2::FFTSIZE_8K_T2GI:
                 N_P2 = 2;
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
@@ -78,6 +78,7 @@ namespace gr {
                 }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
+            case gr::dvbt2::FFTSIZE_16K_T2GI:
                 N_P2 = 1;
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
@@ -90,8 +91,8 @@ namespace gr {
                     K_EXT = 144;
                 }
                 break;
-            case gr::dvbt2::FFTSIZE_32K_NORM:
-            case gr::dvbt2::FFTSIZE_32K_SGI:
+            case gr::dvbt2::FFTSIZE_32K:
+            case gr::dvbt2::FFTSIZE_32K_T2GI:
                 N_P2 = 1;
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
@@ -215,8 +216,8 @@ namespace gr {
                     }
                 }
                 break;
-            case gr::dvbt2::FFTSIZE_8K_NORM:
-            case gr::dvbt2::FFTSIZE_8K_SGI:
+            case gr::dvbt2::FFTSIZE_8K:
+            case gr::dvbt2::FFTSIZE_8K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)
@@ -286,6 +287,7 @@ namespace gr {
                 }
                 break;
             case gr::dvbt2::FFTSIZE_16K:
+            case gr::dvbt2::FFTSIZE_16K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)
@@ -354,8 +356,8 @@ namespace gr {
                     }
                 }
                 break;
-            case gr::dvbt2::FFTSIZE_32K_NORM:
-            case gr::dvbt2::FFTSIZE_32K_SGI:
+            case gr::dvbt2::FFTSIZE_32K:
+            case gr::dvbt2::FFTSIZE_32K_T2GI:
                 if (carriermode == gr::dvbt2::CARRIERS_NORMAL)
                 {
                     switch (pilotpattern)
@@ -478,8 +480,8 @@ namespace gr {
                 p2_papr_map = p2_papr_map_4k;
                 tr_papr_map = tr_papr_map_4k;
                 break;
-            case gr::dvbt2::FFTSIZE_8K_NORM:
-            case gr::dvbt2::FFTSIZE_8K_SGI:
+            case gr::dvbt2::FFTSIZE_8K:
+            case gr::dvbt2::FFTSIZE_8K_T2GI:
                 for (int i = 0; i < 72; i++)
                 {
                     p2_carrier_map[p2_papr_map_8k[i] + K_EXT] = P2PAPR_CARRIER;
@@ -490,6 +492,7 @@ namespace gr {
                 tr_papr_map = tr_papr_map_8k;
                 break;
             case gr::dvbt2::FFTSIZE_16K:
+            case gr::dvbt2::FFTSIZE_16K_T2GI:
                 for (int i = 0; i < 144; i++)
                 {
                     p2_carrier_map[p2_papr_map_16k[i] + K_EXT] = P2PAPR_CARRIER;
@@ -499,8 +502,8 @@ namespace gr {
                 p2_papr_map = p2_papr_map_16k;
                 tr_papr_map = tr_papr_map_16k;
                 break;
-            case gr::dvbt2::FFTSIZE_32K_NORM:
-            case gr::dvbt2::FFTSIZE_32K_SGI:
+            case gr::dvbt2::FFTSIZE_32K:
+            case gr::dvbt2::FFTSIZE_32K_T2GI:
                 for (int i = 0; i < 288; i++)
                 {
                     p2_carrier_map[p2_papr_map_32k[i] + K_EXT] = P2PAPR_CARRIER;
@@ -703,21 +706,22 @@ void paprtr_cc_impl::init_pilots(int symbol)
                 data_carrier_map[tr_papr_map_4k[i] + shift] = TRPAPR_CARRIER;
             }
             break;
-        case gr::dvbt2::FFTSIZE_8K_NORM:
-        case gr::dvbt2::FFTSIZE_8K_SGI:
+        case gr::dvbt2::FFTSIZE_8K:
+        case gr::dvbt2::FFTSIZE_8K_T2GI:
             for (int i = 0; i < 72; i++)
             {
                 data_carrier_map[tr_papr_map_8k[i] + shift] = TRPAPR_CARRIER;
             }
             break;
         case gr::dvbt2::FFTSIZE_16K:
+        case gr::dvbt2::FFTSIZE_16K_T2GI:
             for (int i = 0; i < 144; i++)
             {
                 data_carrier_map[tr_papr_map_16k[i] + shift] = TRPAPR_CARRIER;
             }
             break;
-        case gr::dvbt2::FFTSIZE_32K_NORM:
-        case gr::dvbt2::FFTSIZE_32K_SGI:
+        case gr::dvbt2::FFTSIZE_32K:
+        case gr::dvbt2::FFTSIZE_32K_T2GI:
             for (int i = 0; i < 288; i++)
             {
                 data_carrier_map[tr_papr_map_32k[i] + shift] = TRPAPR_CARRIER;

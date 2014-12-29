@@ -231,7 +231,7 @@ void bbheader_bb_impl::add_bbheader(unsigned char *out, int count, int padding)
     }
     else
     {
-        for (int n = 7; n >= 0 ; n--)
+        for (int n = 7; n >= 0; n--)
         {
             m_frame[m_frame_offset_bits++] = 0;
         }

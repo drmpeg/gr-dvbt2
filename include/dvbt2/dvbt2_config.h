@@ -114,13 +114,14 @@ namespace gr {
 
     enum dvbt2_fftsize_t {
       FFTSIZE_2K = 0,
-      FFTSIZE_8K_NORM,
+      FFTSIZE_8K,
       FFTSIZE_4K,
       FFTSIZE_1K,
       FFTSIZE_16K,
-      FFTSIZE_32K_NORM,
-      FFTSIZE_8K_SGI,
-      FFTSIZE_32K_SGI,
+      FFTSIZE_32K,
+      FFTSIZE_8K_T2GI,
+      FFTSIZE_32K_T2GI,
+      FFTSIZE_16K_T2GI = 11,
     };
 
     enum dvbt2_guardinterval_t {
