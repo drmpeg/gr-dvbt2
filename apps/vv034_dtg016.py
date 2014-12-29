@@ -2,7 +2,7 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Vv034 Dtg016
-# Generated: Mon Dec  1 03:37:10 2014
+# Generated: Mon Dec 29 00:40:52 2014
 ##################################################
 
 from gnuradio import blocks
@@ -50,17 +50,17 @@ class vv034_dtg016(grc_wxgui.top_block_gui):
         	size=(600,600),
         )
         self.Add(self.wxgui_fftsink2_0.win)
-        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.PILOT_PP5, dvbt2.GI_1_16, 500, dvbt2.PAPR_OFF, 4096)
-        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.GI_1_16, 500, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO)
+        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.PILOT_PP5, dvbt2.GI_1_16, 500, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.PREAMBLE_T2_SISO, dvbt2.MISO_TX1, dvbt2.MISO_TX1, 4096)
+        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.FFTSIZE_2K, dvbt2.GI_1_16, 500, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.PREAMBLE_T2_SISO, dvbt2.SHOWLEVELS_OFF, 3.3)
         self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_SHORT, dvbt2.MOD_QPSK, dvbt2.ROTATION_ON)
         self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_SHORT, dvbt2.C4_5)
         self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_SHORT, dvbt2.C4_5, dvbt2.MOD_QPSK)
-        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.PILOT_PP5, dvbt2.GI_1_16, 500, dvbt2.PAPR_OFF)
-        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_SHORT, dvbt2.C4_5, dvbt2.MOD_QPSK, dvbt2.ROTATION_ON, 204, 0, dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.GI_1_16, dvbt2.L1_MOD_QPSK, dvbt2.PILOT_PP5, 2, 500, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.INPUTMODE_NORMAL, dvbt2.RESERVED_OFF)
+        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.PILOT_PP5, dvbt2.GI_1_16, 500, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.PREAMBLE_T2_SISO)
+        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_SHORT, dvbt2.C4_5, dvbt2.MOD_QPSK, dvbt2.ROTATION_ON, 204, 0, dvbt2.CARRIERS_NORMAL, dvbt2.FFTSIZE_4K, dvbt2.FFTSIZE_2K, dvbt2.GI_1_16, dvbt2.L1_MOD_QPSK, dvbt2.PILOT_PP5, 2, 500, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.PREAMBLE_T2_SISO, dvbt2.INPUTMODE_NORMAL, dvbt2.RESERVED_OFF, dvbt2.L1_SCRAMBLED_OFF, dvbt2.INBAND_OFF)
         self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_SHORT, dvbt2.MOD_QPSK, 204, 0)
         self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_SHORT, dvbt2.C4_5)
         self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_SHORT, dvbt2.C4_5)
-        self.dvbt2_bbheader_bb_0 = dvbt2.bbheader_bb(dvbt2.FECFRAME_SHORT, dvbt2.C4_5, dvbt2.INPUTMODE_HIEFF)
+        self.dvbt2_bbheader_bb_0 = dvbt2.bbheader_bb(dvbt2.FECFRAME_SHORT, dvbt2.C4_5, dvbt2.INPUTMODE_HIEFF, dvbt2.INBAND_OFF, 168, 4000000)
         self.digital_ofdm_cyclic_prefixer_0 = digital.ofdm_cyclic_prefixer(4096, 4096+4096/16, 0, "")
         self.blocks_throttle_0 = blocks.throttle(gr.sizeof_gr_complex*1, samp_rate,True)
         self.blocks_file_source_0 = blocks.file_source(gr.sizeof_char*1, "/home/re/xfer/vv034.ts", True)
