@@ -60,6 +60,9 @@ http://www.w6rz.net/adv4k64qam.ts
 
 http://www.w6rz.net/adv32kmiso.ts
 
+A stand-alone Python script (dvbt2-blade.py) is included for the
+bladeRF SDR and matches the VV009-4KFFT profile and test stream.
+
 IMPORTANT: The tone reservation PAPR block is very floating point
 intensive and only runs in real-time on the VV016-256QAM34 profile.
 
