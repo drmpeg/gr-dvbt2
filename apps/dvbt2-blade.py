@@ -73,6 +73,7 @@ def main(args):
         bandwidth = 10000000
 
     if version == dvbt2.VERSION_111:
+        fft_size = fft_size1
         if fft_size1 == dvbt2.FFTSIZE_1K:
             fftsize = 1024
         elif fft_size1 == dvbt2.FFTSIZE_2K:
@@ -91,6 +92,7 @@ def main(args):
             fftsize = 32768
     elif version == dvbt2.VERSION_131:
         if mode2 == dvbt2.PREAMBLE_T2_SISO or dvbt2.PREAMBLE_T2_MISO:
+            fft_size = fft_size1
             if fft_size1 == dvbt2.FFTSIZE_1K:
                 fftsize = 1024
             elif fft_size1 == dvbt2.FFTSIZE_2K:
@@ -108,6 +110,7 @@ def main(args):
             elif fft_size1 == dvbt2.FFTSIZE_32K_T2GI:
                 fftsize = 32768
         else:
+            fft_size = fft_size2
             if fft_size2 == dvbt2.FFTSIZE_2K:
                 fftsize = 2048
             elif fft_size2 == dvbt2.FFTSIZE_4K:
@@ -148,9 +151,9 @@ def main(args):
     dvbt2_modulator = dvbt2.modulator_bc(frame_size, constellation, rotation)
     dvbt2_cellinterleaver = dvbt2.cellinterleaver_cc(frame_size, constellation, fec_blocks, ti_blocks)
     dvbt2_framemapper = dvbt2.framemapper_cc(frame_size, code_rate, constellation, rotation, fec_blocks, ti_blocks, carrier_mode, fft_size1, fft_size2, guard_interval, l1_constellation, pilot_pattern, 2, data_symbols, papr_mode, version, mode1, mode2, input_mode, dvbt2.RESERVED_OFF, dvbt2.L1_SCRAMBLED_OFF, dvbt2.INBAND_OFF)
-    dvbt2_freqinterleaver = dvbt2.freqinterleaver_cc(carrier_mode, fft_size1, pilot_pattern, guard_interval, data_symbols, papr_mode, version, mode1, mode2)
-    dvbt2_pilotgenerator = dvbt2.pilotgenerator_cc(carrier_mode, fft_size1, pilot_pattern, guard_interval, data_symbols, papr_mode, version, mode1, mode2, dvbt2.MISO_TX1, dvbt2.MISO_TX1, fftsize)
-    dvbt2_paprtr = dvbt2.paprtr_cc(carrier_mode, fft_size1, pilot_pattern, guard_interval, data_symbols, papr_mode, version, papr_vclip, papr_iterations, fftsize)
+    dvbt2_freqinterleaver = dvbt2.freqinterleaver_cc(carrier_mode, fft_size, pilot_pattern, guard_interval, data_symbols, papr_mode, version, mode1, mode2)
+    dvbt2_pilotgenerator = dvbt2.pilotgenerator_cc(carrier_mode, fft_size, pilot_pattern, guard_interval, data_symbols, papr_mode, version, mode1, mode2, dvbt2.MISO_TX1, dvbt2.MISO_TX1, fftsize)
+    dvbt2_paprtr = dvbt2.paprtr_cc(carrier_mode, fft_size, pilot_pattern, guard_interval, data_symbols, papr_mode, version, papr_vclip, papr_iterations, fftsize)
     digital_ofdm_cyclic_prefixer = digital.ofdm_cyclic_prefixer(fftsize, fftsize+(gi), 0, "")
     dvbt2_p1insertion = dvbt2.p1insertion_cc(carrier_mode, fft_size1, fft_size2, guard_interval, data_symbols, version, mode1, mode2, dvbt2.SHOWLEVELS_OFF, 3.31)
     blocks_multiply_const = blocks.multiply_const_vcc((0.2, ))
