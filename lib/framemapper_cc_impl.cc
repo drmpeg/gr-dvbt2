@@ -272,35 +272,6 @@ namespace gr {
                 m_qpsk[3].real() = -1.0 / normalization;
                 m_qpsk[3].imag() = -1.0 / normalization;
                 eta_mod = 2;
-#ifdef BBC_BITPERFECT
-                for (int n = 0; n < 4; n++)
-                {
-                    void *real_ptr, *imag_ptr;
-                    unsigned int real_int, imag_int;
-                    real_ptr = &m_qpsk[n].real();
-                    real_int = *(unsigned int*)real_ptr;
-                    imag_ptr = &m_qpsk[n].imag();
-                    imag_int = *(unsigned int*)imag_ptr;
-                    switch (real_int)
-                    {
-                        case 0xbf3504f3:
-                            *(unsigned int*)real_ptr = 0xbf3504f4;
-                            break;
-                        case 0x3f3504f3:
-                            *(unsigned int*)real_ptr = 0x3f3504f4;
-                            break;
-                    }
-                    switch (imag_int)
-                    {
-                        case 0xbf3504f3:
-                            *(unsigned int*)imag_ptr = 0xbf3504f4;
-                            break;
-                        case 0x3f3504f3:
-                            *(unsigned int*)imag_ptr = 0x3f3504f4;
-                            break;
-                    }
-                }
-#endif
                 break;
             case gr::dvbt2::L1_MOD_16QAM:
                 normalization = sqrt(10);
@@ -337,35 +308,6 @@ namespace gr {
                 m_16qam[15].real() = -1.0 / normalization;
                 m_16qam[15].imag() = -1.0 / normalization;
                 eta_mod = 4;
-#ifdef BBC_BITPERFECT
-                for (int n = 0; n < 16; n++)
-                {
-                    void *real_ptr, *imag_ptr;
-                    unsigned int real_int, imag_int;
-                    real_ptr = &m_16qam[n].real();
-                    real_int = *(unsigned int*)real_ptr;
-                    imag_ptr = &m_16qam[n].imag();
-                    imag_int = *(unsigned int*)imag_ptr;
-                    switch (real_int)
-                    {
-                        case 0xbea1e89b:
-                            *(unsigned int*)real_ptr = 0xbea1e89c;
-                            break;
-                        case 0x3ea1e89b:
-                            *(unsigned int*)real_ptr = 0x3ea1e89c;
-                            break;
-                    }
-                    switch (imag_int)
-                    {
-                        case 0xbea1e89b:
-                            *(unsigned int*)imag_ptr = 0xbea1e89c;
-                            break;
-                        case 0x3ea1e89b:
-                            *(unsigned int*)imag_ptr = 0x3ea1e89c;
-                            break;
-                    }
-                }
-#endif
                 break;
             case gr::dvbt2::L1_MOD_64QAM:
                 normalization = sqrt(42);
@@ -498,71 +440,6 @@ namespace gr {
                 m_64qam[63].real() = -3.0 / normalization;
                 m_64qam[63].imag() = -3.0 / normalization;
                 eta_mod = 6;
-#ifdef BBC_BITPERFECT
-                for (int n = 0; n < 64; n++)
-                {
-                    void *real_ptr, *imag_ptr;
-                    unsigned int real_int, imag_int;
-                    real_ptr = &m_64qam[n].real();
-                    real_int = *(unsigned int*)real_ptr;
-                    imag_ptr = &m_64qam[n].imag();
-                    imag_int = *(unsigned int*)imag_ptr;
-                    switch (real_int)
-                    {
-                        case 0xbe1e01b3:
-                            *(unsigned int*)real_ptr = 0xbe1e01af;
-                            break;
-                        case 0x3e1e01b3:
-                            *(unsigned int*)real_ptr = 0x3e1e01af;
-                            break;
-                        case 0xbf8a417c:
-                            *(unsigned int*)real_ptr = 0xbf8a4178;
-                            break;
-                        case 0x3f8a417c:
-                            *(unsigned int*)real_ptr = 0x3f8a4178;
-                            break;
-                        case 0xbf45821f:
-                            *(unsigned int*)real_ptr = 0xbf45821e;
-                            break;
-                        case 0x3f45821f:
-                            *(unsigned int*)real_ptr = 0x3f45821e;
-                            break;
-                        case 0xbeed028c:
-                            *(unsigned int*)real_ptr = 0xbeed028a;
-                            break;
-                        case 0x3eed028c:
-                            *(unsigned int*)real_ptr = 0x3eed028a;
-                            break;
-                    }
-                    switch (imag_int)
-                    {
-                        case 0xbe1e01b3:
-                            *(unsigned int*)imag_ptr = 0xbe1e01af;
-                            break;
-                        case 0x3e1e01b3:
-                            *(unsigned int*)imag_ptr = 0x3e1e01af;
-                            break;
-                        case 0xbf8a417c:
-                            *(unsigned int*)imag_ptr = 0xbf8a4178;
-                            break;
-                        case 0x3f8a417c:
-                            *(unsigned int*)imag_ptr = 0x3f8a4178;
-                            break;
-                        case 0xbf45821f:
-                            *(unsigned int*)imag_ptr = 0xbf45821e;
-                            break;
-                        case 0x3f45821f:
-                            *(unsigned int*)imag_ptr = 0x3f45821e;
-                            break;
-                        case 0xbeed028c:
-                            *(unsigned int*)imag_ptr = 0xbeed028a;
-                            break;
-                        case 0x3eed028c:
-                            *(unsigned int*)imag_ptr = 0x3eed028a;
-                            break;
-                    }
-                }
-#endif
                 break;
         }
         if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
