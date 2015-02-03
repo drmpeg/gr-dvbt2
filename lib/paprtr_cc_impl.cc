@@ -847,7 +847,7 @@ void paprtr_cc_impl::init_pilots(int symbol)
                                     m = n;
                                 }
                             }
-                            if (y < v_clip)
+                            if (y < v_clip + 0.01)
                             {
                                 break;
                             }
