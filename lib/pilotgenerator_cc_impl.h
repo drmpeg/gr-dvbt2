@@ -53,6 +53,7 @@ namespace gr {
       int pilot_pattern;
       int carrier_mode;
       int papr_mode;
+      int equalization_enable;
       float normalization;
       gr_complex p2_bpsk[2];
       gr_complex sp_bpsk[2];
@@ -60,6 +61,7 @@ namespace gr {
       gr_complex p2_bpsk_inverted[2];
       gr_complex sp_bpsk_inverted[2];
       gr_complex cp_bpsk_inverted[2];
+      gr_complex inverse_sinc[32768];
       int prbs[MAX_CARRIERS];
       int pn_sequence[CHIPS];
       int p2_carrier_map[MAX_CARRIERS];
@@ -152,7 +154,7 @@ namespace gr {
       const static int pp8_32k[6];
 
      public:
-      pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, int vlength);
+      pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, dvbt2_equalization_t equalization, dvbt2_bandwidth_t bandwidth, int vlength);
       ~pilotgenerator_cc_impl();
 
       // Where all the action really happens

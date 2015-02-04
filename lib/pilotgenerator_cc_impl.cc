@@ -31,21 +31,23 @@ namespace gr {
   namespace dvbt2 {
 
     pilotgenerator_cc::sptr
-    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, int vlength)
+    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, dvbt2_equalization_t equalization, dvbt2_bandwidth_t bandwidth, int vlength)
     {
       return gnuradio::get_initial_sptr
-        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, version, preamble1, preamble2, misogroup1, misogroup2, vlength));
+        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, version, preamble1, preamble2, misogroup1, misogroup2, equalization, bandwidth, vlength));
     }
 
     /*
      * The private constructor
      */
-    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, int vlength)
+    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, dvbt2_equalization_t equalization, dvbt2_bandwidth_t bandwidth, int vlength)
       : gr::block("pilotgenerator_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex) * vlength))
     {
         int step, ki;
+        double x, sinc, sincrms = 0.0;
+        double fs, fstep, f = 0.0;
         if (version == gr::dvbt2::VERSION_111)
         {
             miso_group = misogroup1;
@@ -1325,6 +1327,55 @@ namespace gr {
             p2_bpsk_inverted[1].imag() = 0.0;
         }
         normalization = 5.0 / sqrt(27.0 * C_PS);
+        switch (bandwidth)
+        {
+            case gr::dvbt2::BANDWIDTH_1_7_MHZ:
+                fs = 131.0 * 1000000.0 / 71.0;
+                break;
+            case gr::dvbt2::BANDWIDTH_5_0_MHZ:
+                fs = 5.0 * 8000000.0 / 7.0;
+                break;
+            case gr::dvbt2::BANDWIDTH_6_0_MHZ:
+                fs = 6.0 * 8000000.0 / 7.0;
+                break;
+            case gr::dvbt2::BANDWIDTH_7_0_MHZ:
+                fs = 7.0 * 8000000.0 / 7.0;
+                break;
+            case gr::dvbt2::BANDWIDTH_8_0_MHZ:
+                fs = 8.0 * 8000000.0 / 7.0;
+                break;
+            case gr::dvbt2::BANDWIDTH_10_0_MHZ:
+                fs = 10.0 * 8000000.0 / 7.0;
+                break;
+            default:
+                fs = 1.0;
+                break;
+        }
+        fstep = fs / vlength;
+        for (int i = 0; i < vlength / 2; i++)
+        {
+            x = M_PI * f / fs;
+            if (i == 0)
+            {
+                sinc = 1.0;
+            }
+            else
+            {
+                sinc = sin(x) / x;
+            }
+            sincrms += sinc * sinc;
+            inverse_sinc[i + (vlength / 2)].real() = 1.0 / sinc;
+            inverse_sinc[i + (vlength / 2)].imag() = 0.0;
+            inverse_sinc[(vlength / 2) - i - 1].real() = 1.0 / sinc;
+            inverse_sinc[(vlength / 2) - i - 1].imag() = 0.0;
+            f = f + fstep;
+        }
+        sincrms = sqrt(sincrms / (vlength / 2));
+        for (int i = 0; i < vlength; i++)
+        {
+            inverse_sinc[i].real() *= sincrms;
+        }
+        equalization_enable = equalization;
         ofdm_fft_size = vlength;
         ofdm_fft = new fft::fft_complex(ofdm_fft_size, false, 1);
         num_symbols = numdatasyms + N_P2;
@@ -3508,6 +3559,10 @@ void pilotgenerator_cc_impl::init_pilots(int symbol)
                     }
                 }
                 out -= ofdm_fft_size;
+                if (equalization_enable == gr::dvbt2::EQUALIZATION_ON)
+                {
+                    volk_32fc_x2_multiply_32fc(out, out, inverse_sinc, ofdm_fft_size);
+                }
                 dst = ofdm_fft->get_inbuf();
                 memcpy(&dst[ofdm_fft_size / 2], &out[0], sizeof(gr_complex) * ofdm_fft_size / 2);
                 memcpy(&dst[0], &out[ofdm_fft_size / 2], sizeof(gr_complex) * ofdm_fft_size / 2);

@@ -188,6 +188,20 @@ namespace gr {
       INBAND_ON,
     };
 
+    enum dvbt2_equalization_t {
+      EQUALIZATION_OFF = 0,
+      EQUALIZATION_ON,
+    };
+
+    enum dvbt2_bandwidth_t {
+      BANDWIDTH_1_7_MHZ = 0,
+      BANDWIDTH_5_0_MHZ,
+      BANDWIDTH_6_0_MHZ,
+      BANDWIDTH_7_0_MHZ,
+      BANDWIDTH_8_0_MHZ,
+      BANDWIDTH_10_0_MHZ,
+    };
+
   } // namespace dvbt2
 } // namespace gr
 
@@ -210,6 +224,8 @@ typedef gr::dvbt2::dvbt2_l1scrambled_t dvbt2_l1scrambled_t;
 typedef gr::dvbt2::dvbt2_misogroup_t dvbt2_misogroup_t;
 typedef gr::dvbt2::dvbt2_showlevels_t dvbt2_showlevels_t;
 typedef gr::dvbt2::dvbt2_inband_t dvbt2_inband_t;
+typedef gr::dvbt2::dvbt2_equalization_t dvbt2_equalization_t;
+typedef gr::dvbt2::dvbt2_bandwidth_t dvbt2_bandwidth_t;
 
 #endif /* INCLUDED_DVBT2_CONFIG_H */
 

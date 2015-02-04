@@ -3,7 +3,7 @@
   <key>dvbt2_pilotgenerator_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.pilotgenerator_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $guardinterval.val, $numdatasyms, $paprmode.val, $version.val, $preamble1.val, $preamble2.val, $misogroup1.val, $misogroup2.val, $fftsize.vlength)</make>
+  <make>dvbt2.pilotgenerator_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $guardinterval.val, $numdatasyms, $paprmode.val, $version.val, $preamble1.val, $preamble2.val, $misogroup1.val, $misogroup2.val, $equalization.val, $bandwidth.val, $fftsize.vlength)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -291,6 +291,59 @@
       <name>TX2</name>
       <key>MISO_TX2</key>
       <opt>val:dvbt2.MISO_TX2</opt>
+    </option>
+  </param>
+  <param>
+    <name>Sin(x)/x Equalization</name>
+    <key>equalization</key>
+    <type>enum</type>
+    <option>
+      <name>Off</name>
+      <key>EQUALIZATION_OFF</key>
+      <opt>val:dvbt2.EQUALIZATION_OFF</opt>
+      <opt>hide_bandwidth:all</opt>
+    </option>
+    <option>
+      <name>On</name>
+      <key>EQUALIZATION_ON</key>
+      <opt>val:dvbt2.EQUALIZATION_ON</opt>
+      <opt>hide_bandwidth:</opt>
+    </option>
+  </param>
+  <param>
+    <name>Bandwidth</name>
+    <key>bandwidth</key>
+    <type>enum</type>
+    <hide>$equalization.hide_bandwidth</hide>
+    <option>
+      <name>1.7 MHz</name>
+      <key>BANDWIDTH_1_7_MHZ</key>
+      <opt>val:dvbt2.BANDWIDTH_1_7_MHZ</opt>
+    </option>
+    <option>
+      <name>5 MHz</name>
+      <key>BANDWIDTH_5_0_MHZ</key>
+      <opt>val:dvbt2.BANDWIDTH_5_0_MHZ</opt>
+    </option>
+    <option>
+      <name>6 MHz</name>
+      <key>BANDWIDTH_6_0_MHZ</key>
+      <opt>val:dvbt2.BANDWIDTH_6_0_MHZ</opt>
+    </option>
+    <option>
+      <name>7 MHz</name>
+      <key>BANDWIDTH_7_0_MHZ</key>
+      <opt>val:dvbt2.BANDWIDTH_7_0_MHZ</opt>
+    </option>
+    <option>
+      <name>8 MHz</name>
+      <key>BANDWIDTH_8_0_MHZ</key>
+      <opt>val:dvbt2.BANDWIDTH_8_0_MHZ</opt>
+    </option>
+    <option>
+      <name>10 MHz</name>
+      <key>BANDWIDTH_10_0_MHZ</key>
+      <opt>val:dvbt2.BANDWIDTH_10_0_MHZ</opt>
     </option>
   </param>
   <sink>
