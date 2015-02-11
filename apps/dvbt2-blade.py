@@ -35,8 +35,7 @@ def main(args):
         sys.exit(1)
 
     version = dvbt2.VERSION_111
-    fft_size1 = dvbt2.FFTSIZE_4K          #valid if mode = T2_SISO or T2_MISO
-    fft_size2 = dvbt2.FFTSIZE_2K          #valid if mode = T2_LITE_SISO or T2_LITE_MISO
+    fft_size = dvbt2.FFTSIZE_4K
     input_mode = dvbt2.INPUTMODE_NORMAL
     frame_size = dvbt2.FECFRAME_NORMAL
     code_rate = dvbt2.C2_3
@@ -46,8 +45,7 @@ def main(args):
     constellation = dvbt2.MOD_64QAM
     rotation = dvbt2.ROTATION_ON
     guard_interval = dvbt2.GI_1_32
-    mode1 = dvbt2.PREAMBLE_T2_SISO        #valid if version = 1.1.1
-    mode2 = dvbt2.PREAMBLE_T2_SISO        #valid if version = 1.3.1
+    mode = dvbt2.PREAMBLE_T2_SISO
     carrier_mode = dvbt2.CARRIERS_NORMAL
     pilot_pattern = dvbt2.PILOT_PP7
     l1_constellation = dvbt2.L1_MOD_16QAM
@@ -80,57 +78,22 @@ def main(args):
         bandwidth = 1750000
         equalization_bandwidth = dvbt2.BANDWIDTH_1_7_MHZ
 
-    if version == dvbt2.VERSION_111:
-        fft_size = fft_size1
-        if fft_size1 == dvbt2.FFTSIZE_1K:
-            fftsize = 1024
-        elif fft_size1 == dvbt2.FFTSIZE_2K:
-            fftsize = 2048
-        elif fft_size1 == dvbt2.FFTSIZE_4K:
-            fftsize = 4096
-        elif fft_size1 == dvbt2.FFTSIZE_8K:
-            fftsize = 8192
-        elif fft_size1 == dvbt2.FFTSIZE_8K_T2GI:
-            fftsize = 8192
-        elif fft_size1 == dvbt2.FFTSIZE_16K:
-            fftsize = 16384
-        elif fft_size1 == dvbt2.FFTSIZE_32K:
-            fftsize = 32768
-        elif fft_size1 == dvbt2.FFTSIZE_32K_T2GI:
-            fftsize = 32768
-    elif version == dvbt2.VERSION_131:
-        if mode2 == dvbt2.PREAMBLE_T2_SISO or dvbt2.PREAMBLE_T2_MISO:
-            fft_size = fft_size1
-            if fft_size1 == dvbt2.FFTSIZE_1K:
-                fftsize = 1024
-            elif fft_size1 == dvbt2.FFTSIZE_2K:
-                fftsize = 2048
-            elif fft_size1 == dvbt2.FFTSIZE_4K:
-                fftsize = 4096
-            elif fft_size1 == dvbt2.FFTSIZE_8K:
-                fftsize = 8192
-            elif fft_size1 == dvbt2.FFTSIZE_8K_T2GI:
-                fftsize = 8192
-            elif fft_size1 == dvbt2.FFTSIZE_16K:
-                fftsize = 16384
-            elif fft_size1 == dvbt2.FFTSIZE_32K:
-                fftsize = 32768
-            elif fft_size1 == dvbt2.FFTSIZE_32K_T2GI:
-                fftsize = 32768
-        else:
-            fft_size = fft_size2
-            if fft_size2 == dvbt2.FFTSIZE_2K:
-                fftsize = 2048
-            elif fft_size2 == dvbt2.FFTSIZE_4K:
-                fftsize = 4096
-            elif fft_size2 == dvbt2.FFTSIZE_8K:
-                fftsize = 8192
-            elif fft_size2 == dvbt2.FFTSIZE_8K_T2GI:
-                fftsize = 8192
-            elif fft_size2 == dvbt2.FFTSIZE_16K:
-                fftsize = 16384
-            elif fft_size2 == dvbt2.FFTSIZE_16K_T2GI:
-                fftsize = 16384
+    if fft_size == dvbt2.FFTSIZE_1K:
+        fftsize = 1024
+    elif fft_size == dvbt2.FFTSIZE_2K:
+        fftsize = 2048
+    elif fft_size == dvbt2.FFTSIZE_4K:
+        fftsize = 4096
+    elif fft_size == dvbt2.FFTSIZE_8K:
+        fftsize = 8192
+    elif fft_size == dvbt2.FFTSIZE_8K_T2GI:
+        fftsize = 8192
+    elif fft_size == dvbt2.FFTSIZE_16K:
+        fftsize = 16384
+    elif fft_size == dvbt2.FFTSIZE_32K:
+        fftsize = 32768
+    elif fft_size == dvbt2.FFTSIZE_32K_T2GI:
+        fftsize = 32768
 
     if guard_interval == dvbt2.GI_1_32:
         gi = fftsize / 32
@@ -158,12 +121,12 @@ def main(args):
     dvbt2_interleaver = dvbt2.interleaver_bb(frame_size, code_rate, constellation)
     dvbt2_modulator = dvbt2.modulator_bc(frame_size, constellation, rotation)
     dvbt2_cellinterleaver = dvbt2.cellinterleaver_cc(frame_size, constellation, fec_blocks, ti_blocks)
-    dvbt2_framemapper = dvbt2.framemapper_cc(frame_size, code_rate, constellation, rotation, fec_blocks, ti_blocks, carrier_mode, fft_size1, fft_size2, guard_interval, l1_constellation, pilot_pattern, 2, data_symbols, papr_mode, version, mode1, mode2, input_mode, dvbt2.RESERVED_OFF, dvbt2.L1_SCRAMBLED_OFF, dvbt2.INBAND_OFF)
-    dvbt2_freqinterleaver = dvbt2.freqinterleaver_cc(carrier_mode, fft_size, pilot_pattern, guard_interval, data_symbols, papr_mode, version, mode1, mode2)
-    dvbt2_pilotgenerator = dvbt2.pilotgenerator_cc(carrier_mode, fft_size, pilot_pattern, guard_interval, data_symbols, papr_mode, version, mode1, mode2, dvbt2.MISO_TX1, dvbt2.MISO_TX1, dvbt2.EQUALIZATION_ON, equalization_bandwidth, fftsize)
+    dvbt2_framemapper = dvbt2.framemapper_cc(frame_size, code_rate, constellation, rotation, fec_blocks, ti_blocks, carrier_mode, fft_size, guard_interval, l1_constellation, pilot_pattern, 2, data_symbols, papr_mode, version, mode, input_mode, dvbt2.RESERVED_OFF, dvbt2.L1_SCRAMBLED_OFF, dvbt2.INBAND_OFF)
+    dvbt2_freqinterleaver = dvbt2.freqinterleaver_cc(carrier_mode, fft_size, pilot_pattern, guard_interval, data_symbols, papr_mode, version, mode)
+    dvbt2_pilotgenerator = dvbt2.pilotgenerator_cc(carrier_mode, fft_size, pilot_pattern, guard_interval, data_symbols, papr_mode, version, mode, dvbt2.MISO_TX1, dvbt2.EQUALIZATION_ON, equalization_bandwidth, fftsize)
     dvbt2_paprtr = dvbt2.paprtr_cc(carrier_mode, fft_size, pilot_pattern, guard_interval, data_symbols, papr_mode, version, papr_vclip, papr_iterations, fftsize)
     digital_ofdm_cyclic_prefixer = digital.ofdm_cyclic_prefixer(fftsize, fftsize+(gi), 0, "")
-    dvbt2_p1insertion = dvbt2.p1insertion_cc(carrier_mode, fft_size1, fft_size2, guard_interval, data_symbols, version, mode1, mode2, dvbt2.SHOWLEVELS_OFF, 3.31)
+    dvbt2_p1insertion = dvbt2.p1insertion_cc(carrier_mode, fft_size, guard_interval, data_symbols, mode, dvbt2.SHOWLEVELS_OFF, 3.31)
     blocks_multiply_const = blocks.multiply_const_vcc((0.2, ))
 
     out = osmosdr.sink(args="bladerf=0,buffers=128,buflen=32768")
