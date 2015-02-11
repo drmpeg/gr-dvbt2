@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='ASCII'?>
+<?grc format='1' created='3.7.7'?>
 <flow_graph>
   <timestamp>Sun Dec 28 23:51:54 2014</timestamp>
   <block>
@@ -251,7 +252,11 @@
       <value>59</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -267,12 +272,16 @@
       <value>PREAMBLE_T2_SISO</value>
     </param>
     <param>
-      <key>misogroup1</key>
+      <key>misogroup</key>
       <value>MISO_TX1</value>
     </param>
     <param>
-      <key>misogroup2</key>
-      <value>MISO_TX1</value>
+      <key>equalization</key>
+      <value>EQUALIZATION_OFF</value>
+    </param>
+    <param>
+      <key>bandwidth</key>
+      <value>BANDWIDTH_1_7_MHZ</value>
     </param>
     <param>
       <key>alias</key>
@@ -795,7 +804,11 @@
       <value>59</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -882,7 +895,11 @@
       <value>59</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -974,53 +991,6 @@
     </param>
   </block>
   <block>
-    <key>blocks_file_sink</key>
-    <param>
-      <key>id</key>
-      <value>blocks_file_sink_0</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>file</key>
-      <value>/home/re/xfer/vv.cfile</value>
-    </param>
-    <param>
-      <key>type</key>
-      <value>complex</value>
-    </param>
-    <param>
-      <key>vlen</key>
-      <value>1</value>
-    </param>
-    <param>
-      <key>unbuffered</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>append</key>
-      <value>False</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>affinity</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(851, 534)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>180</value>
-    </param>
-  </block>
-  <block>
     <key>blocks_file_source</key>
     <param>
       <key>id</key>
@@ -1069,6 +1039,53 @@
     <param>
       <key>_rotation</key>
       <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>blocks_file_sink</key>
+    <param>
+      <key>id</key>
+      <value>blocks_file_sink_0</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>file</key>
+      <value>/home/re/xfer/vv.cfile</value>
+    </param>
+    <param>
+      <key>type</key>
+      <value>complex</value>
+    </param>
+    <param>
+      <key>vlen</key>
+      <value>1</value>
+    </param>
+    <param>
+      <key>unbuffered</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>append</key>
+      <value>False</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>affinity</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(851, 534)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>180</value>
     </param>
   </block>
   <connection>

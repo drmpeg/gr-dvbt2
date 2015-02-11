@@ -1,6 +1,97 @@
 <?xml version='1.0' encoding='ASCII'?>
+<?grc format='1' created='3.7.7'?>
 <flow_graph>
   <timestamp>Sun Dec 28 23:30:16 2014</timestamp>
+  <block>
+    <key>options</key>
+    <param>
+      <key>id</key>
+      <value>vv001_cr35</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>title</key>
+      <value></value>
+    </param>
+    <param>
+      <key>author</key>
+      <value></value>
+    </param>
+    <param>
+      <key>description</key>
+      <value></value>
+    </param>
+    <param>
+      <key>window_size</key>
+      <value>1280, 1024</value>
+    </param>
+    <param>
+      <key>generate_options</key>
+      <value>wx_gui</value>
+    </param>
+    <param>
+      <key>category</key>
+      <value>Custom</value>
+    </param>
+    <param>
+      <key>run_options</key>
+      <value>prompt</value>
+    </param>
+    <param>
+      <key>run</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>max_nouts</key>
+      <value>0</value>
+    </param>
+    <param>
+      <key>realtime_scheduling</key>
+      <value></value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(11, 10)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
+  <block>
+    <key>variable</key>
+    <param>
+      <key>id</key>
+      <value>samp_rate</value>
+    </param>
+    <param>
+      <key>_enabled</key>
+      <value>True</value>
+    </param>
+    <param>
+      <key>value</key>
+      <value>8000000</value>
+    </param>
+    <param>
+      <key>alias</key>
+      <value></value>
+    </param>
+    <param>
+      <key>_coordinate</key>
+      <value>(11, 83)</value>
+    </param>
+    <param>
+      <key>_rotation</key>
+      <value>0</value>
+    </param>
+  </block>
   <block>
     <key>dvbt2_bbscrambler_bb</key>
     <param>
@@ -38,33 +129,6 @@
     <param>
       <key>_coordinate</key>
       <value>(635, 26)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>variable</key>
-    <param>
-      <key>id</key>
-      <value>samp_rate</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>value</key>
-      <value>8000000</value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(11, 83)</value>
     </param>
     <param>
       <key>_rotation</key>
@@ -448,7 +512,11 @@
       <value>59</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -464,12 +532,16 @@
       <value>PREAMBLE_T2_SISO</value>
     </param>
     <param>
-      <key>misogroup1</key>
+      <key>misogroup</key>
       <value>MISO_TX1</value>
     </param>
     <param>
-      <key>misogroup2</key>
-      <value>MISO_TX1</value>
+      <key>equalization</key>
+      <value>EQUALIZATION_OFF</value>
+    </param>
+    <param>
+      <key>bandwidth</key>
+      <value>BANDWIDTH_1_7_MHZ</value>
     </param>
     <param>
       <key>alias</key>
@@ -783,7 +855,11 @@
       <value>59</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -870,7 +946,11 @@
       <value>59</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -904,69 +984,6 @@
     <param>
       <key>_coordinate</key>
       <value>(1011, 217)</value>
-    </param>
-    <param>
-      <key>_rotation</key>
-      <value>0</value>
-    </param>
-  </block>
-  <block>
-    <key>options</key>
-    <param>
-      <key>id</key>
-      <value>vv001_cr35</value>
-    </param>
-    <param>
-      <key>_enabled</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>title</key>
-      <value></value>
-    </param>
-    <param>
-      <key>author</key>
-      <value></value>
-    </param>
-    <param>
-      <key>description</key>
-      <value></value>
-    </param>
-    <param>
-      <key>window_size</key>
-      <value>1280, 1024</value>
-    </param>
-    <param>
-      <key>generate_options</key>
-      <value>wx_gui</value>
-    </param>
-    <param>
-      <key>category</key>
-      <value>Custom</value>
-    </param>
-    <param>
-      <key>run_options</key>
-      <value>prompt</value>
-    </param>
-    <param>
-      <key>run</key>
-      <value>True</value>
-    </param>
-    <param>
-      <key>max_nouts</key>
-      <value>0</value>
-    </param>
-    <param>
-      <key>realtime_scheduling</key>
-      <value></value>
-    </param>
-    <param>
-      <key>alias</key>
-      <value></value>
-    </param>
-    <param>
-      <key>_coordinate</key>
-      <value>(11, 10)</value>
     </param>
     <param>
       <key>_rotation</key>

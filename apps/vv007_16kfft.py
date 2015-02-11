@@ -2,8 +2,19 @@
 ##################################################
 # Gnuradio Python Flow Graph
 # Title: Vv007 16Kfft
-# Generated: Sun Dec 28 23:51:54 2014
+# Generated: Wed Feb 11 04:21:01 2015
 ##################################################
+
+# Call XInitThreads as the _very_ first thing.
+# After some Qt import, it's too late
+import ctypes
+import sys
+if sys.platform.startswith('linux'):
+    try:
+        x11 = ctypes.cdll.LoadLibrary('libX11.so')
+        x11.XInitThreads()
+    except:
+        print "Warning: failed to XInitThreads()"
 
 from gnuradio import blocks
 from gnuradio import digital
@@ -50,13 +61,13 @@ class vv007_16kfft(grc_wxgui.top_block_gui):
         	size=(600,600),
         )
         self.Add(self.wxgui_fftsink2_0.win)
-        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP8, dvbt2.GI_19_128, 59, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.PREAMBLE_T2_SISO, dvbt2.MISO_TX1, dvbt2.MISO_TX1, 16384)
-        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.FFTSIZE_2K, dvbt2.GI_19_128, 59, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.PREAMBLE_T2_SISO, dvbt2.SHOWLEVELS_OFF, 3.3)
+        self.dvbt2_pilotgenerator_cc_0 = dvbt2.pilotgenerator_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP8, dvbt2.GI_19_128, 59, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.MISO_TX1, dvbt2.EQUALIZATION_OFF, dvbt2.BANDWIDTH_1_7_MHZ, 16384)
+        self.dvbt2_p1insertion_cc_0 = dvbt2.p1insertion_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_19_128, 59, dvbt2.PREAMBLE_T2_SISO, dvbt2.SHOWLEVELS_OFF, 3.3)
         self.dvbt2_modulator_bc_0 = dvbt2.modulator_bc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_16QAM, dvbt2.ROTATION_ON)
         self.dvbt2_ldpc_bb_0 = dvbt2.ldpc_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3)
         self.dvbt2_interleaver_bb_0 = dvbt2.interleaver_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3, dvbt2.MOD_16QAM)
-        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP8, dvbt2.GI_19_128, 59, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.PREAMBLE_T2_SISO)
-        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3, dvbt2.MOD_16QAM, dvbt2.ROTATION_ON, 50, 3, dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.FFTSIZE_2K, dvbt2.GI_19_128, dvbt2.L1_MOD_64QAM, dvbt2.PILOT_PP8, 2, 59, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.PREAMBLE_T2_SISO, dvbt2.INPUTMODE_NORMAL, dvbt2.RESERVED_OFF, dvbt2.L1_SCRAMBLED_OFF, dvbt2.INBAND_OFF)
+        self.dvbt2_freqinterleaver_cc_0 = dvbt2.freqinterleaver_cc(dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.PILOT_PP8, dvbt2.GI_19_128, 59, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, )
+        self.dvbt2_framemapper_cc_0 = dvbt2.framemapper_cc(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3, dvbt2.MOD_16QAM, dvbt2.ROTATION_ON, 50, 3, dvbt2.CARRIERS_EXTENDED, dvbt2.FFTSIZE_16K, dvbt2.GI_19_128, dvbt2.L1_MOD_64QAM, dvbt2.PILOT_PP8, 2, 59, dvbt2.PAPR_OFF, dvbt2.VERSION_111, dvbt2.PREAMBLE_T2_SISO, dvbt2.INPUTMODE_NORMAL, dvbt2.RESERVED_OFF, dvbt2.L1_SCRAMBLED_OFF, dvbt2.INBAND_OFF)
         self.dvbt2_cellinterleaver_cc_0 = dvbt2.cellinterleaver_cc(dvbt2.FECFRAME_NORMAL, dvbt2.MOD_16QAM, 50, 3)
         self.dvbt2_bch_bb_0 = dvbt2.bch_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3)
         self.dvbt2_bbscrambler_bb_0 = dvbt2.bbscrambler_bb(dvbt2.FECFRAME_NORMAL, dvbt2.C2_3)
@@ -68,21 +79,20 @@ class vv007_16kfft(grc_wxgui.top_block_gui):
         ##################################################
         # Connections
         ##################################################
-        self.connect((self.dvbt2_bch_bb_0, 0), (self.dvbt2_ldpc_bb_0, 0))
-        self.connect((self.dvbt2_bbscrambler_bb_0, 0), (self.dvbt2_bch_bb_0, 0))
-        self.connect((self.dvbt2_ldpc_bb_0, 0), (self.dvbt2_interleaver_bb_0, 0))
-        self.connect((self.dvbt2_interleaver_bb_0, 0), (self.dvbt2_modulator_bc_0, 0))
-        self.connect((self.dvbt2_modulator_bc_0, 0), (self.dvbt2_cellinterleaver_cc_0, 0))
-        self.connect((self.dvbt2_cellinterleaver_cc_0, 0), (self.dvbt2_framemapper_cc_0, 0))
-        self.connect((self.dvbt2_bbheader_bb_0, 0), (self.dvbt2_bbscrambler_bb_0, 0))
-        self.connect((self.blocks_file_source_0, 0), (self.dvbt2_bbheader_bb_0, 0))
-        self.connect((self.dvbt2_framemapper_cc_0, 0), (self.dvbt2_freqinterleaver_cc_0, 0))
-        self.connect((self.dvbt2_freqinterleaver_cc_0, 0), (self.dvbt2_pilotgenerator_cc_0, 0))
-        self.connect((self.blocks_throttle_0, 0), (self.wxgui_fftsink2_0, 0))
-        self.connect((self.dvbt2_p1insertion_cc_0, 0), (self.blocks_throttle_0, 0))
-        self.connect((self.digital_ofdm_cyclic_prefixer_0, 0), (self.dvbt2_p1insertion_cc_0, 0))
-        self.connect((self.dvbt2_pilotgenerator_cc_0, 0), (self.digital_ofdm_cyclic_prefixer_0, 0))
-
+        self.connect((self.blocks_file_source_0, 0), (self.dvbt2_bbheader_bb_0, 0))    
+        self.connect((self.blocks_throttle_0, 0), (self.wxgui_fftsink2_0, 0))    
+        self.connect((self.digital_ofdm_cyclic_prefixer_0, 0), (self.dvbt2_p1insertion_cc_0, 0))    
+        self.connect((self.dvbt2_bbheader_bb_0, 0), (self.dvbt2_bbscrambler_bb_0, 0))    
+        self.connect((self.dvbt2_bbscrambler_bb_0, 0), (self.dvbt2_bch_bb_0, 0))    
+        self.connect((self.dvbt2_bch_bb_0, 0), (self.dvbt2_ldpc_bb_0, 0))    
+        self.connect((self.dvbt2_cellinterleaver_cc_0, 0), (self.dvbt2_framemapper_cc_0, 0))    
+        self.connect((self.dvbt2_framemapper_cc_0, 0), (self.dvbt2_freqinterleaver_cc_0, 0))    
+        self.connect((self.dvbt2_freqinterleaver_cc_0, 0), (self.dvbt2_pilotgenerator_cc_0, 0))    
+        self.connect((self.dvbt2_interleaver_bb_0, 0), (self.dvbt2_modulator_bc_0, 0))    
+        self.connect((self.dvbt2_ldpc_bb_0, 0), (self.dvbt2_interleaver_bb_0, 0))    
+        self.connect((self.dvbt2_modulator_bc_0, 0), (self.dvbt2_cellinterleaver_cc_0, 0))    
+        self.connect((self.dvbt2_p1insertion_cc_0, 0), (self.blocks_throttle_0, 0))    
+        self.connect((self.dvbt2_pilotgenerator_cc_0, 0), (self.digital_ofdm_cyclic_prefixer_0, 0))    
 
 
     def get_samp_rate(self):
@@ -94,14 +104,6 @@ class vv007_16kfft(grc_wxgui.top_block_gui):
         self.wxgui_fftsink2_0.set_sample_rate(self.samp_rate)
 
 if __name__ == '__main__':
-    import ctypes
-    import sys
-    if sys.platform.startswith('linux'):
-        try:
-            x11 = ctypes.cdll.LoadLibrary('libX11.so')
-            x11.XInitThreads()
-        except:
-            print "Warning: failed to XInitThreads()"
     parser = OptionParser(option_class=eng_option, usage="%prog: [options]")
     (options, args) = parser.parse_args()
     tb = vv007_16kfft()

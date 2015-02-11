@@ -1,4 +1,5 @@
 <?xml version='1.0' encoding='ASCII'?>
+<?grc format='1' created='3.7.7'?>
 <flow_graph>
   <timestamp>Mon Dec 29 00:27:30 2014</timestamp>
   <block>
@@ -495,7 +496,11 @@
       <value>238</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -629,7 +634,11 @@
       <value>238</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -700,7 +709,11 @@
       <value>238</value>
     </param>
     <param>
-      <key>paprmode</key>
+      <key>paprmode1</key>
+      <value>PAPR_OFF</value>
+    </param>
+    <param>
+      <key>paprmode2</key>
       <value>PAPR_OFF</value>
     </param>
     <param>
@@ -716,12 +729,16 @@
       <value>PREAMBLE_T2_SISO</value>
     </param>
     <param>
-      <key>misogroup1</key>
+      <key>misogroup</key>
       <value>MISO_TX1</value>
     </param>
     <param>
-      <key>misogroup2</key>
-      <value>MISO_TX1</value>
+      <key>equalization</key>
+      <value>EQUALIZATION_OFF</value>
+    </param>
+    <param>
+      <key>bandwidth</key>
+      <value>BANDWIDTH_1_7_MHZ</value>
     </param>
     <param>
       <key>alias</key>
