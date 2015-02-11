@@ -90,6 +90,8 @@ def main(args):
         fftsize = 8192
     elif fft_size == dvbt2.FFTSIZE_16K:
         fftsize = 16384
+    elif fft_size == dvbt2.FFTSIZE_16K_T2GI:
+        fftsize = 16384
     elif fft_size == dvbt2.FFTSIZE_32K:
         fftsize = 32768
     elif fft_size == dvbt2.FFTSIZE_32K_T2GI:
