@@ -31,16 +31,16 @@ namespace gr {
   namespace dvbt2 {
 
     pilotgenerator_cc::sptr
-    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, dvbt2_equalization_t equalization, dvbt2_bandwidth_t bandwidth, int vlength)
+    pilotgenerator_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_misogroup_t misogroup, dvbt2_equalization_t equalization, dvbt2_bandwidth_t bandwidth, int vlength)
     {
       return gnuradio::get_initial_sptr
-        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, version, preamble1, preamble2, misogroup1, misogroup2, equalization, bandwidth, vlength));
+        (new pilotgenerator_cc_impl(carriermode, fftsize, pilotpattern, guardinterval, numdatasyms, paprmode, version, preamble, misogroup, equalization, bandwidth, vlength));
     }
 
     /*
      * The private constructor
      */
-    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_misogroup_t misogroup1, dvbt2_misogroup_t misogroup2, dvbt2_equalization_t equalization, dvbt2_bandwidth_t bandwidth, int vlength)
+    pilotgenerator_cc_impl::pilotgenerator_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_pilotpattern_t pilotpattern, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_misogroup_t misogroup, dvbt2_equalization_t equalization, dvbt2_bandwidth_t bandwidth, int vlength)
       : gr::block("pilotgenerator_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex) * vlength))
@@ -48,15 +48,8 @@ namespace gr {
         int step, ki;
         double x, sinc, sincrms = 0.0;
         double fs, fstep, f = 0.0;
-        if (version == gr::dvbt2::VERSION_111)
-        {
-            miso_group = misogroup1;
-        }
-        else
-        {
-            miso_group = misogroup2;
-        }
-        if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
+        miso_group = misogroup;
+        if ((preamble == gr::dvbt2::PREAMBLE_T2_SISO) || (preamble == gr::dvbt2::PREAMBLE_T2_LITE_SISO))
         {
             miso = FALSE;
             switch (fftsize)

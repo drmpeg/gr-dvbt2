@@ -5,7 +5,23 @@
   <import>import dvbt2</import>
   <import>from gnuradio import fft</import>
   <import>from gnuradio.fft import window</import>
-  <make>dvbt2.p1insertion_cc($carriermode.val, $fftsize1.val, $fftsize2.val, $guardinterval.val, $numdatasyms, $version.val, $preamble1.val, $preamble2.val, $showlevels.val, $vclip)</make>
+  <make>dvbt2.p1insertion_cc($carriermode.val, #slurp
+#if str($version) == 'VERSION_111'
+$fftsize1.val, #slurp
+#else
+#if str($preamble2) == 'PREAMBLE_T2_SISO' or str($preamble2) == 'PREAMBLE_T2_MISO'
+$fftsize1.val, #slurp
+#else
+$fftsize2.val, #slurp
+#end if
+#end if
+$guardinterval.val, $numdatasyms, #slurp
+#if str($version) == 'VERSION_111'
+$preamble1.val, #slurp
+#else
+$preamble2.val, #slurp
+#end if
+$showlevels.val, $vclip)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -25,7 +41,7 @@
     <name>FFT Size</name>
     <key>fftsize1</key>
     <type>enum</type>
-    <hide>$preamble2.hide_base</hide>
+    <hide>#if str($version) == 'VERSION_111' then $preamble1.hide_base else $preamble2.hide_base</hide>
     <option>
       <name>1K</name>
       <key>FFTSIZE_1K</key>
@@ -71,7 +87,7 @@
     <name>FFT Size</name>
     <key>fftsize2</key>
     <type>enum</type>
-    <hide>$preamble2.hide_lite</hide>
+    <hide>#if str($version) == 'VERSION_111' then $preamble1.hide_lite else $preamble2.hide_lite</hide>
     <option>
       <name>2K</name>
       <key>FFTSIZE_2K</key>
@@ -177,11 +193,15 @@
       <name>T2 SISO</name>
       <key>PREAMBLE_T2_SISO</key>
       <opt>val:dvbt2.PREAMBLE_T2_SISO</opt>
+      <opt>hide_lite:all</opt>
+      <opt>hide_base:</opt>
     </option>
     <option>
       <name>T2 MISO</name>
       <key>PREAMBLE_T2_MISO</key>
       <opt>val:dvbt2.PREAMBLE_T2_MISO</opt>
+      <opt>hide_lite:all</opt>
+      <opt>hide_base:</opt>
     </option>
   </param>
   <param>

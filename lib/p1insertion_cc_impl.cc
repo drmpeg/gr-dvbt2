@@ -30,37 +30,25 @@ namespace gr {
   namespace dvbt2 {
 
     p1insertion_cc::sptr
-    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize1, dvbt2_fftsize_t fftsize2, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels, float vclip)
+    p1insertion_cc::make(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_preamble_t preamble, dvbt2_showlevels_t showlevels, float vclip)
     {
       return gnuradio::get_initial_sptr
-        (new p1insertion_cc_impl(carriermode, fftsize1, fftsize2, guardinterval, numdatasyms, version, preamble1, preamble2, showlevels, vclip));
+        (new p1insertion_cc_impl(carriermode, fftsize, guardinterval, numdatasyms, preamble, showlevels, vclip));
     }
 
     /*
      * The private constructor
      */
-    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize1, dvbt2_fftsize_t fftsize2, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_showlevels_t showlevels, float vclip)
+    p1insertion_cc_impl::p1insertion_cc_impl(dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, int numdatasyms, dvbt2_preamble_t preamble, dvbt2_showlevels_t showlevels, float vclip)
       : gr::block("p1insertion_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
     {
-        int s1, s2, fftsize, index = 0;
+        int s1, s2, index = 0;
         int fef_present = FALSE;    /* for testing only */
         const gr_complex *in = (const gr_complex *) p1_freq;
         gr_complex *out = (gr_complex *) p1_time;
-        fftsize = fftsize1;
-        if (version == gr::dvbt2::VERSION_111)
-        {
-            s1 = preamble1;
-        }
-        else
-        {
-            s1 = preamble2;
-            if (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO || preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_MISO)
-            {
-                fftsize = fftsize2;
-            }
-        }
+        s1 = preamble;
         switch (fftsize)
         {
             case gr::dvbt2::FFTSIZE_1K:

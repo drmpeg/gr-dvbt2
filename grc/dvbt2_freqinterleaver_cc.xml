@@ -3,7 +3,19 @@
   <key>dvbt2_freqinterleaver_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.freqinterleaver_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $guardinterval.val, $numdatasyms, $paprmode.val, $version.val, $preamble1.val, $preamble2.val)</make>
+  <make>dvbt2.freqinterleaver_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $guardinterval.val, $numdatasyms, #slurp
+#if str($version) == 'VERSION_111'
+$paprmode1.val, #slurp
+#else
+$paprmode2.val, #slurp
+#end if
+$version.val, #slurp
+#if str($version) == 'VERSION_111'
+$preamble1.val, #slurp
+#else
+$preamble2.val, #slurp
+#end if
+)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -162,10 +174,37 @@
   </param>
   <param>
     <name>PAPR Mode</name>
-    <key>paprmode</key>
+    <key>paprmode1</key>
     <type>enum</type>
+    <hide>$version.hide_111</hide>
     <option>
-      <name>Off (1.1.1) / P2 Only (1.3.1)</name>
+      <name>Off</name>
+      <key>PAPR_OFF</key>
+      <opt>val:dvbt2.PAPR_OFF</opt>
+    </option>
+    <option>
+      <name>Active Constellation Extension</name>
+      <key>PAPR_ACE</key>
+      <opt>val:dvbt2.PAPR_ACE</opt>
+    </option>
+    <option>
+      <name>Tone Reservation</name>
+      <key>PAPR_TR</key>
+      <opt>val:dvbt2.PAPR_TR</opt>
+    </option>
+    <option>
+      <name>Both ACE and TR</name>
+      <key>PAPR_BOTH</key>
+      <opt>val:dvbt2.PAPR_BOTH</opt>
+    </option>
+  </param>
+  <param>
+    <name>PAPR Mode</name>
+    <key>paprmode2</key>
+    <type>enum</type>
+    <hide>$version.hide_131</hide>
+    <option>
+      <name>P2 Only</name>
       <key>PAPR_OFF</key>
       <opt>val:dvbt2.PAPR_OFF</opt>
     </option>

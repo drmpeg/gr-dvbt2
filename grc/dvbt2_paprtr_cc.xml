@@ -3,7 +3,13 @@
   <key>dvbt2_paprtr_cc</key>
   <category>dvbt2</category>
   <import>import dvbt2</import>
-  <make>dvbt2.paprtr_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $guardinterval.val, $numdatasyms, $paprmode.val, $version.val, $vclip, $iterations, $fftsize.vlength)</make>
+  <make>dvbt2.paprtr_cc($carriermode.val, $fftsize.val, $pilotpattern.val, $guardinterval.val, $numdatasyms, #slurp
+#if str($version) == 'VERSION_111'
+$paprmode1.val, #slurp
+#else
+$paprmode2.val, #slurp
+#end if
+$version.val, $vclip, $iterations, $fftsize.vlength)</make>
   <param>
     <name>Extended Carrier Mode</name>
     <key>carriermode</key>
@@ -171,10 +177,41 @@
   </param>
   <param>
     <name>PAPR Mode</name>
-    <key>paprmode</key>
+    <key>paprmode1</key>
     <type>enum</type>
+    <hide>$version.hide_111</hide>
     <option>
-      <name>Off (1.1.1) / P2 Only (1.3.1)</name>
+      <name>Off</name>
+      <key>PAPR_OFF</key>
+      <opt>val:dvbt2.PAPR_OFF</opt>
+      <opt>hide_vclip:all</opt>
+    </option>
+    <option>
+      <name>Active Constellation Extension</name>
+      <key>PAPR_ACE</key>
+      <opt>val:dvbt2.PAPR_ACE</opt>
+      <opt>hide_vclip:all</opt>
+    </option>
+    <option>
+      <name>Tone Reservation</name>
+      <key>PAPR_TR</key>
+      <opt>val:dvbt2.PAPR_TR</opt>
+      <opt>hide_vclip:</opt>
+    </option>
+    <option>
+      <name>Both ACE and TR</name>
+      <key>PAPR_BOTH</key>
+      <opt>val:dvbt2.PAPR_BOTH</opt>
+      <opt>hide_vclip:</opt>
+    </option>
+  </param>
+  <param>
+    <name>PAPR Mode</name>
+    <key>paprmode2</key>
+    <type>enum</type>
+    <hide>$version.hide_131</hide>
+    <option>
+      <name>P2 Only</name>
       <key>PAPR_OFF</key>
       <opt>val:dvbt2.PAPR_OFF</opt>
       <opt>hide_vclip:all</opt>
@@ -206,11 +243,15 @@
       <name>1.1.1</name>
       <key>VERSION_111</key>
       <opt>val:dvbt2.VERSION_111</opt>
+      <opt>hide_111:</opt>
+      <opt>hide_131:all</opt>
     </option>
     <option>
       <name>1.3.1</name>
       <key>VERSION_131</key>
       <opt>val:dvbt2.VERSION_131</opt>
+      <opt>hide_111:all</opt>
+      <opt>hide_131:</opt>
     </option>
   </param>
   <param>
@@ -218,14 +259,14 @@
     <key>vclip</key>
     <value>3.3</value>
     <type>float</type>
-    <hide>$paprmode.hide_vclip</hide>
+    <hide>#if str($version) == 'VERSION_111' then $paprmode1.hide_vclip else $paprmode2.hide_vclip</hide>
   </param>
   <param>
     <name>Iterations</name>
     <key>iterations</key>
     <value>10</value>
     <type>int</type>
-    <hide>$paprmode.hide_vclip</hide>
+    <hide>#if str($version) == 'VERSION_111' then $paprmode1.hide_vclip else $paprmode2.hide_vclip</hide>
   </param>
   <sink>
     <name>in</name>

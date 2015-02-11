@@ -30,16 +30,16 @@ namespace gr {
   namespace dvbt2 {
 
     framemapper_cc::sptr
-    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize1, dvbt2_fftsize_t fftsize2, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled, dvbt2_inband_t inband)
+    framemapper_cc::make(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled, dvbt2_inband_t inband)
     {
       return gnuradio::get_initial_sptr
-        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize1, fftsize2, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode, version, preamble1, preamble2, inputmode, reservedbiasbits, l1scrambled, inband));
+        (new framemapper_cc_impl(framesize, rate, constellation, rotation, fecblocks, tiblocks, carriermode, fftsize, guardinterval, l1constellation, pilotpattern, t2frames, numdatasyms, paprmode, version, preamble, inputmode, reservedbiasbits, l1scrambled, inband));
     }
 
     /*
      * The private constructor
      */
-    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize1, dvbt2_fftsize_t fftsize2, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble1, dvbt2_preamble_t preamble2, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled, dvbt2_inband_t inband)
+    framemapper_cc_impl::framemapper_cc_impl(dvbt2_framesize_t framesize, dvbt2_code_rate_t rate, dvbt2_constellation_t constellation, dvbt2_rotation_t rotation, int fecblocks, int tiblocks, dvbt2_extended_carrier_t carriermode, dvbt2_fftsize_t fftsize, dvbt2_guardinterval_t guardinterval, dvbt2_l1constellation_t l1constellation, dvbt2_pilotpattern_t pilotpattern, int t2frames, int numdatasyms, dvbt2_papr_t paprmode, dvbt2_version_t version, dvbt2_preamble_t preamble, dvbt2_inputmode_t inputmode, dvbt2_reservedbiasbits_t reservedbiasbits, dvbt2_l1scrambled_t l1scrambled, dvbt2_inband_t inband)
       : gr::block("framemapper_cc",
               gr::io_signature::make(1, 1, sizeof(gr_complex)),
               gr::io_signature::make(1, 1, sizeof(gr_complex)))
@@ -89,19 +89,8 @@ namespace gr {
         fef_interval = 1;       /*  "     "     "   */
         l1preinit->type = gr::dvbt2::STREAMTYPE_TS;
         l1preinit->bwt_ext = carriermode;
-        fft_size = fftsize1;
-        if (version == gr::dvbt2::VERSION_111)
-        {
-            l1preinit->s1 = preamble1;
-        }
-        else
-        {
-            l1preinit->s1 = preamble2;
-            if (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO || preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_MISO)
-            {
-                fft_size = fftsize2;
-            }
-        }
+        fft_size = fftsize;
+        l1preinit->s1 = preamble;
         l1preinit->s2 = fft_size & 0x7;
         l1preinit->l1_repetition_flag = FALSE;
         l1preinit->guard_interval = guardinterval;
@@ -442,7 +431,7 @@ namespace gr {
                 eta_mod = 6;
                 break;
         }
-        if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
+        if ((preamble == gr::dvbt2::PREAMBLE_T2_SISO) || (preamble == gr::dvbt2::PREAMBLE_T2_LITE_SISO))
         {
             switch (fft_size)
             {
@@ -1021,7 +1010,7 @@ namespace gr {
                 }
                 break;
         }
-        if ((preamble1 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_111) || (preamble2 == gr::dvbt2::PREAMBLE_T2_SISO && version == gr::dvbt2::VERSION_131) || (preamble2 == gr::dvbt2::PREAMBLE_T2_LITE_SISO && version == gr::dvbt2::VERSION_131))
+        if ((preamble == gr::dvbt2::PREAMBLE_T2_SISO) || (preamble == gr::dvbt2::PREAMBLE_T2_LITE_SISO))
         {
             if (guardinterval == gr::dvbt2::GI_1_128 && pilotpattern == gr::dvbt2::PILOT_PP7)
             {
