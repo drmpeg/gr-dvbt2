@@ -18,7 +18,5 @@ icon:
 ---
 This project implements a software-defined DVB-T2 transmitter, based on the EN 302 755 V1.3.1 Frame structure channel coding and modulation for a second generation digital terrestrial television broadcasting system:
 
-http://www.etsi.org/deliver/etsi_en/302700_302799/302755/01.03.01_60/en_302755v010301p.pdf
-
-
+<http://www.etsi.org/deliver/etsi_en/302700_302799/302755/01.03.01_60/en_302755v010301p.pdf>
 
