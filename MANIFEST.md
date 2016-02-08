@@ -1,12 +1,7 @@
 title: gr-dvbt2
 brief: A DVB-T2 transmitter.
 tags:
-  - DVB
-  - LDPC
-  - BCH
-  - PAPR
-  - MISO
-  - T2Lite
+  - In tree as of GNU Radio 3.7.7
 author:
   - Ron Economos <w6rz@comcast.net>
 copyright_owner:
